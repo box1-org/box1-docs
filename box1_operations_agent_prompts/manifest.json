@@ -1,0 +1,63 @@
+{
+  "project": "box1 Operations",
+  "version": "1.0",
+  "created_on": "2026-10-25",
+  "nominal_model_context_tokens": 65536,
+  "gpu": {
+    "model": "NVIDIA RTX 5090",
+    "vram_gb": 32,
+    "notes": "Context configured at 64K, if supported, is not a VRAM guarantee."
+  },
+  "agent_contract": "00-shared/00_AGENT_CONTRACT.md",
+  "core_contracts": "00-shared/01_DOMAIN_CONTRACTS.md",
+  "delivery_contract": "00-shared/02_REPO_AND_GITOPS_CONVENTIONS.md",
+  "recommended_shared_inputs": [
+    "00-shared/00_AGENT_CONTRACT.md",
+    "00-shared/01_DOMAIN_CONTRACTS.md",
+    "00-shared/02_REPO_AND_GITOPS_CONVENTIONS.md",
+    "00-shared/03_QUALITY_GATES.md",
+    "00-shared/04_EXECUTION_PLAN.md",
+    "00-shared/05_HANDOFF_TEMPLATE.md",
+    "00-shared/06_RESOURCE_AND_SECURITY_BOUNDARIES.md"
+  ],
+  "services": [
+    "01-services/01_order_service.md",
+    "01-services/02_inventory_service.md",
+    "01-services/03_fulfillment_adapter.md",
+    "01-services/04_erp_vm_simulator.md",
+    "01-services/05_telemetry_service.md",
+    "01-services/06_notification_service.md",
+    "01-services/07_experience_bff.md",
+    "01-services/08_operator_console.md",
+    "01-services/09_scenario_controller.md",
+    "01-services/10_ai_operations.md"
+  ],
+  "platform_workstreams": [
+    "02-platform/01_contracts_and_data_foundation.md",
+    "02-platform/02_observability_stack.md",
+    "02-platform/03_mesh_and_rollouts.md",
+    "02-platform/04_trusted_delivery.md",
+    "02-platform/05_virtualization_integration.md",
+    "02-platform/06_ai_inference_hosting.md",
+    "02-platform/07_developer_portal_onboarding.md"
+  ],
+  "build_order": [
+    "02-platform/01_contracts_and_data_foundation.md",
+    "01-services/01_order_service.md",
+    "01-services/02_inventory_service.md",
+    "01-services/03_fulfillment_adapter.md",
+    "01-services/07_experience_bff.md",
+    "01-services/08_operator_console.md",
+    "02-platform/02_observability_stack.md",
+    "01-services/09_scenario_controller.md",
+    "01-services/04_erp_vm_simulator.md",
+    "02-platform/05_virtualization_integration.md",
+    "01-services/05_telemetry_service.md",
+    "01-services/06_notification_service.md",
+    "02-platform/03_mesh_and_rollouts.md",
+    "02-platform/04_trusted_delivery.md",
+    "02-platform/07_developer_portal_onboarding.md",
+    "02-platform/06_ai_inference_hosting.md",
+    "01-services/10_ai_operations.md"
+  ]
+}
