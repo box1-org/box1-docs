@@ -62,7 +62,7 @@ onboarding operation is active.
    scripts, but retain historical evidence with a clear `retired` label and a
    link to this runbook.
 
-## Box1 execution on 2026-10-26
+## Retired historical record (superseded)
 
 The four requested services were:
 
@@ -86,3 +86,59 @@ and onboarding-state deletion were also not performed because
 
 Do not mark this decommission complete until the repository deletion, RHDH
 entity 404 checks, and cluster prune verification have durable evidence.
+
+
+## Final observed state — 2026-10-26 21:10 EDT
+
+The previously unverified cleanup was completed against context
+`vllm/api-ocp-box1-org:6443/mike`. `oc whoami` returned `mike`; the Kubernetes
+API was reachable; `api.ocp.box1.org` resolved to `192.168.1.149` (the API
+endpoint returned HTTP 503 to an unauthenticated HEAD request); and
+`developer-hub.apps.ocp.box1.org` resolved to the same address and returned
+HTTP 200. The GitOps parent reported revision
+`25a3c3f62379bf28c9c33a3197aea57b013454d2` with the four children marked
+`requiresPruning`. Because the parent did not prune them, the four child
+Applications were deleted with foreground propagation.
+
+Observed cluster results after cleanup:
+
+- `football-service`, `orders-service`, `shipping-service`, and
+  `quarkus-golden-path-smoke` Applications were absent from
+  `openshift-gitops`.
+- Their namespaces (`football-service-dev`, `orders-service-dev`,
+  `shipping-service-dev`, and `quarkus-golden-path-smoke`) were absent.
+- A cluster-wide search found no matching Deployments, Services, Routes,
+  ServiceAccounts, ConfigMaps, Roles, RoleBindings, Pipelines-as-Code
+  Repositories, PipelineRuns, or TaskRuns. The matching cross-namespace CI
+  RoleBindings and GitOps Roles were explicitly removed. No matching
+  onboarding ConfigMaps or Leases remained in `rhdh`.
+- All PipelineRuns observed before deletion were terminal (Succeeded, Failed,
+  timed out, or could not obtain a Task); none was active when onboarding
+  state was removed.
+
+RHDH catalog locations targeting the four exact URLs were deleted through the
+catalog API (HTTP 204). The eight orphaned entities were unregistered by UID;
+the final authenticated checks returned HTTP 404 for both
+`component:default/<service>` and `api:default/<service>-api` for every
+service. A retired-repository exclusion was added to the GitHub discovery
+filter in `box1-gitops` commit
+[`06bd03a`](https://github.com/box1-org/box1-gitops/commit/06bd03aa743a076feb25818a718a1c66733e5f2f)
+and applied to the live `developer-hub-app-config` ConfigMap before the final
+checks. The branch commit is pushed to `wire-security-gates`; it is not yet
+merged to `main`.
+
+Repository deletion remains the only limitation. The requested
+`gh repo delete box1-org/<service> --yes` commands were attempted for all four
+repositories, but the installed `gh` token returned HTTP 401 and the command
+could not perform deletion. A final unauthenticated public GitHub API check returned HTTP 404 for all
+four repository URLs, so their deletion cannot be attributed or independently
+verified from this session. The earlier irreversible-deletion safety block remains in
+the historical record. Do not report repository deletion as verified until an
+authenticated operator confirms it. The GitOps deletion and published runbook
+baseline remain PR #10 and commit `8c8d1a228ae56b7ec769999f73692c440347966e`.
+
+Final searches across `box1-gitops`, `box1-workloads-dev`, `box1-templates`,
+and `box1-docs` found no live workload or Application manifests. Remaining
+matches are retired historical verification records, test fixtures, or the
+explicit Developer Hub exclusion above; they must remain labeled as retired
+when those records are retained.
