@@ -1,17 +1,45 @@
 {
   "issue": "box1-org/box1-docs#15",
-  "title": "Service 05 — Asset telemetry service",
+  "title": "Service 05 \u2014 Asset telemetry service",
   "profile": "frontier",
   "prompt": "box1_operations_agent_prompts/01-services/05_telemetry_service.md",
   "prompt_revision": "467c311f86452994a63d3324a5ec2805bf3b2b9e",
   "started_at": "2026-11-05T18:03:35-05:00",
-  "current_phase": 2,
+  "current_phase": 4,
   "run_state_branch": "agent-run/15-telemetry-service",
   "repositories": {
-    "asset-service": {"base": "0dc14dc", "branch": null, "commit": null},
-    "box1-ops-contracts": {"base": null, "branch": null, "commit": null},
-    "box1-workloads-dev": {"base": null, "branch": null, "commit": null},
-    "box1-gitops": {"base": null, "branch": null, "commit": null}
+    "asset-service": {
+      "base": "0dc14dc",
+      "branch": "telemetry-service",
+      "commit": "18dddb0",
+      "pr": null
+    },
+    "box1-ops-contracts": {
+      "base": "e278940",
+      "branch": "asset-service-v1",
+      "commit": "8764f7d",
+      "pr": null
+    },
+    "box1-workloads-dev": {
+      "base": "826bfbb",
+      "branch": "asset-service-runtime-config",
+      "commit": null,
+      "pr": null
+    },
+    "box1-gitops": [
+      {
+        "base": "e522445",
+        "branch": "telemetry-dlq-topic",
+        "commit": "8bca2c0",
+        "pr": null
+      },
+      {
+        "base": "e522445",
+        "branch": "asset-service-keycloak-client",
+        "commit": "95206e7",
+        "pr": null
+      }
+    ]
   },
   "image_digest": null,
   "gitops_commit": null

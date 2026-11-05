@@ -1,0 +1,28 @@
+Local test results for box1-docs#15, asset-service branch telemetry-service. America/New_York.
+
+Run 1, 2026-11-05 18:36 EST, ./mvnw test -Pcontainers (commit before d5646c2): 49 tests, 5 failures.
+  Causes, read before counting:
+  - 3 test defects: form post refused with 415 not 403; arm expiry refused 409 after the reaper closed it; non-hex run IDs in the reaper test hit the API's ID check (404).
+  - 2 failures, one product defect: a Micrometer meter (asset.alerts.transitions) registered with different tag keys on clear than on activation. Prometheus throws IllegalArgumentException; the consumer retried it forever and held the partition, so the flap and poison tests timed out.
+  - In isolation the flap test also showed the first-start 'latest' race: readings posted before partition assignment are skipped by design (D-010). Tests now wait for a probe reading.
+
+Run 2, 2026-11-05 18:43 EST, ./mvnw test -Pcontainers at the fixes (committed as d5646c2):
+  org.box1.GreetingResourceTest: 5 tests, 0 failures, 0 errors (3.880 s)
+  org.box1.asset.SecurityTest: 6 tests, 0 failures, 0 errors (1.256 s)
+  org.box1.asset.it.ControlTest: 7 tests, 0 failures, 0 errors (84.49 s)
+  org.box1.asset.it.TelemetryFlowTest: 3 tests, 0 failures, 0 errors (15.22 s)
+  org.box1.asset.it.GateDisabledTest: 1 tests, 0 failures, 0 errors (1.671 s)
+  org.box1.asset.it.GateNotAllowlistedTest: 1 tests, 0 failures, 0 errors (2.409 s)
+  org.box1.GreetingServiceTest: 3 tests, 0 failures, 0 errors (0.003 s)
+  org.box1.asset.ChaosGateTest: 1 tests, 0 failures, 0 errors (0.005 s)
+  org.box1.asset.ContractTest: 1 tests, 0 failures, 0 errors (0.243 s)
+  org.box1.asset.FailuresTest: 1 tests, 0 failures, 0 errors (0.002 s)
+  org.box1.asset.ReadingPublisherTest: 3 tests, 0 failures, 0 errors (0.001 s)
+  org.box1.asset.ReadingValidatorTest: 4 tests, 0 failures, 0 errors (0.001 s)
+  org.box1.asset.RunScriptTest: 7 tests, 0 failures, 0 errors (1.497 s)
+  org.box1.asset.ThresholdEngineTest: 6 tests, 0 failures, 0 errors (0.010 s)
+  org.box1.asset.TokenBucketTest: 1 tests, 0 failures, 0 errors (0.001 s)
+  Total: Tests run: 50, Failures: 0, Errors: 0, Skipped: 0
+
+Clocks before run 2: host 23:42:52Z, Podman VM 23:42:52Z.
+Static analysis: ./mvnw verify at 18dddb0 passed Checkstyle and SpotBugs/FindSecBugs (91+ classes analyzed, 0 bugs).
