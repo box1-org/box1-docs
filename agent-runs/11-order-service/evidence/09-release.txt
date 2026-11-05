@@ -1,0 +1,68 @@
+# Release order-service-release-jn4rl, captured 2026-11-05 10:56 EST
+source 4ec33fb4b1d05d11bbe3159f310d1987eac696f3 (empty commit on a749ef8, requested by the user)
+
+## Pipeline
+order-service-release-jn4rl-build      Succeeded   2026-11-05T15:45:38Z   2026-11-05T15:47:40Z
+order-service-release-jn4rl-promote    Succeeded   2026-11-05T15:48:00Z   2026-11-05T15:48:51Z
+order-service-release-jn4rl-security   Succeeded   2026-11-05T15:47:40Z   2026-11-05T15:48:00Z
+order-service-release-jn4rl-smoke      Succeeded   2026-11-05T15:48:51Z   2026-11-05T15:48:55Z
+enforcement ['gate']
+results {'sbom-id': 'urn:uuid:01a1ac65-2639-746a-be44-fca05f91373a', 'findings': 'scan-exit=0', 'policy': 'pass'}
+RHACS scan exit=0 check exit=0 digest=sha256:513c366dad2163014e3c8f1533976bf11dbf63cb42c81fd7ff789fcc1258b65d
+SBOM accepted by RHTPA: urn:uuid:01a1ac65-2639-746a-be44-fca05f91373a digest=sha256:513c366dad2163014e3c8f1533976bf11dbf63cb42c81fd7ff789fcc1258b65d revision=4ec33fb4b1d05d11bbe3159f310d1987eac696f3
+Created GitOps PR: https://github.com/box1-org/box1-workloads-dev/pull/52
+Merged development GitOps PR after exact-head required checks: 9293ad899a3b0fe26ba55b39cbc243de35db6387
+Requested Argo sync for order-service at GitOps revision 9293ad899a3b0fe26ba55b39cbc243de35db6387
+Argo sync completed for order-service at 9293ad899a3b0fe26ba55b39cbc243de35db6387
+PASS: Argo Synced/Healthy, expected source and runtime digest, REST, Java 21, health, OpenAPI, metrics, validation.
+Source: 4ec33fb4b1d05d11bbe3159f310d1987eac696f3 image: sha256:513c366dad2163014e3c8f1533976bf11dbf63cb42c81fd7ff789fcc1258b65d Route: https://order-service-dev.apps.ocp.box1.org
+
+## Live
+argo=Synced/Healthy rev=9293ad899a3b0fe26ba55b39cbc243de35db6387
+imageID=image-registry.openshift-image-registry.svc:5000/box1-ci/order-service@sha256:513c366dad2163014e3c8f1533976bf11dbf63cb42c81fd7ff789fcc1258b65d restarts=0
+{"name":"order-service","version":"1.0.0-SNAPSHOT","javaVersion":21,"deliveryMode":"tekton-gitops","gitRef":"4ec33fb4b1d05d11bbe3159f310d1987eac696f3"}
+
+## Create, replay and changed body through the Route, key release-accept-4ec33fb
+outbox/published metrics before:
+box1_orders_oldest_open_age_seconds 6325.117548
+box1_outbox_oldest_pending_age_seconds 0.0
+box1_orders_stuck 1.0
+box1_outbox_pending 0.0
+POST 201 location: http://order-service-dev.apps.ocp.box1.org/api/v1/orders/ord_105f4cdf614f47208b6a3a14863855c4
+
+POST 200 location: http://order-service-dev.apps.ocp.box1.org/api/v1/orders/ord_105f4cdf614f47208b6a3a14863855c4
+
+POST 200 location: http://order-service-dev.apps.ocp.box1.org/api/v1/orders/ord_105f4cdf614f47208b6a3a14863855c4
+
+orderId=ord_105f4cdf614f47208b6a3a14863855c4
+changed body: {"type":"about:blank","title":"Conflict","status":409,"detail":"Idempotency key was used with a different payload"} 409
+no key: 400
+invalid: 400
+get: {"orderId":"ord_105f4cdf614f47208b6a3a14863855c4","state":"SUBMITTED","customerId":"cust_live_accept","sku":"SKU-42","quantity":2,"siteId":"site_nyc","statusReason":"ORDE
+timeline: [{"sequence":2,"kind":"TRANSITION","toState":"SUBMITTED","reasonCode":"ORDER_PLACED","occurredAt":"2026-11-05T15:56:45.276583Z","causationId":"cmd_2151b60a-8836-41b1-9581
+metrics after:
+box1_orders_oldest_open_age_seconds 6340.11752
+box1_outbox_oldest_pending_age_seconds 0.723203
+box1_orders_stuck 1.0
+box1_outbox_pending 1.0
+box1_orders_lifecycle_total{state="SUBMITTED"} 1.0 # {span_id="9c4adb60b8098ff3",trace_id="2565a5366f7d8c94d9a24affc810a
+box1_outbox_published_total 1.0
+box1_outbox_publish_lag_seconds_max 0.74193
+box1_outbox_publish_lag_seconds_count 1.0
+box1_outbox_publish_lag_seconds_sum 0.74193
+app log for this order:
+15:56:45 INFO OrdersResource Order created
+15:56:45 INFO OrdersResource Idempotent replay
+15:56:45 INFO OrdersResource Idempotent replay
+
+## Served OpenAPI, order paths
+GET /api/v1/orders ['200']
+POST /api/v1/orders ['200', '400']
+GET /api/v1/orders/{orderId} ['200']
+GET /api/v1/orders/{orderId}/timeline ['200']
+
+## Follow-up checks
+Outbox pending returned to 0, published_total 1 on this pod. Kafka itself was not read.
+Timeline sequence is a global counter: this order's only entry is 2, the earlier order's is 1. The contract says minimum 1; its example shows 1.
+Location uses http:// on the edge-terminated Route. http:// answers 302 to https://. No proxy forwarding setting in application.properties.
+Test orders left live: ord_24a3627c742847c4ad6ef3670e21ea5a, ord_105f4cdf614f47208b6a3a14863855c4.

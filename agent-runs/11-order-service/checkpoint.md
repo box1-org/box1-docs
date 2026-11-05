@@ -1,8 +1,8 @@
 # Checkpoint: box1-docs#11 Service 01, frontier profile
 
 **Updated:** 2026-11-05 America/New_York
-**Current phase:** 7, partially complete. The code is live, but acceptance is limited, the release smoke is at risk, and the Release pass has not run.
-**Stop reason:** `box1-gitops#54` needs a merge and a sync. See the exact next action.
+**Current phase:** 7. The code is live and the Release pass ran. Acceptance is partial.
+**Stop reason:** the release is live. Remaining decisions are the user's. See the exact next action.
 
 ## Branches and PRs
 
@@ -30,11 +30,11 @@ Local scenarios use `postgres:15-alpine` and `apache/kafka:4.2.0`. The deployed 
 
 ## Ledger
 
-27 `locally_tested`, 3 `ci_verified`, 2 `implemented`, 2 `blocked`, 1 `superseded`. None is `deployed` or `live_verified`.
+11 `live_verified`, 22 `deployed`, 1 `blocked`, 1 `superseded`. See `requirements.yaml`.
 
 ## Reviewer passes
 
-Architecture, persistence, messaging, security and operations are recorded in `review-findings/` with outcomes. The release pass has not run.
+All six are recorded in `review-findings/` with outcomes. The Release pass verdict is conditional.
 
 Open from review:
 
@@ -44,8 +44,9 @@ Open from review:
 
 ## Open risks
 
-- **Release pipeline failed.** `order-service-release-dq2fk` failed in promote at 09:15:01 EST, on the 300 s Argo wait. Argo is `OutOfSync` because `order-service-config-29d2hgcc29` requires pruning. Smoke was skipped, so it has not run against this image. The deployment is healthy at the expected revision. Tracked in box1-docs#42.
-- **No dead-letter topic.** `box1-kafka` is `OutOfSync`, because `box1-gitops#52` is merged but not synced. A poison event could auto-create the topic with default retention. If that fails, the pod restarts.
+- **Rollback restores a failing image.** Reverting the promotion deploys `fb669bff`, which has 14 `FAIL_BUILD` violations. Not exercised. Prefer rolling forward.
+- **The gate has not shown a rejection,** and it can be bypassed. See `review-findings/release.md`.
+- **Registry TLS verification is off** (box1-docs#44).
 - **Live database credential** (D-005, box1-docs#41). Specifics withheld, since this repository is public. The NetworkPolicy now limits access to it.
 - Order data is readable on the LAN without credentials (box1-docs#40).
 - The consumer path, outage handling and restart behavior are proven locally only.
@@ -65,11 +66,12 @@ Re-verify the baseline before relying on it.
 
 ## Exact next action
 
-Release `order-service-release-prd6t` failed because `roxctl` does not trust Central. The image itself passes policy. See `evidence/08-security-availability.txt`.
+The release passed with `gate`: `order-service-release-jn4rl`, source `4ec33fb`, digest `sha256:513c366d...b65d`, GitOps `9293ad8`. See `evidence/09-release.txt` and `review-findings/release.md`.
 
-1. The user merges `box1-gitops#54` and approves a `pipelines-ci` sync.
-2. Re-trigger the release. It needs a new commit on `main` or a `/retest` comment.
-3. Follow the release: gate results, digest, promotion, smoke.
-4. Run the Release reviewer pass in a fresh subagent and update the ledger.
+Waiting on the user:
 
-Also open: `box1-gitops#55` (matcher memory; needs an `acs` sync, not during a release), `box1-templates#25`, #23 and #24. The deployed image is still `sha256:fb669bff...83fd`, which fails the policy.
+1. Approve or decline a controlled negative test of the gate, which has never rejected an image through the Task.
+2. Decide on the open findings: served OpenAPI, smoke coverage, `Location` scheme, timeline `sequence`, gate bypass.
+3. Merge `box1-templates#25`, #23 and #24.
+
+Acceptance stays partial. `ORD-LIVE-LIFECYCLE` is blocked, and consumer, outage and restart behavior are proven locally only.

@@ -1,6 +1,8 @@
 # Requirement ledger for box1-docs#11. Status is the highest level actually observed.
 # The prompt's FR-01, FR-03, FR-04, DAT-03/04 and OBS-01/02/03 tags are not defined on box1-docs main,
 # so IDs derive from the prompt's behavior and acceptance text.
+# Deployment refs are the current release. The other live_verified entries were first observed on sha256:fb669bff;
+# on the current digest, evidence/09-release.txt repeats the create, replay, conflict, validation, read, metrics and log checks.
 # Paths are in box1-org/order-service unless noted.
 - id: ORD-API-CREATE
   description: POST /api/v1/orders with Idempotency-Key atomically writes order, idempotency record and order.placed.v1 outbox row; 201 + Location on first request
@@ -17,8 +19,8 @@
   - evidence/04-scenarios-local.txt
   - evidence/07-live.txt
   deployment: &1
-    image_digest: sha256:fb669bff0e522c8067c4118c7ac04303a520acd67a20be85ee940d36344583fd
-    gitops_commit: 5fd61de2479b899ab4f6e9e48055c527f13ac632
+    image_digest: sha256:513c366dad2163014e3c8f1533976bf11dbf63cb42c81fd7ff789fcc1258b65d
+    gitops_commit: 9293ad899a3b0fe26ba55b39cbc243de35db6387
   limitations: []
 - id: ORD-API-READ
   description: GET list, GET by id and /timeline with stable pagination, timestamps, state, status reason and trace/correlation references
@@ -521,12 +523,13 @@
   - 'Cluster sample: 195 MiB just after start. Load on the cluster not measured.'
 - id: ORD-DELIVERY-GITOPS
   description: Immutable image, promotion PR for this service only, Argo reports the expected revision, pod runs the digest
-  status: deployed
+  status: live_verified
   implementation: []
   tests: []
   commands: []
   evidence:
   - evidence/07-live.txt
+  - evidence/09-release.txt
   deployment: *1
   limitations:
   - Pod runs the promoted digest at source 749ef13. Argo reports OutOfSync because an old hash-named ConfigMap needs pruning, so the release pipeline failed in promote at its 300 s wait and smoke was skipped (box1-docs#42). Release reviewer pass not yet run.
