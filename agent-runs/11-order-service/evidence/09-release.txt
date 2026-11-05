@@ -95,3 +95,36 @@ Promote failed: box1-workloads-dev#55 checks reported "pipelinerun start failure
 Orphans: box1-phase1-smoke-59r9f, box1-gitops-validate-694k6, both Pending.
 Controller log: 4 start failures out of about 56 runs created. Tracked in box1-docs#42.
 Deployed is still 4ec33fb, sha256:513c366d...b65d, with the old OpenAPI and http:// Location. box1-ops-contracts#4 is merged.
+
+# Release order-service-release-6skld, source 8fda087, captured 2026-11-05 17:21 EST
+Releases ee9a3b8 (xgfj7) and efa84c0 (8jp8d) passed the gate, then stopped at promotion when GitHub returned 404 and 500 to Pipelines as Code check-run calls. Their promotion PRs box1-workloads-dev#55 and #56 were closed unmerged. This release ran after GitHub recovered.
+order-service-release-6skld-build             Succeeded   2026-11-05T22:19:41Z
+order-service-release-6skld-order-api-smoke   Succeeded   2026-11-05T22:21:18Z
+order-service-release-6skld-promote           Succeeded   2026-11-05T22:21:10Z
+order-service-release-6skld-security          Succeeded   2026-11-05T22:20:02Z
+order-service-release-6skld-smoke             Succeeded   2026-11-05T22:21:14Z
+RHACS scan exit=0 check exit=0 digest=sha256:c90bae8aeb73537dda149be3713744c579fb06d6837e1e21d8d50c3a5ef605c8
+SBOM accepted by RHTPA: urn:uuid:01a1adcc-10b3-730e-9e2d-dcb4b29435d2 digest=sha256:c90bae8aeb73537dda149be3713744c579fb06d6837e1e21d8d50c3a5ef605c8 revision=8fda08763e2a593d67cabea73fb84e762cb41a21
+Created GitOps PR: https://github.com/box1-org/box1-workloads-dev/pull/59
+Merged development GitOps PR after exact-head required checks: 359c71108bbf793c027547e655d63fd67fa4f42b
+Argo sync completed for order-service at 359c71108bbf793c027547e655d63fd67fa4f42b
+PASS: Argo Synced/Healthy, expected source and runtime digest, REST, Java 21, health, OpenAPI, metrics, validation.
+PASS: order reads, 404 and 400 problems, served OpenAPI responses. No order was written.
+## Independent checks
+argo=Synced/Healthy rev=359c71108bbf793c027547e655d63fd67fa4f42b
+imageID=image-registry.openshift-image-registry.svc:5000/box1-ci/order-service@sha256:c90bae8aeb73537dda149be3713744c579fb06d6837e1e21d8d50c3a5ef605c8 restarts=0 ready=true
+{"name":"order-service","version":"1.0.0-SNAPSHOT","javaVersion":21,"deliveryMode":"tekton-gitops","gitRef":"8fda08763e2a593d67cabea73fb84e762cb41a21"}
+openapi GET /api/v1/orders ['200', '400']
+openapi POST /api/v1/orders ['200', '201', '400', '409']
+openapi GET /api/v1/orders/{orderId} ['200', '404']
+openapi GET /api/v1/orders/{orderId}/timeline ['200', '400', '404']
+openapi post request examples ['create'] 201 headers ['Location']
+replay of key release-accept-4ec33fb:
+HTTP/1.1 200 OK
+idempotency-replayed: true
+location: /api/v1/orders/ord_105f4cdf614f47208b6a3a14863855c4
+missing: 404 application/problem+json
+box1_outbox_pending 0.0
+box1_orders_stuck 2.0
+Matcher: 2 restarts since the 6Gi limit took effect at 15:35 UTC. Last termination ContainerStatusUnknown, exit 137, with no previous logs. Cause not established. Reported on box1-docs#43.
+Test orders left live: ord_24a3627c742847c4ad6ef3670e21ea5a and ord_105f4cdf614f47208b6a3a14863855c4. box1_orders_stuck is 2 because of them.

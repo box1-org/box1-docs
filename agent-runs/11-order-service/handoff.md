@@ -1,4 +1,4 @@
-# Agent handoff: Phase 7, gated release live, acceptance partial
+# Agent handoff: Phase 7 closed, acceptance partial
 
 ## Work completed
 
@@ -12,8 +12,8 @@
 
 - Exact commands and observed results: `./mvnw clean verify -Pcontainers -DskipITs=false`: 72 tests, 0 failures, SpotBugs 0, Checkstyle 0.
 - CI status: `order-service-validate-vzxnp` passed at `078f341`: 33 tests. Failure scenarios do not run in CI.
-- GitOps PR and deployed image digest: `box1-workloads-dev#52`, `sha256:513c366dad2163014e3c8f1533976bf11dbf63cb42c81fd7ff789fcc1258b65d`. The pod's imageID matches. Security gates ran with `gate`: SBOM accepted, scan and check passed.
-- Routes / endpoints verified: `POST` and `GET` `/api/v1/orders`, timeline, `/api/info`, health and metrics; see `evidence/09-release.txt`. Served OpenAPI disagrees with the contract.
+- GitOps PR and deployed image digest: `box1-workloads-dev#59`, `sha256:c90bae8aeb73537dda149be3713744c579fb06d6837e1e21d8d50c3a5ef605c8`, source `8fda087`. The pod's imageID matches. Gate, promotion, smoke and `order-api-smoke` passed.
+- Routes / endpoints verified: `POST` and `GET` `/api/v1/orders`, timeline, `/api/info`, health and metrics. The served OpenAPI matches the contract's response codes, and `Location` is relative. See `evidence/09-release.txt`.
 
 ## Contract state
 
@@ -30,21 +30,21 @@
 
 ## Next agent session
 
-**Next smallest slice:** see the exact next action in `checkpoint.md`: restart the release from `order-service#4`, verify it, close box1-docs#11.
+**Next smallest slice:** none in this issue. Pick up a follow-up issue, starting with box1-docs#42.
 
 - Exact files to read: `checkpoint.md`, `decisions/D-016-secrets-integration-choice.md`, `requirements.yaml`, the prompt and profile from `box1-docs` `origin/main`.
-- Blockers and required user decisions: cancel two orphaned runs, close `box1-workloads-dev#55`, approve another empty commit. Tracked: box1-docs#40, #41, #42, #43, #44.
+- Blockers and required user decisions: none for #11. Follow-ups: box1-docs#40, #41, #42, #43, #44.
 
 ## Run state
 
 ```yaml
 profile: frontier
 issue: box1-org/box1-docs#11
-current_phase: 7
+current_phase: 7 (closed)
 repositories:
   - name: order-service
-    branch: order-api-contract-fixes
-    commit: see order-service#4
+    branch: main
+    commit: 8fda08763e2a593d67cabea73fb84e762cb41a21
   - name: box1-ops-contracts
     branch: order-service-v1-additions
     commit: 7dcf2909dfccf6e0009504d6542bdb45a647a68b
@@ -64,10 +64,10 @@ requirements:
   live_verified: 11
   blocked: 1
   superseded: 1
-image_digest: sha256:513c366dad2163014e3c8f1533976bf11dbf63cb42c81fd7ff789fcc1258b65d
-gitops_commit: 9293ad899a3b0fe26ba55b39cbc243de35db6387
+image_digest: sha256:c90bae8aeb73537dda149be3713744c579fb06d6837e1e21d8d50c3a5ef605c8
+gitops_commit: 359c71108bbf793c027547e655d63fd67fa4f42b
 review_passes_completed: [architecture, persistence, messaging, security, operations, release]
 open_decisions: []
-rollback_state: revert restores fb669bff, which fails the gate policy; not exercised; V1 stays applied
-next_action: Clean up the orphans and box1-workloads-dev#55, push a commit to start the release, verify, close box1-docs#11
+rollback_state: roll forward; revert restores 513c366d, which passed the gate; not exercised; V1 stays applied
+next_action: none; issue closed
 ```

@@ -15,8 +15,8 @@ Fresh subagent, read-only, 2026-11-05, against release `order-service-release-jn
 | # | Severity | Finding | Outcome |
 |---|---|---|---|
 | 1 | High | The gate's rejection path had never been shown through the Task. Its reports are discarded, so `policy=pass` cannot be audited. The policy lives in Central, outside Git. | Rejection shown by a TaskRun, `evidence/09-release.txt`. Auditability open in box1-docs#42. |
-| 2 | Medium-high | Rollback by revert restores `fb669bff`, which has 14 `FAIL_BUILD` violations and never passed the gate. Not exercised. | Runbook change in `order-service#4`. Also in box1-docs#42. |
-| 3 | Medium | Served `/q/openapi` declares POST as 200 and 400, and GET by id as 200 only. The contract declares 201, 409, 404 and examples. Smoke never calls the order API. | `order-service#4`, not merged. A broken create would still pass the new smoke. |
+| 2 | Medium-high | Rollback by revert restores `fb669bff`, which has 14 `FAIL_BUILD` violations and never passed the gate. Not exercised. | Runbook updated in `order-service#4`. Also in box1-docs#42. |
+| 3 | Medium | Served `/q/openapi` declares POST as 200 and 400, and GET by id as 200 only. The contract declares 201, 409, 404 and examples. Smoke never calls the order API. | Fixed by `order-service#4`, live in `order-service-release-6skld`. A broken create would still pass the new smoke. |
 | 4 | Medium | The gate can be bypassed: `main` is unprotected on the service and GitOps repos, the pipeline default is `disabled`, and admission enforcement is off. | Open in box1-docs#42. Limited in practice, with one collaborator. |
 | 5 | Low-medium | Gate evidence is not durable: `max-keep-runs` prunes it. | jn4rl results copied to `evidence/09-release.txt`. |
 | 6 | Low | Run state was stale. | Fixed. |
@@ -26,7 +26,7 @@ Found after the pass by the implementing session:
 
 | # | Severity | Finding | Outcome |
 |---|---|---|---|
-| 8 | Low | `Location` uses `http://` on the HTTPS Route. It works through a 302. | `order-service#4`, not merged. |
-| 9 | Low | Timeline `sequence` is global, so an order's first entry may not be 1. The contract allows it, but its example implies per-order. | Open. Needs a contract decision. |
+| 8 | Low | `Location` uses `http://` on the HTTPS Route. It works through a 302. | Fixed by `order-service#4`: now relative. Verified live. |
+| 9 | Low | Timeline `sequence` is global, so an order's first entry may not be 1. The contract allows it, but its example implies per-order. | The user chose global. `box1-ops-contracts#4` updates the contract. |
 
 Finding 4: the direct push of `4ec33fb` was requested by the user. Tracked elsewhere: box1-docs#40, #41, #43, #44.

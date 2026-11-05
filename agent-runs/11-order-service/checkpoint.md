@@ -1,8 +1,8 @@
 # Checkpoint: box1-docs#11 Service 01, frontier profile
 
 **Updated:** 2026-11-05 America/New_York
-**Current phase:** 7. The code is live and the Release pass ran. Acceptance is partial.
-**Stop reason:** promote failed on a Pipelines as Code start failure. See the exact next action.
+**Current phase:** 7, closed. Acceptance is partial; see the ledger.
+**Stop reason:** complete. The user closed out box1-docs#11.
 
 ## Branches and PRs
 
@@ -13,7 +13,7 @@
 | `box1-gitops` | `order-dlq-topic` | `fe11b0f` | [#52](https://github.com/box1-org/box1-gitops/pull/52) | Pass |
 | `box1-workloads-dev` | `order-service-runtime-config` | `de4a218` | [#50](https://github.com/box1-org/box1-workloads-dev/pull/50) | Pass |
 
-All four are merged by the user. Also merged by the user: `order-service#2`, `#3`, `box1-gitops#53`, `#54`, `#55`. Promotion: `box1-workloads-dev#52`, merged by the pipeline. Deployed: digest `sha256:513c366d…b65d`, source `4ec33fb`. Also merged: `box1-templates#23`, `#24`, `#25`. Open: `order-service#4`. Template branches were branches `onboarding-postgres-networkpolicy` and `workload-runtime-baseline`, porting #50 into the template.
+All four are merged by the user. Also merged by the user: `order-service#2`, `#3`, `box1-gitops#53`, `#54`, `#55`. Promotion: `box1-workloads-dev#52`, merged by the pipeline. Deployed: digest `sha256:c90bae8a…05c8`, source `8fda087`, through `box1-workloads-dev#59`. Also merged: `box1-templates#23`, `#24`, `#25`. Also merged: `order-service#4`, `box1-ops-contracts#4`. Template branches were branches `onboarding-postgres-networkpolicy` and `workload-runtime-baseline`, porting #50 into the template.
 
 Local paths: `order-service`, `run11-contracts`, `run11-workloads`, `run11-gitops`, `box1-docs-agent-run-11`.
 
@@ -66,11 +66,10 @@ Re-verify the baseline before relying on it.
 
 ## Exact next action
 
-`order-service#4` is merged but not deployed. Release `order-service-release-xgfj7` passed the gate, then failed in promote because its GitOps checks hit a Pipelines as Code start failure. See `evidence/09-release.txt` and the comment on box1-docs#42.
+None for this run. box1-docs#11 is closed at the user's request.
 
-Waiting on the user:
+**Final state:** release `order-service-release-6skld`, source `8fda087`, digest `sha256:c90bae8a...05c8`, GitOps `359c711`. Gate, promotion, smoke and `order-api-smoke` all passed. See `evidence/09-release.txt`.
 
-1. Cancel the orphaned `box1-phase1-smoke-59r9f` and `box1-gitops-validate-694k6`, and close `box1-workloads-dev#55`.
-2. Approve another empty commit on `order-service` `main`.
+**Follow-ups:** box1-docs#40 (authentication), #41 (database secret), #42 (release flow, gate audit and bypass, Pipelines as Code start failures), #43 (scanner and evictions), #44 (registry TLS).
 
-Then confirm `order-api-smoke`, the served OpenAPI and a relative `Location`, update the ledger and close box1-docs#11.
+**Not proven on the cluster:** `ORD-LIVE-LIFECYCLE`, consumer, outage and restart scenarios, and rollback.

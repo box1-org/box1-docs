@@ -84,6 +84,9 @@ None in product code. One harness adjustment: the scaffold's `verify` failed loc
 21. **Denied cancel.** I tried to cancel the orphaned `order-service-release-9kb6b`, in one command with a `/retest` comment. The permission layer denied it as interfering with a workload. I did not retry the cancel, and posted the comment alone as a separate action. It failed too. Asked the user.
 22. **A second commit to `main`.** The user approved one empty commit earlier. That approval does not extend to another, so I asked.
 
+23. **Repeated cancel denial.** After the user approved cancelling two orphaned runs, the permission layer denied it again. I did not retry. The orphans were gone by the next release, cause not checked.
+24. **GitHub API failures.** From 15:48 to at least 16:52 UTC, GitHub returned 404 and 500 to Pipelines as Code check-run calls, and once rejected pushes with `commit_refs_rules`. Two releases passed the gate but could not promote. I closed their promotion PRs, `box1-workloads-dev#55` and `#56`, unmerged. The user then asked for a new build, which passed end to end after GitHub recovered.
+
 ## Environment findings
 
 - The Mac slept repeatedly during unattended runs (pmset log), despite `caffeinate -i`. 60-second waits took over 1,000 seconds. Long runs on a laptop need the lid open and a clock check first.
@@ -105,3 +108,4 @@ None in product code. One harness adjustment: the scaffold's `verify` failed loc
 - Opened `box1-gitops#54`, `box1-gitops#55`, `box1-templates#25`. Ran `oc port-forward` to Central for the `roxctl` reproduction, and read Central's public CA from `central-tls`.
 - Pushed `4ec33fb` to `order-service` `main`. Second test order `ord_105f4cdf614f47208b6a3a14863855c4`, with its event, is live.
 - Created TaskRun `order-service-gate-negative-test` in `box1-ci`, with one more SBOM in TPA. Opened `order-service#4`. Edited box1-docs#42 at the user's request.
+- Pushed `efa84c0` and `8fda087` to `order-service` `main`, as the user asked. Closed `box1-workloads-dev#55` and `#56`. Posted `/retest` and `/test` comments on them. Opened `box1-ops-contracts#4`.

@@ -2,8 +2,8 @@
   "issue": "box1-org/box1-docs#11",
   "profile": "frontier",
   "current_phase": 7,
-  "phase_state": "gated_release_live_acceptance_partial",
-  "updated_at": "2026-11-05T11:05:00-05:00",
+  "phase_state": "closed_acceptance_partial",
+  "updated_at": "2026-11-05T17:25:00-05:00",
   "open_decisions": [],
   "repositories": {
     "box1-docs": {
@@ -12,10 +12,10 @@
     },
     "order-service": {
       "role": "implementation target",
-      "main": "4ec33fb4b1d05d11bbe3159f310d1987eac696f3",
+      "main": "8fda08763e2a593d67cabea73fb84e762cb41a21",
       "run_branch": null,
-      "commit": "4ec33fb4b1d05d11bbe3159f310d1987eac696f3",
-      "pr": 3
+      "commit": "8fda08763e2a593d67cabea73fb84e762cb41a21",
+      "pr": 4
     },
     "box1-ops-order": {
       "role": "proposed by prompt, does not exist",
@@ -24,9 +24,9 @@
     "box1-ops-contracts": {
       "role": "contract changes",
       "main": "5d44122",
-      "run_branch": "order-service-v1-additions",
+      "run_branch": null,
       "commit": "7dcf2909dfccf6e0009504d6542bdb45a647a68b",
-      "pr": 3
+      "pr": 4
     },
     "box1-gitops": {
       "role": "shared infrastructure",
@@ -38,8 +38,8 @@
       "role": "service workloads",
       "main": "b52ec2e",
       "run_branch": null,
-      "commit": "9293ad899a3b0fe26ba55b39cbc243de35db6387",
-      "pr": 52
+      "commit": "359c71108bbf793c027547e655d63fd67fa4f42b",
+      "pr": 59
     },
     "box1-templates": {
       "role": "template baseline",
