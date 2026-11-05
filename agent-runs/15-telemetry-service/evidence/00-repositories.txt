@@ -1,0 +1,49 @@
+Repository baseline for box1-docs#15, read-only, 2026-11-05 about 18:05-18:15 EST.
+Live weaknesses found during discovery were reported to the user directly; this file holds no details of them.
+
+box1-org/asset-service (public) main 0dc14dc8a32fd58ad5bb1daf9462f080dd1fb835, no other branches, no PRs
+- 327ba19 Initialize Box1 development onboarding; 0dc14dc Create Quarkus service from the Box1 golden path (2026-11-05 22:42Z).
+- Scaffold only: GreetingResource/Service, InfoResource, MyLivenessCheck, greeting tests, scripts/smoke.py.
+- pom: Quarkus 3.40.1.1, Java 21; rest, rest-jackson, arc, health, openapi, micrometer-prometheus, jib, messaging-kafka.
+  checkstyle 3.6.0 and spotbugs 4.10.5.0 + findsecbugs 1.14.0 at verify. No Guava override.
+- .box1/onboarding.json templateVersion 1.1.0 (skeleton hard-codes 1.1.0; template.yaml on box1-templates main says 1.2.0;
+  base image digest matches template main 702a052, so the scaffold came from current main).
+- .tekton/release.yaml: build -> security (security-gates: disabled) -> promote -> smoke.
+- README: Kafka=true, PostgreSQL=false.
+
+box1-workloads-dev (public) main 826bfbb
+- workloads/asset-service: namespace, serviceaccount, deployment, service, route, onboarding; configMapGenerator asset-service-config;
+  image pinned by digest sha256:0dc4185e... in kustomization images:.
+- postgres.yaml present but 1 byte and not in kustomization. No NetworkPolicy, no env: block.
+- applications/asset-service.yaml: path workloads/asset-service, automated selfHeal, PruneLast, no prune.
+- inventory-service pattern: postgres.yaml with placeholder Secret (box1.org/secret-bootstrap), PVC, postgresql-15 Deployment by digest,
+  Service and NetworkPolicy (5432 from the app only); deployment env: entries rather than ConfigMap literals (box1-docs#42 hashed-name lesson).
+
+box1-gitops (public) main e522445
+- platform/kafka/topics: telemetry.yaml = box1.telemetry.events.v1, 6 partitions, RF 1, delete, 2 days. No telemetry DLQ.
+  Inventory DLQ added by box1-gitops#57 (topics/inventory-dlq.yaml, 3 partitions, 14 days) as the pattern to follow.
+  Application box1-kafka has no automated sync.
+- platform/identity/keycloak/realm: RH-SSO 7.6 legacy CRDs keycloak.org/v1alpha1. KeycloakRealm box1 (realm roles openshell-user,
+  openshell-admin; roles also bootstrapped via Admin API because the operator did not add them on update).
+  KeycloakClient CRs: openshell-cli (public, PKCE S256), developer-hub (confidential). No service clients. Application keycloak:
+  automated selfHeal, prune false.
+- platform/pipelines/tasks/quarkus-smoke.yaml: requires anonymous 200 for /api/greetings, /api/info, /q/health/*, /q/openapi
+  (with /api/greetings and /api/info), /q/metrics (box1_greetings_total) and 400 for a blank greeting name.
+- security-gates task: enforcement disabled | observe | gate.
+- No demo namespace or chaos allowlist exists anywhere.
+- Open PR: box1-gitops#59.
+
+box1-ops-contracts (public) main e278940
+- events/v1: envelope + 9 payload schemas including equipment.reading.v1
+  (assetId ^asset_..., siteId ^site_..., measuredAt date-time, metricName 1-80, value number, unit 1-20, additionalProperties false).
+- equipment.threshold-exceeded.v1: named in TOPICS.md only, no schema on any branch.
+- TOPICS.md: box1.telemetry.events.v1 keyed by assetId, 2 days, groups telemetry-projections and ai-operations; no telemetry DLQ row.
+- postgres/OWNERSHIP.md names box1_telemetry / box1_telemetry_app; generated names would be asset_service.
+- Services consume contracts at test time from raw.githubusercontent at a pinned commit (inventory ContractTest).
+- Tooling: scripts/validate.mjs, test/*.test.mjs, ajv. Open PR #6 (legacy-erp-file-v1).
+
+inventory-service main 6b722a3 (pattern reference)
+- Changes over its scaffold: Guava 33.7.2-jre override (CVE-2026-102554), postgres/flyway/jta/scheduler/json-logging/otel/smallrye-jwt,
+  contracts.ref pin, containers test group excluded by default (CI task has no container runtime), security-gates: gate,
+  read-only post-smoke API task, Kafka DLQ via failure-strategy, Kafka not a readiness dependency, JWT issuer with /auth path,
+  roles only from resource_access.<client>.roles via SecurityIdentityAugmentor.

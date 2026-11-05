@@ -1,0 +1,291 @@
+# Requirement ledger for box1-docs#15. Status is the highest level actually observed.
+# proposed -> implemented -> locally_tested -> ci_verified -> deployed -> live_verified
+
+- id: TEL-INGEST-001
+  description: "POST /api/v1/telemetry/readings is authenticated and validates bounds, allowed metric names, timestamp skew, payload size and rate limit (FR-06)"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: TEL-INGEST-002
+  description: "Accepted readings publish equipment.reading.v1 with documented partition key and minimal identifiers"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: TEL-INGEST-003
+  description: "A sample burst is ingested without duplicate records or unbounded growth; invalid units and payloads are rejected (AC1)"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: TEL-STORE-001
+  description: "Recent readings are kept in owned persistence with bounded retention and a documented partition/cleanup strategy"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: TEL-READ-001
+  description: "GET /api/v1/assets/{assetId}/readings supports time range and pagination with stable ordering (AC3)"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: TEL-ALERT-001
+  description: "GET /api/v1/alerts lists alerts"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: TEL-ALERT-002
+  description: "Per-asset/site threshold policies with severity, deduplication and hysteresis; breach then recovery gives one active alert then one clear; repeats do not spam (AC2)"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: TEL-ALERT-003
+  description: "equipment.threshold-exceeded.v1 is emitted when an alert becomes active"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: TEL-BP-001
+  description: "Bounded producer queue and retry; a broker outage gives bounded queuing and documented discard/retry, not silent loss (AC4)"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: TEL-DLQ-001
+  description: "Invalid events go to a telemetry dead-letter path"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: TEL-OBS-001
+  description: "Structured logs, traces and metrics for ingestion rate, drops, lag, alert counts and stale assets (OBS-04/05/06)"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: TEL-OBS-002
+  description: "Source event IDs and trace IDs appear in telemetry and incident evidence (AC5)"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: TEL-SEC-001
+  description: "No hard-coded operator credentials; ingestion is never reachable anonymously through the Route"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: TEL-CON-001
+  description: "Console is plain HTML/CSS/JS served by the same Quarkus pod, no build toolchain or CDN, calls only this service's control API"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: TEL-CON-002
+  description: "Console page and control API require Keycloak box1 login with the chaos-operator role, enforced by the backend; anonymous and role-less requests rejected (AC6)"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: TEL-LOAD-001
+  description: "Load generator takes sites, assets, metrics, rate per asset and duration; uses the same validation and publication path as ingestion"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: TEL-LOAD-002
+  description: "Seeded and deterministic: same seed gives the same reading sequence; page shows the seed and can replay it (AC7)"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: TEL-CHAOS-001
+  description: "Random chaos picks only telemetry-scoped catalog entries at seeded random intervals (AC8)"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: TEL-CHAOS-002
+  description: "Runs are armed and confirmed; max rate, max duration, TTL auto-stop and concurrent-run cap enforced server-side, including against requests that bypass the page (AC8)"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: TEL-CHAOS-003
+  description: "One control stops every run (stop-all), including mid-run (AC8)"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: TEL-CHAOS-004
+  description: "Each run has an audit record: actor from the token, seed, catalog entries chosen, start, stop and reset (AC8)"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: TEL-CHAOS-005
+  description: "A pod restart never resumes a run silently"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: TEL-CHAOS-006
+  description: "The page reports state honestly and shows unknown when the backend cannot confirm it"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: TEL-CHAOS-007
+  description: "TTL expiry stops a run with the browser closed"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: TEL-GATE-001
+  description: "Chaos is off unless a configuration flag enables it and the namespace is on an allowlist named by the user (AC9)"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: TEL-UX-001
+  description: "Console follows the box1 design ethos and brand-kit cube 1 mark; keyboard operable; reduced motion; passes automated accessibility checks (AC10)"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: TEL-UX-002
+  description: "Live readouts of rate, alerts and producer lag come from the service's own metrics"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: TEL-SMOKE-001
+  description: "Golden Path smoke endpoints keep working so release smoke passes"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: TEL-CONTRACT-001
+  description: "equipment.threshold-exceeded.v1 schema reviewed in box1-ops-contracts; service validates against shared contracts without a local copy"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: TEL-DOC-001
+  description: "OpenAPI, event fixtures, migrations, config docs, architecture and runbook"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: TEL-DEL-001
+  description: "Release gates pass; immutable digest promoted through GitOps for this service only; Argo reports it"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: TEL-LIVE-001
+  description: "One seeded load run and one random chaos run on the cluster with audit, alert and clear evidence, after approval"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []

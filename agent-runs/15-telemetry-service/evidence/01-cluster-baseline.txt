@@ -1,0 +1,53 @@
+Cluster baseline for box1-docs#15, read-only, 2026-11-05 about 18:05-18:10 EST (23:05-23:10 UTC).
+Commands: oc get/describe/logs, oc adm top node, curl GET against the public Route. No Secret values read.
+Security observations that are live weaknesses were reported to the user directly and are not recorded here.
+
+Cluster
+- clusterversion 5.0.0-rc.7, Available. Single node quark.host.box1.org (control-plane, master, worker), kubelet v1.36.5.
+- Allocatable 31500m CPU, ~124.6 GiB. Requests: CPU 21250m (67%), memory ~80.8 GiB (64%). Limits CPU 240%, memory 147%.
+- oc adm top node: 5376m CPU (17%), 61483Mi (48%).
+
+Namespace asset-service-dev (created by Golden Path onboarding, ~21 min old)
+- Labels: argocd.argoproj.io/managed-by=openshift-gitops, PSA enforce=restricted.
+- Deployment asset-service 1/1, source-revision annotation 0dc14dc8a32fd58ad5bb1daf9462f080dd1fb835.
+- Image box1-ci/asset-service@sha256:0dc4185e5aaa35b7fffb5846fdeff1241a1a0fb07464c7bb9b8a56d79631c392 (onboarding build onb-asset-service-0dc14dc8).
+- Container: port 8080 "http"; requests 100m/256Mi, limits 1/512Mi; readOnlyRootFilesystem, drop ALL, runAsNonRoot, seccomp RuntimeDefault, automountServiceAccountToken false; /tmp emptyDir 64Mi.
+- Probes: startup /q/health/started, readiness /q/health/ready, liveness /q/health/live.
+- Env: envFrom ConfigMap asset-service-config-<hash> with GREETING_PREFIX, JAVA_TOOL_OPTIONS (-XX:MaxRAMPercentage=50.0), KAFKA_BOOTSTRAP_SERVERS=box1-kafka-kafka-bootstrap.box1-kafka.svc:9092. No Secret references.
+- Service asset-service ClusterIP 8080. Route asset-service: host asset-service-dev.apps.ocp.box1.org, no path, edge TLS, insecure Redirect, default router certificate.
+- No NetworkPolicy, ResourceQuota, LimitRange or PVC. No PostgreSQL workload and no database Secret in the namespace.
+- GitOps source box1-workloads-dev workloads/asset-service: postgres.yaml exists but is 1 byte and not listed in kustomization.yaml.
+
+Route probes (GET, anonymous)
+- /api/info 200 (gitRef 0dc14dc8...), /q/health/{ready,live,started} 200 UP, /q/openapi 200 (paths /api/greetings, /api/info), /q/metrics 200, / 404.
+- TLS verifies (Let's Encrypt, CN=*.apps.ocp.box1.org, valid to 2027-01-21). HTTP redirects 302 to HTTPS.
+
+Argo CD (openshift-gitops), all Synced/Healthy
+- asset-service: box1-workloads-dev workloads/asset-service @ 826bfbb ("Onboard asset-service: promotion (#61)"), automated selfHeal, no prune.
+- box1-kafka: box1-gitops platform/kafka @ e5224454, manual sync.
+- keycloak: box1-gitops platform/identity/keycloak @ e5224454, automated selfHeal, prune false.
+
+Kafka
+- AMQ Streams 3.2.2-7. Kafka box1-kafka (ns box1-kafka) 4.2.0, KRaft, one combined node, RF 1, min.insync 1. Listener plain 9092 internal.
+- Topic box1.telemetry.events.v1: 6 partitions, RF 1, delete, retention.ms 172800000 (48 h), Ready, managed by box1-kafka.
+- No telemetry dead-letter topic. Existing DLQs: box1.order.dlq.v1, box1.inventory.dlq.v1 (3 partitions, 14 days).
+- No consumer of box1.telemetry.events.v1 exists.
+
+Keycloak
+- Namespace keycloak, RH-SSO 7.6 operator (rhsso-operator.7.6.13), CR keycloak.org/v1alpha1 Keycloak box1-keycloak.
+- Realm via KeycloakRealm box1 (realm roles openshell-user, openshell-admin). Clients via KeycloakClient CRs: openshell-cli (public), developer-hub (confidential, created ~2 h before discovery).
+- Issuer https://keycloak.apps.ocp.box1.org/auth/realms/box1 (discovery 200, valid TLS). Path without /auth returns 404.
+
+Pipelines (box1-ci)
+- asset-service release.yaml: build -> security (security-gates param "disabled") -> promote -> smoke.
+- box1-quarkus-smoke waits for Argo Synced+Healthy, Deployment image digest and source-revision annotation, Ready pod with matching imageID,
+  then requires anonymous HTTP 200 at https://asset-service-dev.apps.ocp.box1.org on:
+  /api/greetings?name=OpenShift ("Hello from box1, OpenShift!"), /api/info (javaVersion 21, gitRef = revision),
+  /q/health/{live,ready,started} UP, /q/openapi containing /api/greetings and /api/info, /q/metrics containing box1_greetings_total,
+  and 400 for /api/greetings?name=%20.
+- Only PipelineRun so far: onb-asset-service-0dc14dc8 (onboarding build), Succeeded. No release run yet.
+
+Other
+- No namespace named demo, chaos or telemetry exists.
+- Sibling services (order, inventory) each have <svc>-postgres Deployment (RHEL PostgreSQL 15, digest-pinned), 5Gi PVC on lvms-vg1,
+  NetworkPolicy allowing 5432 only from the app, and envFrom secretRef <svc>-postgres managed by Argo from workloads/<svc>/postgres.yaml.

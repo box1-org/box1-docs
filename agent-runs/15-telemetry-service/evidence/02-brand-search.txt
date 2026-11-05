@@ -1,0 +1,10 @@
+Brand-kit search for the box1 cube "1" mark, 2026-11-05 ~18:10 EST, read-only, no Chrome.
+
+- Local: find under /Users/mike (Library and node_modules skipped): no box1 SVG/PNG/brand/logo/favicon files. Downloads/box1-prompts.zip holds markdown/JSON only.
+- Git: all branches of all local box1 clones after fetch: no brand, logo, svg or favicon paths.
+- GitHub box1-org (10 repos): gh search code for logo, brand, favicon, svg, fullLogo, iconLogo: no results. File trees of all branches: no image files.
+- Cluster: Developer Hub app-config has app.title only, no branding logo. No ConfigMap with box1 branding.
+- Only depiction: hero banner JPEG (2163x1074) in Box1_Operations_White_Paper_v4-2.pdf, box1-docs main, added ab5391a.
+  Isometric charcoal/steel cube with a lighter inset bar forming "1", on a thin grid. Raster, with background.
+- Approximate colors sampled from that image: background #1C2125, cube top #434A50, left face #2D343A, right face #6F787D, "1" bar #788186.
+- The white paper embeds Inter; headings are uppercase with wide letter spacing.
