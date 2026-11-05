@@ -79,6 +79,8 @@ None in product code. One harness adjustment: the scaffold's `verify` failed loc
 18. **A second test order.** Item 9 treated one order as live acceptance. The Release pass needs POST on the current digest, and I had not saved the first order's key. I would not guess it, since a wrong guess creates an order, or read it from the database without approval. I created one more through the Route, with a recorded key, and told the user. A blanket key-recording habit would have avoided this.
 19. **Direct push to `main`.** The standing permission covers feature branches only. The user explicitly asked for a commit to retrigger the release, so I pushed one empty commit to `order-service` `main`.
 
+20. **Negative test design.** I had described a throwaway branch or pipeline. A release branch cannot trigger the pipeline, and any pipeline with promote carries a real risk if the gate fails open. The user approved the test, and I ran the Task alone, which removes that risk but proves less about the pipeline. Stated in the evidence.
+
 ## Environment findings
 
 - The Mac slept repeatedly during unattended runs (pmset log), despite `caffeinate -i`. 60-second waits took over 1,000 seconds. Long runs on a laptop need the lid open and a clock check first.
@@ -99,3 +101,4 @@ None in product code. One harness adjustment: the scaffold's `verify` failed loc
 - Opened `order-service#3`. Scanned the deployed digest and two base image digests in RHACS with the CI token.
 - Opened `box1-gitops#54`, `box1-gitops#55`, `box1-templates#25`. Ran `oc port-forward` to Central for the `roxctl` reproduction, and read Central's public CA from `central-tls`.
 - Pushed `4ec33fb` to `order-service` `main`. Second test order `ord_105f4cdf614f47208b6a3a14863855c4`, with its event, is live.
+- Created TaskRun `order-service-gate-negative-test` in `box1-ci`, with one more SBOM in TPA. Opened `order-service#4`. Edited box1-docs#42 at the user's request.

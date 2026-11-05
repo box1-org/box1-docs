@@ -2,7 +2,7 @@
 
 **Updated:** 2026-11-05 America/New_York
 **Current phase:** 7. The code is live and the Release pass ran. Acceptance is partial.
-**Stop reason:** the release is live. Remaining decisions are the user's. See the exact next action.
+**Stop reason:** `order-service#4` needs a merge. See the exact next action.
 
 ## Branches and PRs
 
@@ -13,7 +13,7 @@
 | `box1-gitops` | `order-dlq-topic` | `fe11b0f` | [#52](https://github.com/box1-org/box1-gitops/pull/52) | Pass |
 | `box1-workloads-dev` | `order-service-runtime-config` | `de4a218` | [#50](https://github.com/box1-org/box1-workloads-dev/pull/50) | Pass |
 
-All four are merged by the user. Also merged by the user: `order-service#2`, `#3`, `box1-gitops#53`, `#54`, `#55`. Promotion: `box1-workloads-dev#52`, merged by the pipeline. Deployed: digest `sha256:513c366d…b65d`, source `4ec33fb`. New and open: `box1-templates#25`, plus `#23` then `#24`, branches `onboarding-postgres-networkpolicy` and `workload-runtime-baseline`, porting #50 into the template.
+All four are merged by the user. Also merged by the user: `order-service#2`, `#3`, `box1-gitops#53`, `#54`, `#55`. Promotion: `box1-workloads-dev#52`, merged by the pipeline. Deployed: digest `sha256:513c366d…b65d`, source `4ec33fb`. Also merged: `box1-templates#23`, `#24`, `#25`. Open: `order-service#4`. Template branches were branches `onboarding-postgres-networkpolicy` and `workload-runtime-baseline`, porting #50 into the template.
 
 Local paths: `order-service`, `run11-contracts`, `run11-workloads`, `run11-gitops`, `box1-docs-agent-run-11`.
 
@@ -45,7 +45,7 @@ Open from review:
 ## Open risks
 
 - **Rollback restores a failing image.** Reverting the promotion deploys `fb669bff`, which has 14 `FAIL_BUILD` violations. Not exercised. Prefer rolling forward.
-- **The gate has not shown a rejection,** and it can be bypassed. See `review-findings/release.md`.
+- **The gate can be bypassed, and its results are not kept per run** (box1-docs#42).
 - **Registry TLS verification is off** (box1-docs#44).
 - **Live database credential** (D-005, box1-docs#41). Specifics withheld, since this repository is public. The NetworkPolicy now limits access to it.
 - Order data is readable on the LAN without credentials (box1-docs#40).
@@ -66,12 +66,10 @@ Re-verify the baseline before relying on it.
 
 ## Exact next action
 
-The release passed with `gate`: `order-service-release-jn4rl`, source `4ec33fb`, digest `sha256:513c366d...b65d`, GitOps `9293ad8`. See `evidence/09-release.txt` and `review-findings/release.md`.
+The gated release is live: `order-service-release-jn4rl`, source `4ec33fb`, digest `sha256:513c366d...b65d`. A TaskRun showed the gate rejecting `fb669bff`. See `evidence/09-release.txt`.
 
-Waiting on the user:
+1. The user merges `order-service#4`, which starts a release with `gate`.
+2. Follow the release, and confirm `order-api-smoke`, the served OpenAPI and a relative `Location`.
+3. The user decides whether timeline `sequence` is global or per order.
 
-1. Approve or decline a controlled negative test of the gate, which has never rejected an image through the Task.
-2. Decide on the open findings: served OpenAPI, smoke coverage, `Location` scheme, timeline `sequence`, gate bypass.
-3. Merge `box1-templates#25`, #23 and #24.
-
-Acceptance stays partial. `ORD-LIVE-LIFECYCLE` is blocked, and consumer, outage and restart behavior are proven locally only.
+Gate auditability and bypass are in box1-docs#42. Acceptance stays partial: `ORD-LIVE-LIFECYCLE` is blocked, and consumer, outage and restart behavior are proven locally only.

@@ -66,3 +66,18 @@ Outbox pending returned to 0, published_total 1 on this pod. Kafka itself was no
 Timeline sequence is a global counter: this order's only entry is 2, the earlier order's is 1. The contract says minimum 1; its example shows 1.
 Location uses http:// on the edge-terminated Route. http:// answers 302 to https://. No proxy forwarding setting in application.properties.
 Test orders left live: ord_24a3627c742847c4ad6ef3670e21ea5a, ord_105f4cdf614f47208b6a3a14863855c4.
+
+# Gate negative test, approved by the user, 2026-11-05 16:03 UTC
+TaskRun order-service-gate-negative-test, labeled box1.org/purpose=gate-negative-test. Same Task, parameters and service account as the release. Task alone, so no promote step exists.
+Image: order-service@sha256:fb669bff...83fd, source 749ef13. enforcement=gate.
+Result: StepFailed. Steps: sbom-and-rhtpa Completed, rhacs-scan-and-check exit 1, evidence skipped by failure.
+Results: findings=scan-exit=0, policy=fail, sbom-id=urn:uuid:01a1ac73-92be-70bd-8ce3-a4abb53f4082
+Log: RHACS scan exit=0 check exit=1. ERROR: checking image failed: failed policies found: 1 policies violated that are failing the check.
+Afterwards: deployed digest still 513c366d, no open promotion PR. This run left one more SBOM in TPA for fb669bff.
+Not shown: a PipelineRun stopping after a policy rejection; observe mode.
+
+# Where the release scan results are, checked for 513c366d
+ACS: GET /v1/images/<digest> returns the scan, 374 components, Scanner V4, scan time 15:47:58 UTC. 244 unique CVEs: 0 Critical, 8 Important, 153 Moderate, 83 Low, per the export taken after the release.
+TPA: GET /api/v3/sbom/urn:uuid:01a1ac65-2639-746a-be44-fca05f91373a returns 387 packages with digest, source and pipeline labels.
+Task reports in /reports: emptyDir, discarded with the pod.
+Service PR: order-service#4 was opened for the OpenAPI, Location, smoke and runbook findings. inventory-service was onboarded by the user at 16:00 UTC, which moved the workloads revision to d67e0b9 and then 30c6c2d. order-service's digest did not change.

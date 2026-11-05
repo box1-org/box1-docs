@@ -30,10 +30,10 @@
 
 ## Next agent session
 
-**Next smallest slice:** see the exact next action in `checkpoint.md`: a controlled negative test of the gate, if approved.
+**Next smallest slice:** see the exact next action in `checkpoint.md`: merge `order-service#4` and follow its release.
 
 - Exact files to read: `checkpoint.md`, `decisions/D-016-secrets-integration-choice.md`, `requirements.yaml`, the prompt and profile from `box1-docs` `origin/main`.
-- Blockers and required user decisions: gate negative test; open Release findings; `box1-templates#25`, #23, #24. Tracked: box1-docs#40, #41, #42, #43, #44.
+- Blockers and required user decisions: merge `order-service#4`; timeline `sequence`. Tracked: box1-docs#40, #41, #42, #43, #44.
 
 ## Run state
 
@@ -43,8 +43,8 @@ issue: box1-org/box1-docs#11
 current_phase: 7
 repositories:
   - name: order-service
-    branch: order-domain
-    commit: 078f341e9014a38daf826719cf67b5bf8f4fc6bd
+    branch: order-api-contract-fixes
+    commit: see order-service#4
   - name: box1-ops-contracts
     branch: order-service-v1-additions
     commit: 7dcf2909dfccf6e0009504d6542bdb45a647a68b
@@ -69,5 +69,5 @@ gitops_commit: 9293ad899a3b0fe26ba55b39cbc243de35db6387
 review_passes_completed: [architecture, persistence, messaging, security, operations, release]
 open_decisions: []
 rollback_state: revert restores fb669bff, which fails the gate policy; not exercised; V1 stays applied
-next_action: User decides on a gate negative test and the open Release findings
+next_action: Merge order-service#4, follow the gated release
 ```
