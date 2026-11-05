@@ -2,8 +2,8 @@
   "issue": "box1-org/box1-docs#11",
   "profile": "frontier",
   "current_phase": 7,
-  "phase_state": "release_gate_blocked_on_image_cves",
-  "updated_at": "2026-11-05T10:20:00-05:00",
+  "phase_state": "release_gate_blocked_on_roxctl_ca",
+  "updated_at": "2026-11-05T10:45:00-05:00",
   "open_decisions": [],
   "repositories": {
     "box1-docs": {
@@ -12,7 +12,7 @@
     },
     "order-service": {
       "role": "implementation target",
-      "main": "fba518d8aec8982b69aad75076c780cfda030896",
+      "main": "a749ef82a81b681890d5c12eb19dbf07b05570fb",
       "run_branch": "release-gate-image-fixes",
       "commit": "121d7e617666fd93dfd2cf16f3072ae8d51b6190",
       "pr": 3
@@ -31,8 +31,12 @@
     "box1-gitops": {
       "role": "shared infrastructure",
       "main": "6dc869d",
-      "run_branch": "order-dlq-topic",
-      "pr": 52
+      "run_branch": "security-gates-central-ca",
+      "pr": 52,
+      "prs_open": [
+        54,
+        55
+      ]
     },
     "box1-workloads-dev": {
       "role": "service workloads",
@@ -46,7 +50,8 @@
       "run_branch": "workload-runtime-baseline",
       "prs": [
         23,
-        24
+        24,
+        25
       ]
     }
   }

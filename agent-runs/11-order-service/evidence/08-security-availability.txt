@@ -64,3 +64,15 @@ Base image policy check: pinned 856ee654 has 13 FAIL_BUILD violations; latest cf
 Matcher during the test: 665 restarts, no change, ready.
 Fix proposed in order-service#3. Full suite passes locally. Built image not yet scanned.
 The same base digest is pinned in box1-templates and quarkus-reference, so new builds there should expect the same 13 violations. Not scanned.
+
+# Release order-service-release-prd6t, source a749ef8, digest sha256:334b9ef4...3024
+build Succeeded. sbom-and-rhtpa Completed: SBOM urn:uuid:01a1ac4a-62f6-707b-856c-6f646171f154 accepted. rhacs-scan-and-check failed: scan-exit=1, policy=fail. Promote and smoke did not run.
+The Task discards roxctl stderr and printed "RHACS security gate rejected the image".
+Reproduced with roxctl 4.11.6 from a workstation, port-forward to svc/central, --server-name central.stackrox:
+  no CA: scan exit 1, check exit 1, "CENTRAL_SERVICE: Central certificate is not trusted"
+  ROX_CA_CERT_FILE set: scan exit 0, check exit 0, summary 0 Critical, 0 High, 2 Low, no failing policies
+API on the same digest: Scanner V4, 374 components, 244 unique CVEs: 0 Critical, 8 Important, 153 Moderate, 83 Low. None of the 8 Important is flagged by the FAIL_BUILD policy.
+The in-cluster cause is inferred from this reproduction, since the run's stderr is gone.
+Registry integration: the user disabled its TLS verification. Central logged x509 unknown authority at 15:05:43 UTC when it was on.
+Fixes proposed: box1-gitops#54 (CA and stderr), #55 (matcher memory), box1-templates#25 (base image).
+

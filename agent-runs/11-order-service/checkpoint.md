@@ -2,7 +2,7 @@
 
 **Updated:** 2026-11-05 America/New_York
 **Current phase:** 7, partially complete. The code is live, but acceptance is limited, the release smoke is at risk, and the Release pass has not run.
-**Stop reason:** `order-service#3` needs a merge. See the exact next action.
+**Stop reason:** `box1-gitops#54` needs a merge and a sync. See the exact next action.
 
 ## Branches and PRs
 
@@ -65,10 +65,11 @@ Re-verify the baseline before relying on it.
 
 ## Exact next action
 
-The ACS test scan works, but `gate` would reject the deployed image: 14 violations of the `FAIL_BUILD` policy `Fixable Severity at least Important`. See `evidence/08-security-availability.txt`.
+Release `order-service-release-prd6t` failed because `roxctl` does not trust Central. The image itself passes policy. See `evidence/08-security-availability.txt`.
 
-1. The user merges `order-service#3`. It pins the current base image and overrides Guava. Merging to `main` should start the release with `gate`.
-2. Follow the release: gate results, digest, promotion, smoke.
-3. Run the Release reviewer pass in a fresh subagent and update the ledger.
+1. The user merges `box1-gitops#54` and approves a `pipelines-ci` sync.
+2. Re-trigger the release. It needs a new commit on `main` or a `/retest` comment.
+3. Follow the release: gate results, digest, promotion, smoke.
+4. Run the Release reviewer pass in a fresh subagent and update the ledger.
 
-The same base digest is pinned in `box1-templates` and `quarkus-reference`. Scanner and eviction work is in box1-docs#43, and the matcher may still restart during a release.
+Also open: `box1-gitops#55` (matcher memory; needs an `acs` sync, not during a release), `box1-templates#25`, #23 and #24. The deployed image is still `sha256:fb669bff...83fd`, which fails the policy.
