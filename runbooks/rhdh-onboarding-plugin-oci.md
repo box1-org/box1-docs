@@ -78,20 +78,25 @@ The credential is a token for the read-only `box1-plugins/rhdh-plugin-puller` se
    ```sh
    TOKEN=$(oc -n box1-plugins get secret rhdh-plugin-puller-token -o jsonpath='{.data.token}' | base64 -d)
    AUTH=$(printf 'serviceaccount:%s' "$TOKEN" | base64 | tr -d '\n')
+   oc -n rhdh delete secret dynamic-plugins-registry-auth --ignore-not-found
    printf '{"auths":{"registry.apps.ocp.box1.org":{"auth":"%s"}}}' "$AUTH" \
      | oc -n rhdh create secret generic dynamic-plugins-registry-auth \
-         --from-file=auth.json=/dev/stdin --dry-run=client -o yaml \
-     | oc apply -f -
+         --from-file=auth.json=/dev/stdin
    unset TOKEN AUTH
    ```
 
-3. Prove the new credential works from the RHDH pod, before any restart depends on it. Use the digest in `dynamic-plugins.yaml`. The expected output is the digest and labels, with no `unauthorized` or `x509` error.
+   Use `create`, not `apply`, because `apply` copies the credential into a `last-applied-configuration` annotation.
+
+3. Prove the new credential works from the RHDH pod, before any restart depends on it. Use the digest in `dynamic-plugins.yaml`. The credential goes over stdin, so no file is written to the pod. The expected output is the digest and labels, with no `unauthorized` or `x509` error.
 
    ```sh
    oc -n rhdh get secret dynamic-plugins-registry-auth -o jsonpath='{.data.auth\.json}' | base64 -d \
-     | oc -n rhdh exec -i "$POD" -c backstage-backend -- sh -c \
-       'umask 077; cat > /tmp/auth.json; skopeo inspect --authfile /tmp/auth.json docker://registry.apps.ocp.box1.org/box1-plugins/box1-onboarding-plugin@<digest>; rc=$?; rm -f /tmp/auth.json; exit $rc'
+     | oc -n rhdh exec -i "$POD" -c backstage-backend -- \
+       skopeo inspect --no-tags --authfile /dev/stdin \
+       docker://registry.apps.ocp.box1.org/box1-plugins/box1-onboarding-plugin@<digest>
    ```
+
+   The same command against an image in `box1-ci` must fail with `authentication required`.
 
 Do not commit the credential. If the Secret is missing at the next restart, the installer cannot pull the image and the Hub will not start. Recreate the Secret and the Pod retries.
 
