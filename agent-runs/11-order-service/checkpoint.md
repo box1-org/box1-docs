@@ -44,7 +44,7 @@ Open from review:
 
 ## Open risks
 
-- **Smoke will likely time out.** Argo is `OutOfSync` because `order-service-config-29d2hgcc29` requires pruning. The release pipeline's smoke task needs `Synced`, with a 900 s limit. The deployment itself is healthy.
+- **Release pipeline failed.** `order-service-release-dq2fk` failed in promote at 09:15:01 EST, on the 300 s Argo wait. Argo is `OutOfSync` because `order-service-config-29d2hgcc29` requires pruning. Smoke was skipped, so it has not run against this image. The deployment is healthy at the expected revision. Tracked in box1-docs#42.
 - **No dead-letter topic.** `box1-kafka` is `OutOfSync`, because `box1-gitops#52` is merged but not synced. A poison event could auto-create the topic with default retention. If that fails, the pod restarts.
 - **Live database credential** (D-005, box1-docs#41). Specifics withheld, since this repository is public. The NetworkPolicy now limits access to it.
 - Order data is readable on the LAN without credentials (box1-docs#40).
@@ -65,4 +65,4 @@ Re-verify the baseline before relying on it.
 
 ## Exact next action
 
-With user approval: sync `box1-kafka`, and prune the orphan ConfigMap through Argo. Confirm `Synced`, check the release pipeline's smoke result (rerun if it timed out), then run the Release reviewer pass. Propose `IgnoreExtraneous` on generated ConfigMaps so later config changes do not repeat this.
+With user approval: sync `box1-kafka`, and prune the orphan ConfigMap through Argo. Confirm `Synced`, rerun the release so promote and smoke pass, then run the Release reviewer pass. The permanent fix is box1-docs#42.

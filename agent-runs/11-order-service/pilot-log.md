@@ -49,7 +49,7 @@ None in product code. One harness adjustment: the scaffold's `verify` failed loc
 10. **A chosen option can imply out-of-scope work.** The user chose a secrets integration, which D-005 described as outside this prompt, and the profile says more autonomy is not more scope. I treated the choice as direction, not as approval to install anything, and stopped for D-016.
 11. **`ci_verified` is awkward when CI covers only part of a requirement.** Most scenarios cannot run in CI. I kept those at `locally_tested` and marked only three as `ci_verified`, noting the partial coverage.
 
-12. **Changing a config value breaks the next smoke.** `configMapGenerator` hashes names, so a config change orphans the old ConfigMap. Applications have no prune, so Argo stays `OutOfSync` and the smoke task, which requires `Synced`, times out. No phase of the profile would surface this before merge. Reviewers read the task but did not connect it to the #50 change, and neither did I. **My PR description missed it.**
+12. **Changing a config value breaks the next smoke.** `configMapGenerator` hashes names, so a config change orphans the old ConfigMap. Applications have no prune, so Argo stays `OutOfSync`. Promote then fails at its 300 s wait, before smoke even runs. I first predicted smoke would be what failed; the run showed it was promote. No phase of the profile would surface this before merge. Reviewers read the task but did not connect it to the #50 change, and neither did I. **My PR description missed it.**
 13. **Copying a change into a template is not a copy.** The onboarding validator's file list and kind allowlist would have rejected #50 as written, which is the kind of constraint only reading the plugin shows.
 
 ## Places I was unsure of my authority
@@ -81,4 +81,4 @@ None in product code. One harness adjustment: the scaffold's `verify` failed loc
 - The cluster was read only, apart from CI pipeline runs that opening PRs triggered.
 - Pushed branches: `order-domain`, `order-service-v1-additions`, `order-dlq-topic`, `order-service-runtime-config`, plus this run-state branch.
 - Live: one test order, `ord_24a3627c742847c4ad6ef3670e21ea5a`, and its `order.placed.v1` event on `box1.order.events.v1`.
-- Opened PRs: `box1-templates#23`, `box1-templates#24`, `order-service#1`, `box1-ops-contracts#3`, `box1-gitops#52`, `box1-workloads-dev#50`. Filed issues box1-docs#40 and box1-docs#41 at the user's request.
+- Opened PRs: `box1-templates#23`, `box1-templates#24`, `order-service#1`, `box1-ops-contracts#3`, `box1-gitops#52`, `box1-workloads-dev#50`. Filed issues box1-docs#40, #41 and #42 at the user's request.

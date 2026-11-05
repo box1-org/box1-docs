@@ -529,7 +529,7 @@
   - evidence/07-live.txt
   deployment: *1
   limitations:
-  - Pod runs the promoted digest at source 749ef13. Argo reports OutOfSync because an old hash-named ConfigMap needs pruning, so the release smoke step had not passed when recorded. Release reviewer pass not yet run.
+  - Pod runs the promoted digest at source 749ef13. Argo reports OutOfSync because an old hash-named ConfigMap needs pruning, so the release pipeline failed in promote at its 300 s wait and smoke was skipped (box1-docs#42). Release reviewer pass not yet run.
 - id: ORD-LIVE-LIFECYCLE
   description: One order lifecycle followed through logs, metrics, traces and timeline as far as deployed dependencies allow
   status: blocked

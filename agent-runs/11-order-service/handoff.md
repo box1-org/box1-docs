@@ -30,7 +30,7 @@
 
 ## Next agent session
 
-**Next smallest slice:** see the exact next action in `checkpoint.md`. Then merge `box1-templates#23`, ship its plugin image, and merge `#24`.
+**Next smallest slice:** see the exact next action in `checkpoint.md`. Promote failed on the Argo wait and smoke was skipped (box1-docs#42). Then merge `box1-templates#23`, ship its plugin image, and merge `#24`.
 
 - Exact files to read: `checkpoint.md`, `decisions/D-016-secrets-integration-choice.md`, `requirements.yaml`, the prompt and profile from `box1-docs` `origin/main`.
 - Blockers and required user decisions: approval for the `box1-kafka` sync and the ConfigMap prune; template merges. Vault is deferred to box1-docs#41.
