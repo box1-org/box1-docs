@@ -1,59 +1,68 @@
 # Checkpoint: box1-docs#11 Service 01, frontier profile
 
-**Updated:** 2026-11-05 02:40 EST
-**Current phase:** 0 Discovery, exit criteria met. Stopped before Phase 1.
-**Run branch:** `agent-run/11-order-service` in `box1-docs`. Local worktree: `box1-docs-agent-run-11`.
-**Changed files:** only this directory. No service, contracts or GitOps branch, commit or PR exists for this run.
-**Tests run:** baselines only, see below. No order behavior is implemented, and every ledger entry is `proposed`, except `ORD-GUARD-DEMO`, which is `blocked`.
+**Updated:** 2026-11-05 America/New_York
+**Current phase:** stopped at the entry to Phase 6. Phases 0 to 5 have exited, except the Release pass, which needs a deployment.
+**Stop reason:** the next actions need approval (operator install, merges) and D-016 is open.
 
-## Observed baseline
+## Branches and PRs
 
-- `box1-ops-order` does not exist. `order-service` is a Golden Path scaffold at `fba518d`, created 2026-11-05 02:08 EST, with no order behavior: `/api/v1/orders` returns 404.
-- Deployed: `order-service` Argo Application Synced/Healthy at `box1-workloads-dev` `b52ec2e`, image `sha256:7c206ee3…aa54`, one pod plus a PostgreSQL 15 pod with a 5Gi `lvms-vg1` PVC. The app has 100m/128Mi requests and 1/512Mi limits, using about 146Mi. PostgreSQL has no requests or limits.
-- `orders-service` no longer exists as a repository, namespace or Argo Application.
-- Kafka: AMQ Streams 3.2.2, Kafka 4.2.0, Ready, five topics Ready at replication factor 1. Plain listener on 9092, no authentication or authorization, no dead-letter topic. Entity operators watch only `box1-kafka`. `KAFKA_BOOTSTRAP_SERVERS` is unset in the order-service workload.
-- The live database credential does not meet `postgres/SECRETS.md` (D-005; specifics are withheld because this repository is public). No NetworkPolicy in the namespace. No secret-management CRDs.
-- No OpenTelemetry, Tempo or Loki CRDs. User workload monitoring is off, so a ServiceMonitor would not be scraped.
-- Node: 12% CPU and 51% memory in use. Memory requests 49%, limits 136%.
-- Contracts `5d44122`: `npm test` 3 of 3 pass and `validate` passes, but they miss a real defect: the OpenAPI `Order` schema rejects every valid order, because `allOf` includes `CreateOrder` with `additionalProperties: false`.
-- Scaffold `verify`: passes in CI and locally with `DOCKER_HOST` on the Podman socket (8 unit, 5 integration). The cluster task has no sidecars.
-- The release pipeline runs with `security-gates: disabled`.
+| Repository | Branch | Head | PR | Checks |
+|---|---|---|---|---|
+| `order-service` | `order-domain` | `078f341` | [#1](https://github.com/box1-org/order-service/pull/1) | Pass |
+| `box1-ops-contracts` | `order-service-v1-additions` | `7dcf290` | [#3](https://github.com/box1-org/box1-ops-contracts/pull/3) | None configured |
+| `box1-gitops` | `order-dlq-topic` | `fe11b0f` | [#52](https://github.com/box1-org/box1-gitops/pull/52) | Pass |
+| `box1-workloads-dev` | `order-service-runtime-config` | `de4a218` | [#50](https://github.com/box1-org/box1-workloads-dev/pull/50) | Pass |
 
-## Contract gaps to resolve in Phase 1 and 2
+Nothing is merged. Nothing changed on the cluster. The deployed service is still the scaffold.
 
-- OpenAPI: no `/timeline`, no pagination, no `Location` header, no 200 on idempotent replay, and 404/409 without Problem bodies. No examples, and `validate.mjs` would not check them. Pagination can stay additive: keep the array body and add query parameters and a `Link` header.
-- Schemas missing: `inventory.rejected`, `inventory.reservation-expired`, `order.state-changed`, `shipment.failed`. Their fixtures are missing too.
-- Fixtures have no `traceparent`.
-- `postgres/migrations/orders/V1` lacks `order_state_history` and `idempotency_records`. `MIGRATIONS.md` says these are fixtures, and the service owns its real migrations.
-- `TOPICS.md` names no dead-letter topic.
-- Database and login names conflict with the template (D-004).
+Local paths: `order-service`, `run11-contracts`, `run11-workloads`, `run11-gitops`, `box1-docs-agent-run-11`.
 
-## Open decisions
+## Test results
 
-D-001 target repository, D-002 `box1-workloads-dev` authority, D-003 API authentication, D-004 database names, D-005 live database credential. D-006 records planned defaults.
+| Run | Result | Evidence |
+|---|---|---|
+| CI, `order-service-validate-vzxnp`, at `078f341` | 28 unit and contract tests, 5 integration tests, SpotBugs 0, Checkstyle 0 | `evidence/06-ci.txt` |
+| Local with containers, at `078f341` | 64 and 8 tests, 0 failures, SpotBugs 0, Checkstyle 0 | `evidence/04-scenarios-local.txt` |
+| Contracts, at `7dcf290` | `validate` pass, `test` 3 of 3. Drills 5 of 5 on the earlier commit. | `box1-ops-contracts#3` |
+| Workstation load sample, at `764ada1` | About 276 MiB RSS, p95 11 ms at about 5 POST/s for 60 s | `evidence/05-resource-sample.txt` |
+
+Local scenarios use `postgres:15-alpine` and `apache/kafka:4.2.0`. The deployed PostgreSQL is the Red Hat build, which needs a registry login to pull. The load sample predates the reviewer repairs.
+
+## Ledger
+
+27 `locally_tested`, 3 `ci_verified`, 2 `implemented`, 2 `blocked`, 1 `superseded`. None is `deployed` or `live_verified`.
+
+## Reviewer passes
+
+Architecture, persistence, messaging, security and operations are recorded in `review-findings/` with outcomes. The release pass has not run.
+
+Open from review:
+
+- A failed dead-letter send restarts the pod. Documented, not tested. Merge the topic first.
+- Published outbox rows are never purged.
+- Permanent publish errors retry forever.
 
 ## Open risks
 
-- Live database credential (D-005).
-- Unauthenticated order data on a LAN-resolving Route if D-003 chooses B.
-- Merging to the service's `main` starts a build and an auto-merging dev promotion, so a merge deploys with no further review step.
-- Greeting endpoints must remain, because the platform smoke task asserts them.
-
-## Evidence
-
-`evidence/00-repositories.txt`, `evidence/01-cluster-baseline.txt`, `evidence/03-local-baselines.txt`. There is deliberately no `evidence/02`: the database credential check is not published, and D-005 says how to repeat it.
+- The live database credential (D-005, D-016). Specifics are withheld because this repository is public.
+- Merging `order-service#1` deploys automatically, and unauthenticated order data then becomes reachable on the LAN (box1-docs#40).
+- The release pipeline runs with `security-gates: disabled`.
+- Failure scenarios do not run in CI. A later change could break them with CI still green.
+- Smoke, Flyway with the deployed login and the `/tmp` limit are unproven against this image.
+- The prompt still names `box1-ops-order` and `orders-service`.
 
 ## Resume notes
-
-Local tests need:
 
 ```sh
 export DOCKER_HOST=unix://$(podman machine inspect --format '{{.ConnectionInfo.PodmanSocket.Path}}')
 export TESTCONTAINERS_RYUK_DISABLED=true
+# Check the VM clock first. Host sleep leaves it behind, and Kafka then rejects messages.
+podman machine ssh date; date -u
+caffeinate -ims ./mvnw clean verify -Pcontainers -DskipITs=false
 ```
 
-Re-verify the baseline before relying on it. `order-service` was created minutes before this run, and the platform repositories changed the same night.
+Re-verify the baseline before relying on it.
 
 ## Exact next action
 
-Get the user's answers to D-001 to D-005. Then begin Phase 1: record the prompt's nine required design decisions in `decisions/`, starting with idempotency scope, using the D-003 answer.
+Get the user's answer to D-016. If approved, open a `box1-gitops` PR installing the chosen operator, stating what merging deploys. Then follow the order in `handoff.md`.

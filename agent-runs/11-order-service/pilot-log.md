@@ -6,7 +6,8 @@ No comparison with `qwen-64k`, because no baseline exists.
 
 | # | Time (America/New_York) | Phase | Stop condition | Reason |
 |---|---|---|---|---|
-| 1 | 2026-11-05 02:40 EST | 0 exit | Repository conflicts with prompt; product or ownership decision required | `order-service` exists where the prompt proposes `box1-ops-order`. See `decisions/D-001` to `D-005`. |
+| 1 | 2026-11-05 02:40 EST | 0 exit | Repository conflicts with prompt; product or ownership decision required | `order-service` exists where the prompt proposes `box1-ops-order`. See `decisions/D-001` to `D-005`. The user answered at about 02:44 EST. |
+| 2 | 2026-11-05 America/New_York | 6 entry | Next action needs approval; product decision required | Merges and the operator install need approval, and D-016 is open. |
 
 ## Repairs
 
@@ -16,6 +17,16 @@ Found by verification (Phase 4), fixed and retested:
 2. **Bad bodies returned non-Problem errors.** Framework mappers won over global ones, giving empty or plain JSON 400s. Added mappers scoped to the resource.
 3. **Outbox scheduling mixed clock domains.** `next_attempt_at` used the application clock and was compared with the database clock, so an application clock running ahead silently delayed publishing. Outbox times now come from the database.
 4. **Readiness check switch was build-time.** `health-exclude` cannot change at runtime, so the check became `DatabaseReadinessCheck` with a runtime flag.
+
+Found by reviewer passes (Phase 5), fixed and retested. See `review-findings/` for all findings and outcomes:
+
+5. Unbounded request fields, a high-severity finding.
+6. Valid events dead-lettered after a 7.5 s database outage.
+7. Publisher fail-fast that never fired on metadata timeouts.
+8. Driver text reaching dead-letter headers.
+9. Reservations not checked against the order or their expiry.
+
+The reviewers found defects that 68 passing tests had missed. Passes 1, 3 and 4 flagged the same dead-letter and fail-fast issues independently, which raised confidence in them.
 
 Test harness repairs: stale container client connections on pause and resume now retry, and post-SIGKILL waits allow for the broker's 45 s session timeout.
 
@@ -32,6 +43,10 @@ None in product code. One harness adjustment: the scaffold's `verify` failed loc
 7. **No named demo namespace.** Cluster fault injection is allowed only in one, and none is named.
 8. **Run state lives in a public repository, and the profile does not say so.** `box1-docs` is public. The profile bans credentials in `evidence/`, but says nothing about a live weakness found during discovery. I nearly published one. I withheld the specifics from the run state and reported them directly. The profile should say where such findings go.
 
+9. **Reviewer passes come after verification, but found behavior worth re-verifying.** The profile runs Phase 4 then Phase 5. Its exit says findings are "fixed or recorded", and is silent on retesting. I reran the full suite after repairs, and the profile could require that.
+10. **A chosen option can imply out-of-scope work.** The user chose a secrets integration, which D-005 described as outside this prompt, and the profile says more autonomy is not more scope. I treated the choice as direction, not as approval to install anything, and stopped for D-016.
+11. **`ci_verified` is awkward when CI covers only part of a requirement.** Most scenarios cannot run in CI. I kept those at `locally_tested` and marked only three as `ci_verified`, noting the partial coverage.
+
 ## Places I was unsure of my authority
 
 1. **Pushing to `order-service`.** "The service repository" could cover it, since it is the only order service that exists. It is not the repo the prompt names, so I did not push. See D-001.
@@ -40,7 +55,8 @@ None in product code. One harness adjustment: the scaffold's `verify` failed loc
 4. **What to publish.** The standing permission covers pushing run state to `box1-docs`, but it was written without saying the repository is public, so I narrowed what I pushed for D-005.
 
 5. **Blocked container cleanup.** The permission layer denied a blanket `podman rm -f` of all running containers, which could have removed containers that were not mine. I dropped it. Afterwards I removed only the two containers I had named `run11-pg` and `run11-kafka`.
-6. **Podman VM clock.** I set the local Podman VM clock from the host twice, because host sleep left it about 2 hours behind and Kafka rejected messages. I treated this as part of local testing. No restart, and no running containers were affected.
+6. **Issue #11 checkboxes.** Left unticked. The tests support the behavior locally, but the code is on an unmerged branch and nothing is deployed, so ticking would read as more than the evidence shows.
+7. **Podman VM clock.** I set the local Podman VM clock from the host twice, because host sleep left it about 2 hours behind and Kafka rejected messages. I treated this as part of local testing. No restart, and no running containers were affected.
 
 ## Environment findings
 
@@ -53,4 +69,6 @@ None in product code. One harness adjustment: the scaffold's `verify` failed loc
 - `git fetch` ran in the `box1-gitops`, `box1-ops-contracts`, `box1-templates`, `box1-workloads-dev` and `quarkus-reference` clones.
 - New worktrees: `box1-docs-agent-run-11`, `run11-contracts`, `run11-workloads`, `run11-gitops`. New clone: `order-service`.
 - Local Podman pulled `postgres:15-alpine` and the Kafka Dev Services image. A pull of the RHEL PostgreSQL image failed for lack of registry login.
-- The cluster was read only. Pushed branches: `order-domain` in `order-service`, `order-service-v1-additions` in `box1-ops-contracts`, plus this run-state branch.
+- The cluster was read only, apart from CI pipeline runs that opening PRs triggered.
+- Pushed branches: `order-domain`, `order-service-v1-additions`, `order-dlq-topic`, `order-service-runtime-config`, plus this run-state branch.
+- Opened PRs: `order-service#1`, `box1-ops-contracts#3`, `box1-gitops#52`, `box1-workloads-dev#50`. Filed issue box1-docs#40 at the user's request.

@@ -1,9 +1,9 @@
 {
   "issue": "box1-org/box1-docs#11",
   "profile": "frontier",
-  "current_phase": 5,
-  "phase_state": "phases_2_to_4_exited_review_running",
-  "updated_at": "2026-11-05T06:45:00-05:00",
+  "current_phase": 6,
+  "phase_state": "stopped_at_phase_6_entry_for_approvals",
+  "updated_at": "2026-11-05T07:30:00-05:00",
   "open_decisions": [
     "D-016"
   ],
@@ -16,7 +16,8 @@
       "role": "implementation target",
       "main": "fba518d8aec8982b69aad75076c780cfda030896",
       "run_branch": "order-domain",
-      "commit": "764ada1bb8b49ce76a60714901a8ba7f9333d6af"
+      "commit": "078f341e9014a38daf826719cf67b5bf8f4fc6bd",
+      "pr": 1
     },
     "box1-ops-order": {
       "role": "proposed by prompt, does not exist",
@@ -26,17 +27,21 @@
       "role": "contract changes",
       "main": "5d44122",
       "run_branch": "order-service-v1-additions",
-      "commit": "56f9df2472f99f17cef03b6a31edd7e8cacb08b9"
+      "commit": "7dcf2909dfccf6e0009504d6542bdb45a647a68b",
+      "pr": 3
     },
     "box1-gitops": {
-      "role": "shared infrastructure, inspected only",
-      "main": "3951caf",
-      "run_branch": null
+      "role": "shared infrastructure",
+      "main": "6dc869d",
+      "run_branch": "order-dlq-topic",
+      "pr": 52
     },
     "box1-workloads-dev": {
-      "role": "service workloads, inspected only",
+      "role": "service workloads",
       "main": "b52ec2e",
-      "run_branch": null
+      "run_branch": "order-service-runtime-config",
+      "commit": "de4a2188df4db36235c662172d3f03ab7f32cc2e",
+      "pr": 50
     }
   }
 }
