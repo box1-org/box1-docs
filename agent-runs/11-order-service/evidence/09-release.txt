@@ -1,0 +1,130 @@
+# Release order-service-release-jn4rl, captured 2026-11-05 10:56 EST
+source 4ec33fb4b1d05d11bbe3159f310d1987eac696f3 (empty commit on a749ef8, requested by the user)
+
+## Pipeline
+order-service-release-jn4rl-build      Succeeded   2026-11-05T15:45:38Z   2026-11-05T15:47:40Z
+order-service-release-jn4rl-promote    Succeeded   2026-11-05T15:48:00Z   2026-11-05T15:48:51Z
+order-service-release-jn4rl-security   Succeeded   2026-11-05T15:47:40Z   2026-11-05T15:48:00Z
+order-service-release-jn4rl-smoke      Succeeded   2026-11-05T15:48:51Z   2026-11-05T15:48:55Z
+enforcement ['gate']
+results {'sbom-id': 'urn:uuid:01a1ac65-2639-746a-be44-fca05f91373a', 'findings': 'scan-exit=0', 'policy': 'pass'}
+RHACS scan exit=0 check exit=0 digest=sha256:513c366dad2163014e3c8f1533976bf11dbf63cb42c81fd7ff789fcc1258b65d
+SBOM accepted by RHTPA: urn:uuid:01a1ac65-2639-746a-be44-fca05f91373a digest=sha256:513c366dad2163014e3c8f1533976bf11dbf63cb42c81fd7ff789fcc1258b65d revision=4ec33fb4b1d05d11bbe3159f310d1987eac696f3
+Created GitOps PR: https://github.com/box1-org/box1-workloads-dev/pull/52
+Merged development GitOps PR after exact-head required checks: 9293ad899a3b0fe26ba55b39cbc243de35db6387
+Requested Argo sync for order-service at GitOps revision 9293ad899a3b0fe26ba55b39cbc243de35db6387
+Argo sync completed for order-service at 9293ad899a3b0fe26ba55b39cbc243de35db6387
+PASS: Argo Synced/Healthy, expected source and runtime digest, REST, Java 21, health, OpenAPI, metrics, validation.
+Source: 4ec33fb4b1d05d11bbe3159f310d1987eac696f3 image: sha256:513c366dad2163014e3c8f1533976bf11dbf63cb42c81fd7ff789fcc1258b65d Route: https://order-service-dev.apps.ocp.box1.org
+
+## Live
+argo=Synced/Healthy rev=9293ad899a3b0fe26ba55b39cbc243de35db6387
+imageID=image-registry.openshift-image-registry.svc:5000/box1-ci/order-service@sha256:513c366dad2163014e3c8f1533976bf11dbf63cb42c81fd7ff789fcc1258b65d restarts=0
+{"name":"order-service","version":"1.0.0-SNAPSHOT","javaVersion":21,"deliveryMode":"tekton-gitops","gitRef":"4ec33fb4b1d05d11bbe3159f310d1987eac696f3"}
+
+## Create, replay and changed body through the Route, key release-accept-4ec33fb
+outbox/published metrics before:
+box1_orders_oldest_open_age_seconds 6325.117548
+box1_outbox_oldest_pending_age_seconds 0.0
+box1_orders_stuck 1.0
+box1_outbox_pending 0.0
+POST 201 location: http://order-service-dev.apps.ocp.box1.org/api/v1/orders/ord_105f4cdf614f47208b6a3a14863855c4
+
+POST 200 location: http://order-service-dev.apps.ocp.box1.org/api/v1/orders/ord_105f4cdf614f47208b6a3a14863855c4
+
+POST 200 location: http://order-service-dev.apps.ocp.box1.org/api/v1/orders/ord_105f4cdf614f47208b6a3a14863855c4
+
+orderId=ord_105f4cdf614f47208b6a3a14863855c4
+changed body: {"type":"about:blank","title":"Conflict","status":409,"detail":"Idempotency key was used with a different payload"} 409
+no key: 400
+invalid: 400
+get: {"orderId":"ord_105f4cdf614f47208b6a3a14863855c4","state":"SUBMITTED","customerId":"cust_live_accept","sku":"SKU-42","quantity":2,"siteId":"site_nyc","statusReason":"ORDE
+timeline: [{"sequence":2,"kind":"TRANSITION","toState":"SUBMITTED","reasonCode":"ORDER_PLACED","occurredAt":"2026-11-05T15:56:45.276583Z","causationId":"cmd_2151b60a-8836-41b1-9581
+metrics after:
+box1_orders_oldest_open_age_seconds 6340.11752
+box1_outbox_oldest_pending_age_seconds 0.723203
+box1_orders_stuck 1.0
+box1_outbox_pending 1.0
+box1_orders_lifecycle_total{state="SUBMITTED"} 1.0 # {span_id="9c4adb60b8098ff3",trace_id="2565a5366f7d8c94d9a24affc810a
+box1_outbox_published_total 1.0
+box1_outbox_publish_lag_seconds_max 0.74193
+box1_outbox_publish_lag_seconds_count 1.0
+box1_outbox_publish_lag_seconds_sum 0.74193
+app log for this order:
+15:56:45 INFO OrdersResource Order created
+15:56:45 INFO OrdersResource Idempotent replay
+15:56:45 INFO OrdersResource Idempotent replay
+
+## Served OpenAPI, order paths
+GET /api/v1/orders ['200']
+POST /api/v1/orders ['200', '400']
+GET /api/v1/orders/{orderId} ['200']
+GET /api/v1/orders/{orderId}/timeline ['200']
+
+## Follow-up checks
+Outbox pending returned to 0, published_total 1 on this pod. Kafka itself was not read.
+Timeline sequence is a global counter: this order's only entry is 2, the earlier order's is 1. The contract says minimum 1; its example shows 1.
+Location uses http:// on the edge-terminated Route. http:// answers 302 to https://. No proxy forwarding setting in application.properties.
+Test orders left live: ord_24a3627c742847c4ad6ef3670e21ea5a, ord_105f4cdf614f47208b6a3a14863855c4.
+
+# Gate negative test, approved by the user, 2026-11-05 16:03 UTC
+TaskRun order-service-gate-negative-test, labeled box1.org/purpose=gate-negative-test. Same Task, parameters and service account as the release. Task alone, so no promote step exists.
+Image: order-service@sha256:fb669bff...83fd, source 749ef13. enforcement=gate.
+Result: StepFailed. Steps: sbom-and-rhtpa Completed, rhacs-scan-and-check exit 1, evidence skipped by failure.
+Results: findings=scan-exit=0, policy=fail, sbom-id=urn:uuid:01a1ac73-92be-70bd-8ce3-a4abb53f4082
+Log: RHACS scan exit=0 check exit=1. ERROR: checking image failed: failed policies found: 1 policies violated that are failing the check.
+Afterwards: deployed digest still 513c366d, no open promotion PR. This run left one more SBOM in TPA for fb669bff.
+Not shown: a PipelineRun stopping after a policy rejection; observe mode.
+
+# Where the release scan results are, checked for 513c366d
+ACS: GET /v1/images/<digest> returns the scan, 374 components, Scanner V4, scan time 15:47:58 UTC. 244 unique CVEs: 0 Critical, 8 Important, 153 Moderate, 83 Low, per the export taken after the release.
+TPA: GET /api/v3/sbom/urn:uuid:01a1ac65-2639-746a-be44-fca05f91373a returns 387 packages with digest, source and pipeline labels.
+Task reports in /reports: emptyDir, discarded with the pod.
+Service PR: order-service#4 was opened for the OpenAPI, Location, smoke and runbook findings. inventory-service was onboarded by the user at 16:00 UTC, which moved the workloads revision to d67e0b9 and then 30c6c2d. order-service's digest did not change.
+
+# Release from order-service#4 did not start, 2026-11-05 UTC
+16:16:12 order-service-release-9kb6b created for 0920f9a as PipelineRunPending.
+16:16:13 Pipelines as Code: PATCH check-runs/127368157188 returned 404, then "resource name may not be empty". The run never reached the queue. Check run: failure, "pipelinerun start failure".
+Deployed is still 4ec33fb, sha256:513c366d...b65d. The order-service#4 changes are not live.
+16:26 /retest commit comment was received as retest-all-comment, then failed: "unexpected status code: 404 Not Found" after "Using PipelineRun definition from default_branch". So /retest did not work for a push on this setup, though earlier messages offered it as an option.
+Cancelling the orphaned run was denied by the permission layer. It remains Pending. Whether it would start after a watcher restart was not established.
+
+# Release order-service-release-xgfj7, source ee9a3b8, digest sha256:f4817f1f...9da4, 16:36 UTC
+Gate passed: SBOM urn:uuid:01a1ac91-3327-7124-919d-4b1d2d7e8332, scan and check exit 0.
+Promote failed: box1-workloads-dev#55 checks reported "pipelinerun start failure", from PATCH check-runs 404. The checks did not run. Smoke and order-api-smoke skipped.
+Orphans: box1-phase1-smoke-59r9f, box1-gitops-validate-694k6, both Pending.
+Controller log: 4 start failures out of about 56 runs created. Tracked in box1-docs#42.
+Deployed is still 4ec33fb, sha256:513c366d...b65d, with the old OpenAPI and http:// Location. box1-ops-contracts#4 is merged.
+
+# Release order-service-release-6skld, source 8fda087, captured 2026-11-05 17:21 EST
+Releases ee9a3b8 (xgfj7) and efa84c0 (8jp8d) passed the gate, then stopped at promotion when GitHub returned 404 and 500 to Pipelines as Code check-run calls. Their promotion PRs box1-workloads-dev#55 and #56 were closed unmerged. This release ran after GitHub recovered.
+order-service-release-6skld-build             Succeeded   2026-11-05T22:19:41Z
+order-service-release-6skld-order-api-smoke   Succeeded   2026-11-05T22:21:18Z
+order-service-release-6skld-promote           Succeeded   2026-11-05T22:21:10Z
+order-service-release-6skld-security          Succeeded   2026-11-05T22:20:02Z
+order-service-release-6skld-smoke             Succeeded   2026-11-05T22:21:14Z
+RHACS scan exit=0 check exit=0 digest=sha256:c90bae8aeb73537dda149be3713744c579fb06d6837e1e21d8d50c3a5ef605c8
+SBOM accepted by RHTPA: urn:uuid:01a1adcc-10b3-730e-9e2d-dcb4b29435d2 digest=sha256:c90bae8aeb73537dda149be3713744c579fb06d6837e1e21d8d50c3a5ef605c8 revision=8fda08763e2a593d67cabea73fb84e762cb41a21
+Created GitOps PR: https://github.com/box1-org/box1-workloads-dev/pull/59
+Merged development GitOps PR after exact-head required checks: 359c71108bbf793c027547e655d63fd67fa4f42b
+Argo sync completed for order-service at 359c71108bbf793c027547e655d63fd67fa4f42b
+PASS: Argo Synced/Healthy, expected source and runtime digest, REST, Java 21, health, OpenAPI, metrics, validation.
+PASS: order reads, 404 and 400 problems, served OpenAPI responses. No order was written.
+## Independent checks
+argo=Synced/Healthy rev=359c71108bbf793c027547e655d63fd67fa4f42b
+imageID=image-registry.openshift-image-registry.svc:5000/box1-ci/order-service@sha256:c90bae8aeb73537dda149be3713744c579fb06d6837e1e21d8d50c3a5ef605c8 restarts=0 ready=true
+{"name":"order-service","version":"1.0.0-SNAPSHOT","javaVersion":21,"deliveryMode":"tekton-gitops","gitRef":"8fda08763e2a593d67cabea73fb84e762cb41a21"}
+openapi GET /api/v1/orders ['200', '400']
+openapi POST /api/v1/orders ['200', '201', '400', '409']
+openapi GET /api/v1/orders/{orderId} ['200', '404']
+openapi GET /api/v1/orders/{orderId}/timeline ['200', '400', '404']
+openapi post request examples ['create'] 201 headers ['Location']
+replay of key release-accept-4ec33fb:
+HTTP/1.1 200 OK
+idempotency-replayed: true
+location: /api/v1/orders/ord_105f4cdf614f47208b6a3a14863855c4
+missing: 404 application/problem+json
+box1_outbox_pending 0.0
+box1_orders_stuck 2.0
+Matcher: 2 restarts since the 6Gi limit took effect at 15:35 UTC. Last termination ContainerStatusUnknown, exit 137, with no previous logs. Cause not established. Reported on box1-docs#43.
+Test orders left live: ord_24a3627c742847c4ad6ef3670e21ea5a and ord_105f4cdf614f47208b6a3a14863855c4. box1_orders_stuck is 2 because of them.

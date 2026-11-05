@@ -1,0 +1,22 @@
+# captured 2026-11-05 06:54 EST
+# order-service PR #1, head 078f341e9014a38daf826719cf67b5bf8f4fc6bd, PipelineRun order-service-validate-vzxnp
+order-service-validate-vzxnp   True   Succeeded   2m35s   63s
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.302 s -- in org.box1.GreetingResourceTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.836 s -- in org.box1.order.ContractTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in org.box1.GreetingServiceTest
+[INFO] Tests run: 16, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.040 s -- in org.box1.order.TransitionsTest
+[INFO] Tests run: 28, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 7.862 s -- in org.box1.GreetingResourceIT
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BugInstance size is 0
+[INFO] Error size is 0
+[INFO] BUILD SUCCESS
+
+# Other PR checks
+box1-gitops/52:
+Pipelines as Code CI / box1-onboarding-plugin-guard-	pass
+Pipelines as Code CI / box1-phase1-smoke-	pass
+box1-workloads-dev/50:
+Pipelines as Code CI / box1-gitops-validate-	pass
+Pipelines as Code CI / box1-phase1-smoke-	pass
+box1-ops-contracts/3: no checks configured; local npm results in the PR

@@ -1,0 +1,7 @@
+# captured 2026-11-05 06:35 EST, commit 764ada1bb8b49ce76a60714901a8ba7f9333d6af
+# Local workstation (arm64, JVM capped at -XX:MaxRAM=512m), about 5 POST/s for 60 s; not a cluster measurement
+requests:      285
+rss idle KiB: 224784
+rss after load KiB: 276112
+create latency seconds p50=0.007822 p95=0.011086 max=0.083458
+after load: box1_outbox_pending 10.0

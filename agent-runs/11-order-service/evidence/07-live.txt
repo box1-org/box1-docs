@@ -1,0 +1,41 @@
+# captured 2026-11-05 09:11 EST
+## Delivered
+image=image-registry.openshift-image-registry.svc:5000/box1-ci/order-service@sha256:fb669bff0e522c8067c4118c7ac04303a520acd67a20be85ee940d36344583fd
+source=749ef130447a7c933ee1c782153e434099677eab
+pod=order-service-54d8fd555d-9rflx ready=true restarts=0 imageID=image-registry.openshift-image-registry.svc:5000/box1-ci/order-service@sha256:fb669bff0e522c8067c4118c7ac04303a520acd67a20be85ee940d36344583fd
+{"name":"order-service","version":"1.0.0-SNAPSHOT","javaVersion":21,"deliveryMode":"tekton-gitops","gitRef":"749ef130447a7c933ee1c782153e434099677eab"}
+ready: {"status":"UP","checks":[{"name":"database","status":"UP"},{"name":"SmallRyeReactiveMessaging-readinesscheck","status":"UP"}]}
+argo=OutOfSync/Healthy rev=5fd61de2479b899ab4f6e9e48055c527f13ac632
+
+## Idempotent create through the Route, 10x with one key
+201 200 200 200 200 200 200 200 200 200 
+orderId=ord_24a3627c742847c4ad6ef3670e21ea5a
+changed body: {"type":"about:blank","title":"Conflict","status":409,"detail":"Idempotency key was used with a different payload"} 409
+missing: 404
+invalid: 400
+order: {"orderId":"ord_24a3627c742847c4ad6ef3670e21ea5a","state":"SUBMITTED","customerId":"cust_live_accept","sku":"SKU-42","quantity":2,"siteId":"site_nyc","statusReason":"ORDER_PLACED","createdAt":"2026-11-05T14:11:05.882718Z","updatedAt":"2026-11-05T14:11:05.882718Z","correlationId":"corr-live-accept","traceId":"4bf92f3577b34da6a3ce929d0e0e4736"}
+timeline: [{"sequence":1,"kind":"TRANSITION","toState":"SUBMITTED","reasonCode":"ORDER_PLACED","occurredAt":"2026-11-05T14:11:05.882718Z","causationId":"cmd_103811d4-cf3a-4fd2-a290-f34065d83aed","correlationId":"corr-live-accept","traceId":"4bf92f3577b34da6a3ce929d0e0e4736"}]
+
+## Published event on the broker
+ord_24a3627c742847c4ad6ef3670e21ea5a	{"eventId": "63052b4d-4aaa-42b5-817e-77b3abfee584", "payload": {"sku": "SKU-42", "siteId": "site_nyc", "orderId": "ord_24a3627c742847c4ad6ef3670e21ea5a", "quantity": 2, "customerId": "cust_live_accept"}, "eventType": "order.placed.v1", "occurredAt": "2026-11-05T14:11:05.882718Z", "aggregateId": "ord_24a3627c742847c4ad6ef3670e21ea5a", "causationId": "cmd_103811d4-cf3a-4fd2-a290-f34
+
+## Metrics
+box1_orders_stuck 0.0
+box1_outbox_published_total 1.0
+box1_outbox_pending 0.0
+box1_orders_lifecycle_total{state="SUBMITTED"} 1.0 # {span_id="f141d8bd16374e2d",trace_id="4bf92f3577b34da6a3ce929d0e0e4736"} 1.0 1793887865.894
+box1_outbox_oldest_pending_age_seconds 0.0
+
+## Log line for this order (structured)
+{"timestamp":"2026-11-05T14:11:05.894771078Z","sequence":109,"loggerClassName":"org.jboss.logging.Logger","loggerName":"org.box1.order.api.OrdersResource","level":"INFO","message":"Order created","threadName":"executor-thread-2","threadId":29,"mdc":{"spanId":"f141d8bd16374e2d","parentId":"00f067aa0ba902b7","correlationId":"corr-live-accept","traceId":"4bf92f3577b34da6a3ce929d0e0e4736","sampled":"true","orderId":"ord_24a3627c742847c4ad6ef3670e21ea5a"},"ndc":"","hostName":"order-service-54d8fd555d
+{"timestamp":"2026-11-05T14:11:05.932982535Z","sequence":110,"loggerClassName":"org.jboss.logging.Logger","loggerName":"org.box1.order.api.OrdersResource","level":"INFO","message":"Idempotent replay","threadName":"executor-thread-2","threadId":29,"mdc":{"spanId":"cd5246342d9d94bd","parentId":"00f067aa0ba902b7","correlationId":"corr-live-accept","traceId":"4bf92f3577b34da6a3ce929d0e0e4736","sampled":"true","orderId":"ord_24a3627c742847c4ad6ef3670e21ea5a"},"ndc":"","hostName":"order-service-54d8fd
+log lines with customer id: 0
+log lines with key: 0
+
+## Flyway, memory
+{"timestamp":"2026-11-05T14:10:08.305226928Z","sequence":96,"loggerClassName":"org.slf4j.impl.Slf4jLogger","loggerName":"org.flywaydb.core.internal.command.DbMigrate","level":"INFO","message":"Successfully applied 1 migration to schema \"public\", now at versi
+order-service-54d8fd555d-9rflx            37m   195Mi   
+order-service-postgres-6f489dc8b4-tvkr5   4m    30Mi    
+
+## Network policy
+order-service-postgres   app.kubernetes.io/name=order-service-postgres   4m47s

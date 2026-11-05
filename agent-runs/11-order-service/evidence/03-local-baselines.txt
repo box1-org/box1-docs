@@ -1,0 +1,26 @@
+# captured 2026-11-05 02:35 EST
+## box1-ops-contracts @ 5d44122
+PASS 5 event fixtures and 6 schemas
+ℹ tests 3
+ℹ pass 3
+ℹ fail 0
+
+## valid Order example vs Order schema
+valid Order example accepted by Order schema: false [{"instancePath":"","schemaPath":"#/components/schemas/CreateOrder/additionalProperties","keyword":"additionalProperties","params":{"additionalProperty":"orderId"},"message":"must NOT have additional properties"}]
+
+## scaffold verify (order-service fba518d), no Docker socket configured
+java.lang.RuntimeException: java.util.concurrent.CompletionException: java.lang.IllegalStateException: Previous attempts to find a Docker environment failed. Will not retry. Please see logs and check 
+[ERROR] Tests run: 8, Failures: 0, Errors: 1, Skipped: 4
+
+## scaffold verify with DOCKER_HOST=podman socket, TESTCONTAINERS_RYUK_DISABLED=true
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+real	0m26.665s
+
+## same commit in CI
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+[INFO] BUILD SUCCESS
+Published digest: sha256:7c206ee34db79bc2f505098642cd4388a6fe5511d12426f736a20060c872aa54

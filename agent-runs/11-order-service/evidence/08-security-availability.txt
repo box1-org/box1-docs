@@ -1,0 +1,78 @@
+# captured 2026-11-05 09:29 EST. Read-only probes; credentials not printed. Release order-service-release-796ds failed in security.
+
+## Release failure
+step-sbom-and-rhtpa: POST /api/v3/sbom -> HTTP 500
+TPA server log: storage error: backend error: unhandled error (InvalidBucketState)
+step-rhacs-scan-and-check and step-evidence: skipped
+
+## TPA
+GET / 200; GET /.well-known/trustify 200; GET /api/v3/sbom?limit=1 without token 401, with CI token 200
+Keycloak token for rhtpa-ci: 200
+GET /api/v3/importer and /api/v3/advisory with CI token: 403, not investigated (CI client's scope)
+SBOM write: fails
+
+## NooBaa
+system phase Ready, Degraded False
+backingstore noobaa-default-backing-store: Rejected, mode ALL_NODES_OFFLINE since 2026-11-01 04:11:02 UTC
+agent pod: Failed/Evicted, node low on ephemeral-storage. Not recreated since.
+PV and PVC: Bound, lvms-vg1, 50Gi. OBC rhtpa-documents: Bound.
+Node DiskPressure now False, since 2026-10-31 23:58 EDT
+Pods in ContainerStatusUnknown cluster-wide: 15
+
+## ACS
+Central 4.11.6, /v1/ping 200, CI token valid until 2027-10-31, role Continuous Integration
+POST /v1/images/scan and /v1/detect/build on the deployed digest: HTTP 500
+  no matching image registries found: please add an image integration for image-registry.openshift-image-registry.svc:5000
+scanner-v4-matcher: 664 restarts, last OOMKilled 2026-11-05 14:20:10 UTC, limit 1 CPU, 3Gi; 991m CPU in use at sample
+scanner-v4-indexer: 576 restarts, last Error exit 1 on 2026-11-04 04:00:18 UTC
+
+## Gate behavior from task source
+sbom-and-rhtpa raises on any upload failure in observe and gate alike.
+
+## Service
+Still running source 749ef13, which has not passed the security gates or smoke.
+
+# Update 2026-11-05 (times UTC)
+
+## TPA restored, with user approval
+14:31:44 deleted evicted pod noobaa-default-backing-store-noobaa-pod-3aa907b4. Owner: BackingStore. PVC kept.
+14:32:30 backingstore Ready/OPTIMAL, same PVC, Bound.
+SBOM probe with the rhtpa-ci client: POST 201 in 0.39 s, download 200, content matches. DELETE 403.
+Probe document left in TPA: urn:uuid:01a1ac22-153b-724c-9fbb-753bb07d0606, label purpose=availability-probe.
+
+## Matcher memory, sampled every 30 s
+Limit 3,221,225,472 bytes, 1 CPU. Request 768Mi. ROX_MEMLIMIT from requests.memory; indexer's from limits.memory.
+Restart 665: OOMKilled exit 137 at 14:30:58, ran from 14:20:11, rhel-vex import unfinished.
+Next run: import 14:31:10 to 14:44:51, 4,011,719 records. CPU about 990m from 14:36.
+Peak 3,220,598,784 bytes at about 14:42, 626,688 under the limit. memory.events max 0, oom_kill 0.
+Earlier restarts are inferred from timing only; older logs are gone.
+Indexer last failure: refused connections to scanner-v4-db, exit 1. Stable since. Unrelated to memory.
+
+## Registry access
+box1-gitops#53 open: acs-registry-reader, pull only in box1-ci. Not merged. No integration exists yet, so ACS still cannot scan.
+Tracked: box1-docs#43.
+
+# Test scan 2026-11-05, 15:07 UTC, CI token, deployed digest sha256:fb669bff...83fd
+Prerequisites: box1-gitops#53 merged, pipelines-ci Synced/Healthy, integration created by the user.
+POST /v1/images/scan: 200 in 2.6 s. Scanner V4, indexer and matcher 4.11.6, os rhel:9. The integration's TLS setting is not verified: the CI token gets 403 reading integrations.
+373 components, 298 unique CVEs: 1 Critical, 16 Important, 187 Moderate, 94 Low.
+POST /v1/detect/build: 200, 3 alerts:
+  Fixable Severity at least Important: FAIL_BUILD, 14 violations (13 base image, 1 guava)
+  90-Day Image Age: inform only, Jib's 1970 timestamp, false positive for reproducible builds
+  Red Hat Package Manager in Image: inform only, microdnf and rpm in base
+Base image policy check: pinned 856ee654 has 13 FAIL_BUILD violations; latest cfa544ef (1.24-3.1793323798) has none.
+Matcher during the test: 665 restarts, no change, ready.
+Fix proposed in order-service#3. Full suite passes locally. Built image not yet scanned.
+The same base digest is pinned in box1-templates and quarkus-reference, so new builds there should expect the same 13 violations. Not scanned.
+
+# Release order-service-release-prd6t, source a749ef8, digest sha256:334b9ef4...3024
+build Succeeded. sbom-and-rhtpa Completed: SBOM urn:uuid:01a1ac4a-62f6-707b-856c-6f646171f154 accepted. rhacs-scan-and-check failed: scan-exit=1, policy=fail. Promote and smoke did not run.
+The Task discards roxctl stderr and printed "RHACS security gate rejected the image".
+Reproduced with roxctl 4.11.6 from a workstation, port-forward to svc/central, --server-name central.stackrox:
+  no CA: scan exit 1, check exit 1, "CENTRAL_SERVICE: Central certificate is not trusted"
+  ROX_CA_CERT_FILE set: scan exit 0, check exit 0, summary 0 Critical, 0 High, 2 Low, no failing policies
+API on the same digest: Scanner V4, 374 components, 244 unique CVEs: 0 Critical, 8 Important, 153 Moderate, 83 Low. None of the 8 Important is flagged by the FAIL_BUILD policy.
+The in-cluster cause is inferred from this reproduction, since the run's stderr is gone.
+Registry integration: the user disabled its TLS verification. Central logged x509 unknown authority at 15:05:43 UTC when it was on.
+Fixes proposed: box1-gitops#54 (CA and stderr), #55 (matcher memory), box1-templates#25 (base image).
+

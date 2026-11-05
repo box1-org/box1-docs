@@ -1,0 +1,48 @@
+# captured 2026-11-05 02:35 EST
+## repositories
+box1-gitops created=2026-10-24T17:12:40Z pushed=2026-11-05T07:24:43Z
+box1-templates created=2026-10-25T03:57:10Z pushed=2026-11-05T07:17:39Z
+box1-workloads-dev created=2026-10-25T18:37:09Z pushed=2026-11-05T07:11:28Z
+order-service created=2026-11-05T07:08:29Z pushed=2026-11-05T07:08:41Z
+box1-docs created=2026-10-25T17:46:35Z pushed=2026-11-05T06:44:48Z
+box1-ops-contracts created=2026-11-01T04:58:11Z pushed=2026-11-01T05:24:22Z
+quarkus-reference created=2026-10-25T02:45:57Z pushed=2026-10-27T01:16:02Z
+
+## box1-ops-order / orders-service lookups
+GraphQL: Could not resolve to a Repository with the name 'box1-org/box1-ops-order'. (repository)
+GraphQL: Could not resolve to a Repository with the name 'box1-org/orders-service'. (repository)
+
+## origin/main heads
+box1-docs c151c2ffc6b5a62c9e5a2d787acb1a2f85ba321c
+box1-ops-contracts 5d441225b8f5796f81c1d7852156e744b4f22115
+box1-gitops 3951caf9aaf7e2abe1d53e860c0c4fa25d0d6049
+box1-workloads-dev b52ec2e7d84e304e1257c5020103be8185910240
+box1-templates 003a25c777f5f5de5e2c54b993a6ab36a227691a
+quarkus-reference f0c13943454c0cec89d365b656b3ec7b25688386
+order-service fba518d8aec8982b69aad75076c780cfda030896
+
+## order-service commits
+fba518d8aec8982b69aad75076c780cfda030896 box1-developer-hub[bot] 2026-11-05T07:08:41Z Create Quarkus service from the Box1 golden path
+e076e6596175cde9ce42091b34c5e0c710b4419e box1-developer-hub[bot] 2026-11-05T07:08:32Z Initialize Box1 development onboarding
+open PRs: 0
+
+## .box1/onboarding.json
+{
+  "id": "6bf39f13-333a-4b67-9ff2-c0ff4bcc05c9",
+  "name": "order-service",
+  "namespace": "order-service-dev",
+  "owner": "user:default/mike4263",
+  "templateVersion": "1.1.0"
+}
+
+## box1-workloads-dev recent history
+b52ec2e 2026-11-05 07:11:25 +0000 box1-developer-hub[bot] Onboard order-service: promotion (#49)
+c053350 2026-11-05 07:09:12 +0000 box1-developer-hub[bot] Onboard order-service: onboarding (#48)
+9004149 2026-11-05 01:30:13 -0500 Mike Battles Merge pull request #47 from box1-org/decommission-golden-path-apps
+8b67285 2026-11-05 01:28:19 -0500 Mike Battles Decommission 17 Golden Path development services
+ebd1683 2026-11-05 06:09:13 +0000 box1-developer-hub[bot] Onboard post-show: promotion (#46)
+d9bce07 2026-11-05 06:06:54 +0000 box1-developer-hub[bot] Onboard post-show: onboarding (#45)
+
+## orders-service decommission record (box1-docs runbooks/service-decommission.md)
+70:- `orders-service` (requested commit `c511ea3`)
+76:as commit `25a3c3f62379bf28c9c33a3197aea57b013454d2`, removing all four Argo
