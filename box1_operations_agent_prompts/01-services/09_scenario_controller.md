@@ -16,7 +16,7 @@ Create a **safe demo orchestration API**, not an arbitrary command runner. Propo
 
 ## Interfaces, domain behavior and implementation constraints
 
-- Declarative catalog of named scenarios: `baseline-order`, `inventory-contention`, `broker-outage`, `erp-manual-hold`, `erp-delayed-processing`, `erp-crash-after-commit`, `erp-unavailable`, `poison-event`, `bad-artifact-gate`. Each specifies prerequisites, fixture IDs, duration, expected observation and reset action.
+- Declarative catalog of named scenarios: `baseline-order`, `inventory-contention`, `broker-outage`, `erp-manual-hold`, `erp-delayed-processing`, `erp-crash-after-commit`, `erp-unavailable`, `poison-event`, `bad-artifact-gate`. Each specifies prerequisites, fixture IDs, duration, expected observation and reset action. Telemetry load and telemetry-scoped chaos live in `05_telemetry_service.md`; this controller may call that service's control API instead of duplicating it.
 - `POST /internal/v1/scenarios/{name}/start`, `/stop`, `/reset`, `GET /internal/v1/scenarios` behind admin/operator authorization and explicit namespace/environment allowlist. No arbitrary `exec`, unvalidated shell, unrestricted Kubernetes writes or arbitrary URL fetches.
 - For P0 local tests use service-level fault toggles / injected test dependencies rather than requiring cluster-admin powers. For platform-level faults, use pre-approved minimal resource patch permission **only** after compatible support is confirmed.
 - Every start creates `scenarioRunId` and stable correlation marker; emit audit record with actor, time, environment, mode, TTL, impact and reset result.
