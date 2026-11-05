@@ -9,6 +9,8 @@ No comparison with `qwen-64k`, because no baseline exists.
 | 1 | 2026-11-05 02:40 EST | 0 exit | Repository conflicts with prompt; product or ownership decision required | `order-service` exists where the prompt proposes `box1-ops-order`. See `decisions/D-001` to `D-005`. The user answered at about 02:44 EST. |
 | 2 | 2026-11-05 America/New_York | 6 entry | Next action needs approval; product decision required | Merges and the operator install need approval, and D-016 is open. |
 
+| 3 | 2026-11-05 09:12 EST | 6 | Next action needs approval | Rollout is live, but the release smoke step needs Argo `Synced`, which needs a prune and a sync the user has not approved. |
+
 ## Repairs
 
 Found by verification (Phase 4), fixed and retested:
@@ -47,6 +49,9 @@ None in product code. One harness adjustment: the scaffold's `verify` failed loc
 10. **A chosen option can imply out-of-scope work.** The user chose a secrets integration, which D-005 described as outside this prompt, and the profile says more autonomy is not more scope. I treated the choice as direction, not as approval to install anything, and stopped for D-016.
 11. **`ci_verified` is awkward when CI covers only part of a requirement.** Most scenarios cannot run in CI. I kept those at `locally_tested` and marked only three as `ci_verified`, noting the partial coverage.
 
+12. **Changing a config value breaks the next smoke.** `configMapGenerator` hashes names, so a config change orphans the old ConfigMap. Applications have no prune, so Argo stays `OutOfSync` and the smoke task, which requires `Synced`, times out. No phase of the profile would surface this before merge. Reviewers read the task but did not connect it to the #50 change, and neither did I. **My PR description missed it.**
+13. **Copying a change into a template is not a copy.** The onboarding validator's file list and kind allowlist would have rejected #50 as written, which is the kind of constraint only reading the plugin shows.
+
 ## Places I was unsure of my authority
 
 1. **Pushing to `order-service`.** "The service repository" could cover it, since it is the only order service that exists. It is not the repo the prompt names, so I did not push. See D-001.
@@ -57,6 +62,10 @@ None in product code. One harness adjustment: the scaffold's `verify` failed loc
 5. **Blocked container cleanup.** The permission layer denied a blanket `podman rm -f` of all running containers, which could have removed containers that were not mine. I dropped it. Afterwards I removed only the two containers I had named `run11-pg` and `run11-kafka`.
 6. **Issue #11 checkboxes.** Left unticked. The tests support the behavior locally, but the code is on an unmerged branch and nothing is deployed, so ticking would read as more than the evidence shows.
 7. **Podman VM clock.** I set the local Podman VM clock from the host twice, because host sleep left it about 2 hours behind and Kafka rejected messages. I treated this as part of local testing. No restart, and no running containers were affected.
+
+8. **`box1-templates`.** Not in the original permissions. Your request to add #50 to the baseline covers branches and PRs there. Merges stay with you.
+9. **The live test order.** I treated one order through the Route as part of live acceptance. It stays in the database, since history is immutable. I did not produce fixture events to shared Kafka topics, since that needs your say.
+10. **Argo prune and `box1-kafka` sync.** Not done. Both change the cluster, and neither was approved.
 
 ## Environment findings
 
@@ -71,4 +80,5 @@ None in product code. One harness adjustment: the scaffold's `verify` failed loc
 - Local Podman pulled `postgres:15-alpine` and the Kafka Dev Services image. A pull of the RHEL PostgreSQL image failed for lack of registry login.
 - The cluster was read only, apart from CI pipeline runs that opening PRs triggered.
 - Pushed branches: `order-domain`, `order-service-v1-additions`, `order-dlq-topic`, `order-service-runtime-config`, plus this run-state branch.
-- Opened PRs: `order-service#1`, `box1-ops-contracts#3`, `box1-gitops#52`, `box1-workloads-dev#50`. Filed issue box1-docs#40 at the user's request.
+- Live: one test order, `ord_24a3627c742847c4ad6ef3670e21ea5a`, and its `order.placed.v1` event on `box1.order.events.v1`.
+- Opened PRs: `box1-templates#23`, `box1-templates#24`, `order-service#1`, `box1-ops-contracts#3`, `box1-gitops#52`, `box1-workloads-dev#50`. Filed issues box1-docs#40 and box1-docs#41 at the user's request.

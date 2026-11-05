@@ -4,7 +4,7 @@
 # Paths are in box1-org/order-service unless noted.
 - id: ORD-API-CREATE
   description: POST /api/v1/orders with Idempotency-Key atomically writes order, idempotency record and order.placed.v1 outbox row; 201 + Location on first request
-  status: locally_tested
+  status: live_verified
   implementation:
   - src/main/java/org/box1/order/OrderService.java
   - src/main/java/org/box1/order/api/OrdersResource.java
@@ -15,14 +15,14 @@
   - "./mvnw verify -Pcontainers -DskipITs=false"
   evidence:
   - evidence/04-scenarios-local.txt
-  deployment:
-    image_digest: 
-    gitops_commit: 
-  limitations:
-  - Failure scenarios need containers, so they do not run in CI (box1-quarkus-maven has no container runtime). Highest level is local until deployed.
+  - evidence/07-live.txt
+  deployment: &1
+    image_digest: sha256:fb669bff0e522c8067c4118c7ac04303a520acd67a20be85ee940d36344583fd
+    gitops_commit: 5fd61de2479b899ab4f6e9e48055c527f13ac632
+  limitations: []
 - id: ORD-API-READ
   description: GET list, GET by id and /timeline with stable pagination, timestamps, state, status reason and trace/correlation references
-  status: locally_tested
+  status: live_verified
   implementation:
   - src/main/java/org/box1/order/api/OrdersResource.java
   - src/main/java/org/box1/order/store/OrderStore.java
@@ -32,14 +32,13 @@
   - "./mvnw verify -Pcontainers -DskipITs=false"
   evidence:
   - evidence/04-scenarios-local.txt
-  deployment:
-    image_digest: 
-    gitops_commit: 
+  - evidence/07-live.txt
+  deployment: *1
   limitations:
-  - Failure scenarios need containers, so they do not run in CI (box1-quarkus-maven has no container runtime). Highest level is local until deployed.
+  - Read and timeline seen live for one order. Pagination tested locally only.
 - id: ORD-API-PROBLEM
   description: 404 and other errors are RFC 9457 Problem JSON
-  status: locally_tested
+  status: live_verified
   implementation:
   - src/main/java/org/box1/order/api/ProblemMappers.java
   - src/main/java/org/box1/order/api/OrdersResource.java
@@ -49,14 +48,12 @@
   - "./mvnw verify -Pcontainers -DskipITs=false"
   evidence:
   - evidence/04-scenarios-local.txt
-  deployment:
-    image_digest: 
-    gitops_commit: 
-  limitations:
-  - Failure scenarios need containers, so they do not run in CI (box1-quarkus-maven has no container runtime). Highest level is local until deployed.
+  - evidence/07-live.txt
+  deployment: *1
+  limitations: []
 - id: ORD-DB-SCHEMA
   description: Flyway migrations for orders, order_state_history, idempotency_records, outbox, processed_event with unique constraints and lifecycle indexes
-  status: locally_tested
+  status: deployed
   implementation:
   - src/main/resources/db/migration/V1__order_schema.sql
   tests:
@@ -65,15 +62,16 @@
   - "./mvnw verify -Pcontainers -DskipITs=false"
   evidence:
   - evidence/04-scenarios-local.txt
-  deployment:
-    image_digest: 
-    gitops_commit: 
+  - evidence/07-live.txt
+  deployment: *1
   limitations:
   - Failure scenarios need containers, so they do not run in CI (box1-quarkus-maven has no container runtime). Highest level is local until deployed.
   - Tests fixed at postgres:15-alpine locally; the deployed image is the Red Hat PostgreSQL 15 build, which needs a registry login.
+  - Code is deployed, but this behavior was not exercised on the cluster.
+  - Flyway log shows V1 applied with the deployed login.
 - id: ORD-STATE-GUARD
   description: Guarded transitions on the documented path and alternates; FULFILLMENT_REQUESTED displayable as Awaiting ERP acknowledgement
-  status: ci_verified
+  status: deployed
   implementation:
   - src/main/java/org/box1/order/domain/Transitions.java
   tests:
@@ -85,14 +83,13 @@
   evidence:
   - evidence/04-scenarios-local.txt
   - evidence/06-ci.txt
-  deployment:
-    image_digest: 
-    gitops_commit: 
+  deployment: *1
   limitations:
   - CI covers the pure state machine; event-driven behavior is locally_tested.
+  - Code is deployed, but this behavior was not exercised on the cluster.
 - id: ORD-SAGA-RESERVED
   description: inventory.reserved.v1 once per event/order links reservationId, moves to RESERVED and enqueues fulfillment.requested.v1 in one transaction
-  status: locally_tested
+  status: deployed
   implementation:
   - src/main/java/org/box1/order/OrderService.java
   - src/main/java/org/box1/order/messaging/LifecycleConsumer.java
@@ -102,15 +99,14 @@
   - "./mvnw verify -Pcontainers -DskipITs=false"
   evidence:
   - evidence/04-scenarios-local.txt
-  deployment:
-    image_digest: 
-    gitops_commit: 
+  deployment: *1
   limitations:
   - Failure scenarios need containers, so they do not run in CI (box1-quarkus-maven has no container runtime). Highest level is local until deployed.
   - Contract fixture available; inventory is out of scope, so this stays fixture-driven.
+  - Code is deployed, but this behavior was not exercised on the cluster.
 - id: ORD-SAGA-REJECTED
   description: inventory.rejected.v1 moves to REJECTED
-  status: locally_tested
+  status: deployed
   implementation:
   - src/main/java/org/box1/order/OrderService.java
   - src/main/java/org/box1/order/domain/Transitions.java
@@ -121,15 +117,14 @@
   - "./mvnw verify -Pcontainers -DskipITs=false"
   evidence:
   - evidence/04-scenarios-local.txt
-  deployment:
-    image_digest: 
-    gitops_commit: 
+  deployment: *1
   limitations:
   - Failure scenarios need containers, so they do not run in CI (box1-quarkus-maven has no container runtime). Highest level is local until deployed.
   - No schema or fixture in box1-ops-contracts at 5d44122.
+  - Code is deployed, but this behavior was not exercised on the cluster.
 - id: ORD-SAGA-SHIPPED
   description: shipment.confirmed.v1 moves to SHIPPED; COMPLETED only under an explicit completion policy
-  status: locally_tested
+  status: deployed
   implementation:
   - src/main/java/org/box1/order/OrderService.java
   - src/main/java/org/box1/order/domain/Transitions.java
@@ -140,15 +135,14 @@
   - "./mvnw verify -Pcontainers -DskipITs=false"
   evidence:
   - evidence/04-scenarios-local.txt
-  deployment:
-    image_digest: 
-    gitops_commit: 
+  deployment: *1
   limitations:
   - Failure scenarios need containers, so they do not run in CI (box1-quarkus-maven has no container runtime). Highest level is local until deployed.
   - Policy decided in D-010.
+  - Code is deployed, but this behavior was not exercised on the cluster.
 - id: ORD-SAGA-NOREGRESS
   description: Late or duplicate events never regress state
-  status: locally_tested
+  status: deployed
   implementation:
   - src/main/java/org/box1/order/domain/Transitions.java
   tests:
@@ -157,14 +151,13 @@
   - "./mvnw verify -Pcontainers -DskipITs=false"
   evidence:
   - evidence/04-scenarios-local.txt
-  deployment:
-    image_digest: 
-    gitops_commit: 
+  deployment: *1
   limitations:
   - Failure scenarios need containers, so they do not run in CI (box1-quarkus-maven has no container runtime). Highest level is local until deployed.
+  - Code is deployed, but this behavior was not exercised on the cluster.
 - id: ORD-OUTBOX-PUBLISH
   description: Restart-safe publisher with bounded batch/lease or safe claiming, backoff retries, published only after broker confirmation, key = orderId
-  status: locally_tested
+  status: live_verified
   implementation:
   - src/main/java/org/box1/order/messaging/OutboxPublisher.java
   - src/main/java/org/box1/order/store/OutboxStore.java
@@ -175,14 +168,13 @@
   - "./mvnw verify -Pcontainers -DskipITs=false"
   evidence:
   - evidence/04-scenarios-local.txt
-  deployment:
-    image_digest: 
-    gitops_commit: 
+  - evidence/07-live.txt
+  deployment: *1
   limitations:
-  - Failure scenarios need containers, so they do not run in CI (box1-quarkus-maven has no container runtime). Highest level is local until deployed.
+  - Normal publish path only. Broker outage and restart behavior is local only.
 - id: ORD-OUTBOX-METRICS
   description: box1_outbox_pending and oldest pending age metrics
-  status: locally_tested
+  status: live_verified
   implementation:
   - src/main/java/org/box1/order/OrderMetrics.java
   tests:
@@ -192,14 +184,12 @@
   - "./mvnw verify -Pcontainers -DskipITs=false"
   evidence:
   - evidence/04-scenarios-local.txt
-  deployment:
-    image_digest: 
-    gitops_commit: 
-  limitations:
-  - Failure scenarios need containers, so they do not run in CI (box1-quarkus-maven has no container runtime). Highest level is local until deployed.
+  - evidence/07-live.txt
+  deployment: *1
+  limitations: []
 - id: ORD-TRACE-PROPAGATE
   description: Valid W3C traceparent, correlationId and causationId are propagated across HTTP and events
-  status: locally_tested
+  status: live_verified
   implementation:
   - src/main/java/org/box1/order/OrderService.java
   - src/main/java/org/box1/order/messaging/LifecycleConsumer.java
@@ -210,15 +200,14 @@
   - "./mvnw verify -Pcontainers -DskipITs=false"
   evidence:
   - evidence/04-scenarios-local.txt
-  deployment:
-    image_digest: 
-    gitops_commit: 
+  - evidence/07-live.txt
+  deployment: *1
   limitations:
-  - Failure scenarios need containers, so they do not run in CI (box1-quarkus-maven has no container runtime). Highest level is local until deployed.
   - Span export is off; proven through IDs in responses, history, envelopes and logs, never in a trace backend. Tracked by D-006 and box1-docs#22.
+  - HTTP traceparent seen live in the response, timeline, log and metric exemplar. Event-consumer continuation is local only, and there is no trace backend.
 - id: ORD-LOG-JSON
   description: JSON logs carry orderId and event ID and no sensitive customer data
-  status: locally_tested
+  status: live_verified
   implementation:
   - src/main/java/org/box1/order/api/OrdersResource.java
   - src/main/java/org/box1/order/messaging/LifecycleConsumer.java
@@ -229,14 +218,12 @@
   - "./mvnw verify -Pcontainers -DskipITs=false"
   evidence:
   - evidence/04-scenarios-local.txt
-  deployment:
-    image_digest: 
-    gitops_commit: 
-  limitations:
-  - Failure scenarios need containers, so they do not run in CI (box1-quarkus-maven has no container runtime). Highest level is local until deployed.
+  - evidence/07-live.txt
+  deployment: *1
+  limitations: []
 - id: ORD-METRICS-BUSINESS
   description: 'Business meters: order age, lifecycle rates, stuck order count, outbox lag'
-  status: locally_tested
+  status: live_verified
   implementation:
   - src/main/java/org/box1/order/OrderMetrics.java
   tests:
@@ -245,14 +232,12 @@
   - "./mvnw verify -Pcontainers -DskipITs=false"
   evidence:
   - evidence/04-scenarios-local.txt
-  deployment:
-    image_digest: 
-    gitops_commit: 
-  limitations:
-  - Failure scenarios need containers, so they do not run in CI (box1-quarkus-maven has no container runtime). Highest level is local until deployed.
+  - evidence/07-live.txt
+  deployment: *1
+  limitations: []
 - id: ORD-AC-IDEMP-10X
   description: 'Issue AC 1: same key + same body 10x returns one order and one outbox event; same key + changed body returns 409'
-  status: locally_tested
+  status: live_verified
   implementation:
   - src/main/java/org/box1/order/OrderService.java
   tests:
@@ -261,14 +246,12 @@
   - "./mvnw verify -Pcontainers -DskipITs=false"
   evidence:
   - evidence/04-scenarios-local.txt
-  deployment:
-    image_digest: 
-    gitops_commit: 
-  limitations:
-  - Failure scenarios need containers, so they do not run in CI (box1-quarkus-maven has no container runtime). Highest level is local until deployed.
+  - evidence/07-live.txt
+  deployment: *1
+  limitations: []
 - id: ORD-AC-CONCURRENT
   description: 'Issue AC 2: concurrent duplicate POSTs, including at the transaction boundary, return one persisted aggregate'
-  status: locally_tested
+  status: deployed
   implementation:
   - src/main/java/org/box1/order/OrderService.java
   - src/main/java/org/box1/order/store/OrderStore.java
@@ -278,14 +261,13 @@
   - "./mvnw verify -Pcontainers -DskipITs=false"
   evidence:
   - evidence/04-scenarios-local.txt
-  deployment:
-    image_digest: 
-    gitops_commit: 
+  deployment: *1
   limitations:
   - Failure scenarios need containers, so they do not run in CI (box1-quarkus-maven has no container runtime). Highest level is local until deployed.
+  - Code is deployed, but this behavior was not exercised on the cluster.
 - id: ORD-AC-KAFKA-FAIL
   description: 'Issue AC 3: Kafka failure after commit leaves an unpublished outbox record; recovery emits once logically; consumers remain idempotent'
-  status: locally_tested
+  status: deployed
   implementation:
   - src/main/java/org/box1/order/messaging/OutboxPublisher.java
   tests:
@@ -294,14 +276,13 @@
   - "./mvnw verify -Pcontainers -DskipITs=false"
   evidence:
   - evidence/04-scenarios-local.txt
-  deployment:
-    image_digest: 
-    gitops_commit: 
+  deployment: *1
   limitations:
   - Failure scenarios need containers, so they do not run in CI (box1-quarkus-maven has no container runtime). Highest level is local until deployed.
+  - Code is deployed, but this behavior was not exercised on the cluster.
 - id: ORD-AC-REDELIVERY
   description: 'Issue AC 4: redelivery/out-of-order events do not duplicate fulfillment requests or regress status; timeline ordered and attributable'
-  status: locally_tested
+  status: deployed
   implementation:
   - src/main/java/org/box1/order/OrderService.java
   tests:
@@ -310,14 +291,13 @@
   - "./mvnw verify -Pcontainers -DskipITs=false"
   evidence:
   - evidence/04-scenarios-local.txt
-  deployment:
-    image_digest: 
-    gitops_commit: 
+  deployment: *1
   limitations:
   - Failure scenarios need containers, so they do not run in CI (box1-quarkus-maven has no container runtime). Highest level is local until deployed.
+  - Code is deployed, but this behavior was not exercised on the cluster.
 - id: ORD-AC-LOCAL-OPS
   description: 'Issue AC 5: OpenAPI examples, DB migrations, readiness failing when DB is unavailable, metrics inspectable locally'
-  status: locally_tested
+  status: deployed
   implementation:
   - src/main/java/org/box1/order/DatabaseReadinessCheck.java
   - src/main/java/org/box1/order/OrderMetrics.java
@@ -330,14 +310,13 @@
   - "./mvnw verify -Pcontainers -DskipITs=false"
   evidence:
   - evidence/04-scenarios-local.txt
-  deployment:
-    image_digest: 
-    gitops_commit: 
+  deployment: *1
   limitations:
   - Failure scenarios need containers, so they do not run in CI (box1-quarkus-maven has no container runtime). Highest level is local until deployed.
+  - Code is deployed, but this behavior was not exercised on the cluster.
 - id: ORD-VS-ROLLBACK
   description: 'Scenario: rollback during create'
-  status: locally_tested
+  status: deployed
   implementation:
   - src/main/java/org/box1/order/OrderService.java
   tests:
@@ -346,14 +325,13 @@
   - "./mvnw verify -Pcontainers -DskipITs=false"
   evidence:
   - evidence/04-scenarios-local.txt
-  deployment:
-    image_digest: 
-    gitops_commit: 
+  deployment: *1
   limitations:
   - Failure scenarios need containers, so they do not run in CI (box1-quarkus-maven has no container runtime). Highest level is local until deployed.
+  - Code is deployed, but this behavior was not exercised on the cluster.
 - id: ORD-VS-PUB-RESTART
   description: 'Scenario: publisher restart while claiming'
-  status: locally_tested
+  status: deployed
   implementation:
   - src/main/java/org/box1/order/store/OutboxStore.java
   tests:
@@ -363,14 +341,13 @@
   - "./mvnw verify -Pcontainers -DskipITs=false"
   evidence:
   - evidence/04-scenarios-local.txt
-  deployment:
-    image_digest: 
-    gitops_commit: 
+  deployment: *1
   limitations:
   - Failure scenarios need containers, so they do not run in CI (box1-quarkus-maven has no container runtime). Highest level is local until deployed.
+  - Code is deployed, but this behavior was not exercised on the cluster.
 - id: ORD-VS-MALFORMED
   description: 'Scenario: malformed envelopes'
-  status: locally_tested
+  status: deployed
   implementation:
   - src/main/java/org/box1/order/messaging/EventParser.java
   tests:
@@ -380,14 +357,13 @@
   - "./mvnw verify -Pcontainers -DskipITs=false"
   evidence:
   - evidence/04-scenarios-local.txt
-  deployment:
-    image_digest: 
-    gitops_commit: 
+  deployment: *1
   limitations:
   - Failure scenarios need containers, so they do not run in CI (box1-quarkus-maven has no container runtime). Highest level is local until deployed.
+  - Code is deployed, but this behavior was not exercised on the cluster.
 - id: ORD-VS-DLQ
   description: 'Scenario: retry exhaustion to the dead-letter path'
-  status: locally_tested
+  status: deployed
   implementation:
   - src/main/java/org/box1/order/messaging/LifecycleConsumer.java
   tests:
@@ -396,16 +372,15 @@
   - "./mvnw verify -Pcontainers -DskipITs=false"
   evidence:
   - evidence/04-scenarios-local.txt
-  deployment:
-    image_digest: 
-    gitops_commit: 
+  deployment: *1
   limitations:
   - Failure scenarios need containers, so they do not run in CI (box1-quarkus-maven has no container runtime). Highest level is local until deployed.
   - Replay covered by a test that re-produces the record. The runbook commands ran against a local broker only. Consumer retries in that test use a short backoff.
   - No dead-letter topic exists on the cluster until box1-gitops#52 merges and syncs.
+  - Code is deployed, but this behavior was not exercised on the cluster.
 - id: ORD-VS-DUP-FULFILL
   description: 'Scenario: duplicate fulfillment requests'
-  status: locally_tested
+  status: deployed
   implementation:
   - src/main/java/org/box1/order/OrderService.java
   tests:
@@ -415,14 +390,13 @@
   - "./mvnw verify -Pcontainers -DskipITs=false"
   evidence:
   - evidence/04-scenarios-local.txt
-  deployment:
-    image_digest: 
-    gitops_commit: 
+  deployment: *1
   limitations:
   - Failure scenarios need containers, so they do not run in CI (box1-quarkus-maven has no container runtime). Highest level is local until deployed.
+  - Code is deployed, but this behavior was not exercised on the cluster.
 - id: ORD-VS-MIGRATION-RERUN
   description: 'Scenario: migration rerun'
-  status: locally_tested
+  status: deployed
   implementation:
   - src/main/resources/db/migration/V1__order_schema.sql
   tests:
@@ -431,15 +405,14 @@
   - "./mvnw verify -Pcontainers -DskipITs=false"
   evidence:
   - evidence/04-scenarios-local.txt
-  deployment:
-    image_digest: 
-    gitops_commit: 
+  deployment: *1
   limitations:
   - Failure scenarios need containers, so they do not run in CI (box1-quarkus-maven has no container runtime). Highest level is local until deployed.
   - Tests fixed at postgres:15-alpine locally; the deployed image is the Red Hat PostgreSQL 15 build, which needs a registry login.
+  - Code is deployed, but this behavior was not exercised on the cluster.
 - id: ORD-VS-RESTART-MSG
   description: 'Scenario: restart during message processing'
-  status: locally_tested
+  status: deployed
   implementation:
   - src/main/java/org/box1/order/messaging/LifecycleConsumer.java
   tests:
@@ -448,14 +421,13 @@
   - "./mvnw verify -Pcontainers -DskipITs=false"
   evidence:
   - evidence/04-scenarios-local.txt
-  deployment:
-    image_digest: 
-    gitops_commit: 
+  deployment: *1
   limitations:
   - Failure scenarios need containers, so they do not run in CI (box1-quarkus-maven has no container runtime). Highest level is local until deployed.
+  - Code is deployed, but this behavior was not exercised on the cluster.
 - id: ORD-VS-AUTHZ
   description: 'Scenario: unauthorized access to internal endpoints'
-  status: locally_tested
+  status: deployed
   implementation:
   - src/main/java/org/box1/order/api/OrdersResource.java
   tests:
@@ -464,15 +436,14 @@
   - "./mvnw verify -Pcontainers -DskipITs=false"
   evidence:
   - evidence/04-scenarios-local.txt
-  deployment:
-    image_digest: 
-    gitops_commit: 
+  deployment: *1
   limitations:
   - Failure scenarios need containers, so they do not run in CI (box1-quarkus-maven has no container runtime). Highest level is local until deployed.
   - 'By D-003 the API has no authentication and no internal endpoints exist. Provable only as: representative internal paths return 404. Access control is tracked in box1-docs#40.'
+  - Code is deployed, but this behavior was not exercised on the cluster.
 - id: ORD-VS-PII
   description: 'Scenario: customer data in logs or events'
-  status: locally_tested
+  status: live_verified
   implementation:
   - src/main/java/org/box1/order/messaging/EventFactory.java
   tests:
@@ -482,14 +453,13 @@
   - "./mvnw verify -Pcontainers -DskipITs=false"
   evidence:
   - evidence/04-scenarios-local.txt
-  deployment:
-    image_digest: 
-    gitops_commit: 
+  - evidence/07-live.txt
+  deployment: *1
   limitations:
-  - Failure scenarios need containers, so they do not run in CI (box1-quarkus-maven has no container runtime). Highest level is local until deployed.
+  - Live log search covered this order only; no customer ID or key found. Consumer paths local only.
 - id: ORD-CONTRACT-OPENAPI
   description: OpenAPI covers the prompt and examples validate against box1-ops-contracts
-  status: ci_verified
+  status: deployed
   implementation:
   - src/main/java/org/box1/order/api/OrdersResource.java
   tests:
@@ -500,14 +470,13 @@
   evidence:
   - evidence/04-scenarios-local.txt
   - evidence/06-ci.txt
-  deployment:
-    image_digest: 
-    gitops_commit: 
+  deployment: *1
   limitations:
   - Contract fix is in box1-ops-contracts#3, not merged; tests pin its head commit.
+  - Code is deployed, but this behavior was not exercised on the cluster.
 - id: ORD-CONTRACT-EVENTS
   description: Event schemas and fixtures cover every event this service produces or consumes
-  status: ci_verified
+  status: deployed
   implementation:
   - src/main/java/org/box1/order/messaging/EventParser.java
   - src/main/java/org/box1/order/messaging/EventFactory.java
@@ -519,14 +488,13 @@
   evidence:
   - evidence/04-scenarios-local.txt
   - evidence/06-ci.txt
-  deployment:
-    image_digest: 
-    gitops_commit: 
+  deployment: *1
   limitations:
   - Contract fix is in box1-ops-contracts#3, not merged; tests pin its head commit.
+  - Code is deployed, but this behavior was not exercised on the cluster.
 - id: ORD-DOCS
   description: README, docs/architecture.md, docs/runbook.md, config documentation and Developer Hub metadata
-  status: implemented
+  status: deployed
   implementation:
   - README.md
   - docs/architecture.md
@@ -536,36 +504,32 @@
   tests: []
   commands: []
   evidence: []
-  deployment:
-    image_digest: 
-    gitops_commit: 
+  deployment: *1
   limitations: []
 - id: ORD-OPS-RESOURCES
   description: Measured request/limit proposal and security boundaries recorded
-  status: implemented
+  status: deployed
   implementation:
   - box1-workloads-dev workloads/order-service
   tests: []
   commands: []
   evidence:
   - evidence/05-resource-sample.txt
-  deployment:
-    image_digest: 
-    gitops_commit: 
+  - evidence/07-live.txt
+  deployment: *1
   limitations:
-  - Sample is one workstation run at about 5 POST/s for 60 s, not a cluster measurement.
+  - 'Cluster sample: 195 MiB just after start. Load on the cluster not measured.'
 - id: ORD-DELIVERY-GITOPS
   description: Immutable image, promotion PR for this service only, Argo reports the expected revision, pod runs the digest
-  status: blocked
+  status: deployed
   implementation: []
   tests: []
   commands: []
-  evidence: []
-  deployment:
-    image_digest: 
-    gitops_commit: 
+  evidence:
+  - evidence/07-live.txt
+  deployment: *1
   limitations:
-  - 'Blocked on D-016 and merge approvals. PRs are open: order-service#1, box1-workloads-dev#50, box1-gitops#52, box1-ops-contracts#3.'
+  - Pod runs the promoted digest at source 749ef13. Argo reports OutOfSync because an old hash-named ConfigMap needs pruning, so the release smoke step had not passed when recorded. Release reviewer pass not yet run.
 - id: ORD-LIVE-LIFECYCLE
   description: One order lifecycle followed through logs, metrics, traces and timeline as far as deployed dependencies allow
   status: blocked
@@ -577,7 +541,7 @@
     image_digest: 
     gitops_commit: 
   limitations:
-  - Blocked behind ORD-DELIVERY-GITOPS. No trace backend or user workload monitoring is installed; see D-006.
+  - 'Partial: create, publish, logs, metrics and timeline seen live at SUBMITTED. Later states need inventory and fulfillment events, and none are deployed. No fixture events were sent to shared topics. No trace backend or user workload monitoring exists; see D-006.'
 - id: ORD-GUARD-DEMO
   description: Do not overwrite the validated orders-service example; promotion leaves orders-service unchanged
   status: superseded

@@ -1,8 +1,8 @@
 # Checkpoint: box1-docs#11 Service 01, frontier profile
 
 **Updated:** 2026-11-05 America/New_York
-**Current phase:** stopped at the entry to Phase 6. Phases 0 to 5 have exited, except the Release pass, which needs a deployment.
-**Stop reason:** the next actions need approval (operator install, merges) and D-016 is open.
+**Current phase:** 7, partially complete. The code is live, but acceptance is limited, the release smoke is at risk, and the Release pass has not run.
+**Stop reason:** two cluster actions need approval. See the exact next action.
 
 ## Branches and PRs
 
@@ -13,7 +13,7 @@
 | `box1-gitops` | `order-dlq-topic` | `fe11b0f` | [#52](https://github.com/box1-org/box1-gitops/pull/52) | Pass |
 | `box1-workloads-dev` | `order-service-runtime-config` | `de4a218` | [#50](https://github.com/box1-org/box1-workloads-dev/pull/50) | Pass |
 
-Nothing is merged. Nothing changed on the cluster. The deployed service is still the scaffold.
+All four are merged by the user. Deployed: digest `sha256:fb669bff…83fd`, source `749ef13`. New and open: `box1-templates#23` then `#24`, branches `onboarding-postgres-networkpolicy` and `workload-runtime-baseline`, porting #50 into the template.
 
 Local paths: `order-service`, `run11-contracts`, `run11-workloads`, `run11-gitops`, `box1-docs-agent-run-11`.
 
@@ -44,11 +44,11 @@ Open from review:
 
 ## Open risks
 
-- The live database credential (D-005, D-016). Specifics are withheld because this repository is public.
-- Merging `order-service#1` deploys automatically, and unauthenticated order data then becomes reachable on the LAN (box1-docs#40).
-- The release pipeline runs with `security-gates: disabled`.
-- Failure scenarios do not run in CI. A later change could break them with CI still green.
-- Smoke, Flyway with the deployed login and the `/tmp` limit are unproven against this image.
+- **Smoke will likely time out.** Argo is `OutOfSync` because `order-service-config-29d2hgcc29` requires pruning. The release pipeline's smoke task needs `Synced`, with a 900 s limit. The deployment itself is healthy.
+- **No dead-letter topic.** `box1-kafka` is `OutOfSync`, because `box1-gitops#52` is merged but not synced. A poison event could auto-create the topic with default retention. If that fails, the pod restarts.
+- **Live database credential** (D-005, box1-docs#41). Specifics withheld, since this repository is public. The NetworkPolicy now limits access to it.
+- Order data is readable on the LAN without credentials (box1-docs#40).
+- The consumer path, outage handling and restart behavior are proven locally only.
 - The prompt still names `box1-ops-order` and `orders-service`.
 
 ## Resume notes
@@ -65,4 +65,4 @@ Re-verify the baseline before relying on it.
 
 ## Exact next action
 
-Get the user's answer to D-016. If approved, open a `box1-gitops` PR installing the chosen operator, stating what merging deploys. Then follow the order in `handoff.md`.
+With user approval: sync `box1-kafka`, and prune the orphan ConfigMap through Argo. Confirm `Synced`, check the release pipeline's smoke result (rerun if it timed out), then run the Release reviewer pass. Propose `IgnoreExtraneous` on generated ConfigMaps so later config changes do not repeat this.

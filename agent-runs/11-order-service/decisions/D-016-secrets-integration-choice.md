@@ -1,6 +1,6 @@
 # D-016 Which secrets integration
 
-**Status:** open, user decision. Blocks Phase 6. The user chose to add a secrets integration first (D-005, option B). Installing an operator is shared infrastructure, so it needs separate approval as a GitOps PR.
+**Status:** resolved 2026-11-05 by the user: install Vault, later, tracked in box1-docs#41. The recommendation below was not taken. The user merged the service before this work, so the deployed database still uses the credential described in D-005.
 
 **Observed in the cluster's catalogs:**
 

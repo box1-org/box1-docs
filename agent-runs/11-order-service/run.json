@@ -1,12 +1,10 @@
 {
   "issue": "box1-org/box1-docs#11",
   "profile": "frontier",
-  "current_phase": 6,
-  "phase_state": "stopped_at_phase_6_entry_for_approvals",
-  "updated_at": "2026-11-05T06:55:00-05:00",
-  "open_decisions": [
-    "D-016"
-  ],
+  "current_phase": 7,
+  "phase_state": "rollout_live_awaiting_sync_and_prune_approval",
+  "updated_at": "2026-11-05T09:15:00-05:00",
+  "open_decisions": [],
   "repositories": {
     "box1-docs": {
       "branch": "agent-run/11-order-service",
@@ -42,6 +40,14 @@
       "run_branch": "order-service-runtime-config",
       "commit": "de4a2188df4db36235c662172d3f03ab7f32cc2e",
       "pr": 50
+    },
+    "box1-templates": {
+      "role": "template baseline",
+      "run_branch": "workload-runtime-baseline",
+      "prs": [
+        23,
+        24
+      ]
     }
   }
 }
