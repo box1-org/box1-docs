@@ -94,7 +94,18 @@ onboarding operation is active.
    entity/location verification in the achievement log. If policy blocks
    deletion, archive the repository and leave the source URL in the exception
    record instead of claiming deletion.
-5. Search `box1-gitops`, `box1-workloads-dev`, `box1-templates`, and
+5. Remove CI leftovers from `box1-ci`: the service's image stream, and its
+   PipelineRuns, including the `onb-<service>-*` onboarding runs and any
+   manually created runs:
+
+   ```sh
+   kubectl -n box1-ci delete imagestream <service> --ignore-not-found
+   kubectl -n box1-ci delete pipelineruns -l backstage.io/kubernetes-id=<service>
+   ```
+
+   Also delete any `<run>-git` secrets those runs left behind. Deleting the
+   image stream removes the last in-cluster reference to the built images.
+6. Search `box1-gitops`, `box1-workloads-dev`, `box1-templates`, and
    `box1-docs` for the service name. Remove operational links and live-check
    scripts, but retain historical evidence with a clear `retired` label and a
    link to this runbook.
@@ -154,9 +165,15 @@ Removed: `atrioc-service`, `blue-wave`, `bypass-service`, `ds9`, `enterprise`,
 - **After removal:** `quarkus-reference` and `box1-workloads-dev` are `Synced` and
   `Healthy`, and the `quarkus-reference` health endpoint and the Hub return 200.
 
-Not removed, because they were outside this cleanup's request: 12 image streams
-in `box1-ci` named after retired services, and the `atrioc-*` PipelineRuns and
-their `-git` secrets in `box1-ci`.
+CI leftovers were removed the same night: 12 image streams, 21 PipelineRuns (with
+their TaskRuns and Pods) and 4 `atrioc-observe-*-git` secrets in `box1-ci`. The
+image streams for the October services (`football-service`, `orders-service`,
+`shipping-service`, `quarkus-golden-path-smoke`) were left in place.
+
+**Update on the 2026-10-26 execution above:** on 2026-11-05 those four
+repositories returned 404, their namespaces were absent, and the catalog held
+no entries or locations for them. When and by whom they were removed is not
+recorded here.
 
 The onboarding plugin is not re-tested by this cleanup. Service names in earlier
 achievement logs are historical; those repositories no longer exist.
