@@ -1,24 +1,23 @@
-# captured 2026-11-05 06:34 EST, commit 764ada1bb8b49ce76a60714901a8ba7f9333d6af
+# captured 2026-11-05 06:51 EST, commit 078f341e9014a38daf826719cf67b5bf8f4fc6bd
 # ./mvnw clean verify -Pcontainers -DskipITs=false (Podman; postgres:15-alpine, apache/kafka:4.2.0)
-[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.369 s -- in org.box1.GreetingResourceTest
-[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.349 s -- in org.box1.order.ContractTest
-[INFO] Tests run: 14, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.331 s -- in org.box1.order.ApiScenariosTest
-[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.115 s -- in org.box1.order.MigrationTest
-[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 38.42 s -- in org.box1.order.OutboxScenariosTest
-[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 28.56 s -- in org.box1.order.SagaScenariosTest
-[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.470 s -- in org.box1.order.DatabaseDownTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.348 s -- in org.box1.GreetingResourceTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.354 s -- in org.box1.order.ContractTest
+[INFO] Tests run: 15, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.544 s -- in org.box1.order.ApiScenariosTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.126 s -- in org.box1.order.MigrationTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 37.91 s -- in org.box1.order.OutboxScenariosTest
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 31.89 s -- in org.box1.order.SagaScenariosTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.455 s -- in org.box1.order.DatabaseDownTest
 [INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in org.box1.GreetingServiceTest
-[INFO] Tests run: 15, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.016 s -- in org.box1.order.TransitionsTest
-[INFO] Tests run: 60, Failures: 0, Errors: 0, Skipped: 0
-[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.085 s -- in org.box1.GreetingResourceIT
-[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 148.1 s -- in org.box1.order.ProcessRestartIT
+[INFO] Tests run: 16, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.039 s -- in org.box1.order.TransitionsTest
+[INFO] Tests run: 64, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.018 s -- in org.box1.GreetingResourceIT
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 110.7 s -- in org.box1.order.ProcessRestartIT
 [INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0
 [INFO] BugInstance size is 0
 [INFO] Error size is 0
 [INFO] BUILD SUCCESS
 
-# Passed tests by class
-ApiScenariosTest 14 tests 0 failures 0 errors
+ApiScenariosTest 15 tests 0 failures 0 errors
    formattingDoesNotChangeTheFingerprint
    readinessIncludesTheDatabase
    tenIdenticalPostsMakeOneOrderAndOneOutboxEvent
@@ -30,6 +29,7 @@ ApiScenariosTest 14 tests 0 failures 0 errors
    sameKeyWithChangedBodyConflicts
    concurrentDuplicatesPersistOneAggregate
    paginationIsStableWhileOrdersArrive
+   firstResponseAndLaterReadsCarryTheSameTimestamps
    scopesSeparateKeys
    validationAndMissingResourcesReturnProblems
    internalPathsDoNotExist
@@ -52,17 +52,20 @@ OutboxScenariosTest 6 tests 0 failures 0 errors
    expiredLeaseIsReclaimedAndLiveLeaseIsNot
    brokerOutageKeepsOrdersAndRecoversOnce
    publishesCommittedOrderKeyedByOrderId
-SagaScenariosTest 8 tests 0 failures 0 errors
+SagaScenariosTest 10 tests 0 failures 0 errors
    retryExhaustionDeadLettersAndReplayRecovers
    reservedThenShippedFollowsTheLifecycle
    redeliveryDoesNotDuplicateFulfillmentOrHistory
    customerDataStaysOutOfLogsAndLaterEvents
    historyIsImmutable
    eventsAfterTerminalStatesOnlyAddNotes
+   reservationForDifferentContentNeedsReconciliationAndRequestsNothing
    malformedAndUnknownEventsGoToTheDeadLetterTopicAndDoNotStopConsumption
    outOfOrderShipmentMovesToExceptionAndLateEventsDoNotRegress
-TransitionsTest 15 tests 0 failures 0 errors
+   replayedReservationPastItsExpiryRequestsNothing
+TransitionsTest 16 tests 0 failures 0 errors
    shipmentBeforeReservationNeedsReconciliation
+   reservationThatDiffersOrHasExpiredNeedsReconciliation
    reservedRequestsFulfillmentOnce
    expiredReservationAfterFulfillmentNeedsReconciliation
    mismatchedIdentifiersCannotMoveAnOrder
