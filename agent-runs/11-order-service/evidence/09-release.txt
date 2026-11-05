@@ -81,3 +81,10 @@ ACS: GET /v1/images/<digest> returns the scan, 374 components, Scanner V4, scan 
 TPA: GET /api/v3/sbom/urn:uuid:01a1ac65-2639-746a-be44-fca05f91373a returns 387 packages with digest, source and pipeline labels.
 Task reports in /reports: emptyDir, discarded with the pod.
 Service PR: order-service#4 was opened for the OpenAPI, Location, smoke and runbook findings. inventory-service was onboarded by the user at 16:00 UTC, which moved the workloads revision to d67e0b9 and then 30c6c2d. order-service's digest did not change.
+
+# Release from order-service#4 did not start, 2026-11-05 UTC
+16:16:12 order-service-release-9kb6b created for 0920f9a as PipelineRunPending.
+16:16:13 Pipelines as Code: PATCH check-runs/127368157188 returned 404, then "resource name may not be empty". The run never reached the queue. Check run: failure, "pipelinerun start failure".
+Deployed is still 4ec33fb, sha256:513c366d...b65d. The order-service#4 changes are not live.
+16:26 /retest commit comment was received as retest-all-comment, then failed: "unexpected status code: 404 Not Found" after "Using PipelineRun definition from default_branch". So /retest did not work for a push on this setup, though earlier messages offered it as an option.
+Cancelling the orphaned run was denied by the permission layer. It remains Pending. Whether it would start after a watcher restart was not established.

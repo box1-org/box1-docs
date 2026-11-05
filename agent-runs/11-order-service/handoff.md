@@ -30,10 +30,10 @@
 
 ## Next agent session
 
-**Next smallest slice:** see the exact next action in `checkpoint.md`: merge `order-service#4` and follow its release.
+**Next smallest slice:** see the exact next action in `checkpoint.md`: restart the release from `order-service#4`, verify it, close box1-docs#11.
 
 - Exact files to read: `checkpoint.md`, `decisions/D-016-secrets-integration-choice.md`, `requirements.yaml`, the prompt and profile from `box1-docs` `origin/main`.
-- Blockers and required user decisions: merge `order-service#4`; timeline `sequence`. Tracked: box1-docs#40, #41, #42, #43, #44.
+- Blockers and required user decisions: cancel `order-service-release-9kb6b`; a new commit on `main`; merge `box1-ops-contracts#4`. Tracked: box1-docs#40, #41, #42, #43, #44.
 
 ## Run state
 
@@ -69,5 +69,5 @@ gitops_commit: 9293ad899a3b0fe26ba55b39cbc243de35db6387
 review_passes_completed: [architecture, persistence, messaging, security, operations, release]
 open_decisions: []
 rollback_state: revert restores fb669bff, which fails the gate policy; not exercised; V1 stays applied
-next_action: Merge order-service#4, follow the gated release
+next_action: Cancel the orphaned run, push a commit to start the release, verify, close box1-docs#11
 ```

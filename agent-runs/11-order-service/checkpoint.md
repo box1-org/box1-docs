@@ -2,7 +2,7 @@
 
 **Updated:** 2026-11-05 America/New_York
 **Current phase:** 7. The code is live and the Release pass ran. Acceptance is partial.
-**Stop reason:** `order-service#4` needs a merge. See the exact next action.
+**Stop reason:** the release from `order-service#4` did not start. See the exact next action.
 
 ## Branches and PRs
 
@@ -66,10 +66,12 @@ Re-verify the baseline before relying on it.
 
 ## Exact next action
 
-The gated release is live: `order-service-release-jn4rl`, source `4ec33fb`, digest `sha256:513c366d...b65d`. A TaskRun showed the gate rejecting `fb669bff`. See `evidence/09-release.txt`.
+`order-service#4` is merged but not deployed. `order-service-release-9kb6b` never started, because Pipelines as Code got a 404 from GitHub, and `/retest` also failed. See `evidence/09-release.txt`.
 
-1. The user merges `order-service#4`, which starts a release with `gate`.
-2. Follow the release, and confirm `order-api-smoke`, the served OpenAPI and a relative `Location`.
-3. The user decides whether timeline `sequence` is global or per order.
+Waiting on the user, each needing their approval:
 
-Gate auditability and bypass are in box1-docs#42. Acceptance stays partial: `ORD-LIVE-LIFECYCLE` is blocked, and consumer, outage and restart behavior are proven locally only.
+1. Cancel the orphaned `order-service-release-9kb6b`. The permission layer denied this for the agent.
+2. Push a new commit to `order-service` `main`, or approve the agent doing it, to start a release.
+3. Merge `box1-ops-contracts#4` (timeline `sequence` is global, decided by the user).
+
+Then confirm `order-api-smoke`, the served OpenAPI and a relative `Location`, update the ledger and close box1-docs#11. The user asked to close it. Its follow-ups are box1-docs#40, #41, #42, #43, #44.

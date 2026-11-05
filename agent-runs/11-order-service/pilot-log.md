@@ -81,6 +81,9 @@ None in product code. One harness adjustment: the scaffold's `verify` failed loc
 
 20. **Negative test design.** I had described a throwaway branch or pipeline. A release branch cannot trigger the pipeline, and any pipeline with promote carries a real risk if the gate fails open. The user approved the test, and I ran the Task alone, which removes that risk but proves less about the pipeline. Stated in the evidence.
 
+21. **Denied cancel.** I tried to cancel the orphaned `order-service-release-9kb6b`, in one command with a `/retest` comment. The permission layer denied it as interfering with a workload. I did not retry the cancel, and posted the comment alone as a separate action. It failed too. Asked the user.
+22. **A second commit to `main`.** The user approved one empty commit earlier. That approval does not extend to another, so I asked.
+
 ## Environment findings
 
 - The Mac slept repeatedly during unattended runs (pmset log), despite `caffeinate -i`. 60-second waits took over 1,000 seconds. Long runs on a laptop need the lid open and a clock check first.
