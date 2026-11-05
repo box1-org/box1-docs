@@ -65,4 +65,4 @@ Re-verify the baseline before relying on it.
 
 ## Exact next action
 
-With user approval: sync `box1-kafka`, and prune the orphan ConfigMap through Argo. Confirm `Synced`, rerun the release so promote and smoke pass, then run the Release reviewer pass. The permanent fix is box1-docs#42.
+The release with `gate` failed (`order-service-release-796ds`). See `evidence/08-security-availability.txt`. Two blockers need user approval: restore the NooBaa backing store, and give ACS access to the internal registry. Then re-trigger the release. `gate` is on `main`, so no `order-service` release can promote until both are fixed.

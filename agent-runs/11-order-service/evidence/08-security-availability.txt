@@ -1,0 +1,33 @@
+# captured 2026-11-05 09:29 EST. Read-only probes; credentials not printed. Release order-service-release-796ds failed in security.
+
+## Release failure
+step-sbom-and-rhtpa: POST /api/v3/sbom -> HTTP 500
+TPA server log: storage error: backend error: unhandled error (InvalidBucketState)
+step-rhacs-scan-and-check and step-evidence: skipped
+
+## TPA
+GET / 200; GET /.well-known/trustify 200; GET /api/v3/sbom?limit=1 without token 401, with CI token 200
+Keycloak token for rhtpa-ci: 200
+GET /api/v3/importer and /api/v3/advisory with CI token: 403, not investigated (CI client's scope)
+SBOM write: fails
+
+## NooBaa
+system phase Ready, Degraded False
+backingstore noobaa-default-backing-store: Rejected, mode ALL_NODES_OFFLINE since 2026-11-01 04:11:02 UTC
+agent pod: Failed/Evicted, node low on ephemeral-storage. Not recreated since.
+PV and PVC: Bound, lvms-vg1, 50Gi. OBC rhtpa-documents: Bound.
+Node DiskPressure now False, since 2026-10-31 23:58 EDT
+Pods in ContainerStatusUnknown cluster-wide: 15
+
+## ACS
+Central 4.11.6, /v1/ping 200, CI token valid until 2027-10-31, role Continuous Integration
+POST /v1/images/scan and /v1/detect/build on the deployed digest: HTTP 500
+  no matching image registries found: please add an image integration for image-registry.openshift-image-registry.svc:5000
+scanner-v4-matcher: 664 restarts, last OOMKilled 2026-11-05 14:20:10 UTC, limit 1 CPU, 3Gi; 991m CPU in use at sample
+scanner-v4-indexer: 576 restarts, last Error exit 1 on 2026-11-04 04:00:18 UTC
+
+## Gate behavior from task source
+sbom-and-rhtpa raises on any upload failure in observe and gate alike.
+
+## Service
+Still running source 749ef13, which has not passed the security gates or smoke.

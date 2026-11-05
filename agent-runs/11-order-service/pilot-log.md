@@ -11,6 +11,8 @@ No comparison with `qwen-64k`, because no baseline exists.
 
 | 3 | 2026-11-05 09:12 EST | 6 | Next action needs approval | Rollout is live, but the release smoke step needs Argo `Synced`, which needs a prune and a sync the user has not approved. |
 
+| 4 | 2026-11-05 09:29 EST | 6 | Required dependency unavailable | TPA object storage is down and ACS cannot read the internal registry, so `gate` blocks every release. |
+
 ## Repairs
 
 Found by verification (Phase 4), fixed and retested:
@@ -51,6 +53,8 @@ None in product code. One harness adjustment: the scaffold's `verify` failed loc
 
 12. **Changing a config value breaks the next smoke.** `configMapGenerator` hashes names, so a config change orphans the old ConfigMap. Applications have no prune, so Argo stays `OutOfSync`. Promote then fails at its 300 s wait, before smoke even runs. I first predicted smoke would be what failed; the run showed it was promote. No phase of the profile would surface this before merge. Reviewers read the task but did not connect it to the #50 change, and neither did I. **My PR description missed it.**
 13. **Copying a change into a template is not a copy.** The onboarding validator's file list and kind allowlist would have rejected #50 as written, which is the kind of constraint only reading the plugin shows.
+
+14. **My pre-merge check of the gate was too shallow.** I reported the ACS pods running and TPA answering 200, which proved neither could do the pipeline's work. Pod status and a health URL are not a functional check. NooBaa itself reported `Ready` while its only backing store had been offline for days. Discovery should exercise the write path of any dependency a gate needs.
 
 ## Places I was unsure of my authority
 
