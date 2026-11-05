@@ -2,7 +2,7 @@
 
 Use this runbook to release, verify, or roll back the Developer Hub onboarding plugin, and to rotate its registry credential.
 
-**Status, 2026-11-05 (America/New_York): not yet exercised on the cluster.** Tracked in [box1-docs#34](https://github.com/box1-org/box1-docs/issues/34). The procedures below are untested until that issue records the results. Until the cutover merges, the source-copy path in [rhdh-onboarding-refactor.md](rhdh-onboarding-refactor.md) remains the live one.
+Evidence is in [box1-docs#34](https://github.com/box1-org/box1-docs/issues/34). On 2026-11-05 (America/New_York), release, cold install on the existing PVC, warm restart, upgrade, digest rollback, and end-to-end onboarding were each run once on the cluster. **Not tested:** an install on an empty PVC, and credential rotation.
 
 ## How delivery works
 
@@ -21,7 +21,7 @@ CI builds the image and opens a GitOps PR. It never changes the cluster. The `de
 
 ## Release
 
-1. Merge the plugin change to `box1-templates` `main`, with `version` in `plugins/box1-onboarding/package.json` raised. PR checks build and inspect the image.
+1. Merge the plugin change to `box1-templates` `main`, with `version` in `plugins/box1-onboarding/package.json` raised. PR checks build and inspect the image. Each version can be released once, so a failed release needs a new version.
 2. Approve the release by tagging that commit:
 
    ```sh
@@ -51,17 +51,13 @@ git -C box1-gitops switch main && git -C box1-gitops pull
 REGISTRY_TOKEN=$(oc whoami -t) python3 box1-gitops/platform/developer-hub/scripts/check-onboarding-runtime.py box1-gitops --live
 ```
 
-During the transition, add `--transition` to the last command. Then onboard a test service with the `quarkus-rest-service` template and run `platform/developer-hub/scripts/verify-onboarding.cjs` inside the Hub container. A healthy pod alone does not show that onboarding works.
+Then onboard a test service with the `quarkus-rest-service` template and run `platform/developer-hub/scripts/verify-onboarding.cjs` inside the Hub container. A healthy pod alone does not show that onboarding works.
 
 ## Roll back
 
-**To an earlier digest:** revert the release PR in `box1-gitops`, or use the rollback digest from its description, then sync `developer-hub`. Every release has a unique image tag, so the image pruner keeps its digest.
+Revert the release PR in `box1-gitops`, or use the rollback digest from its description, then sync `developer-hub`. Every release has a unique image tag, so the image pruner keeps its digest. The installer replaces the plugin directory on the PVC and the Hub restarts.
 
-**To the source-copy path:** available only until the cleanup change merges. Revert the cutover PR and sync `developer-hub`. The installer should remove the `box1-scaffolder-onboarding` directory through its hash cleanup. Confirm that only one copy of the plugin is present afterwards:
-
-```sh
-oc -n rhdh exec "$POD" -c backstage-backend -- ls /opt/app-root/src/dynamic-plugins-root | grep box1-scaffolder
-```
+Reverting does not undo merged service PRs or deployed services.
 
 ## Rotate the registry credential
 

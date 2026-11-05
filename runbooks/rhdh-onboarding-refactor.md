@@ -47,24 +47,9 @@ Retry a failed task by resubmitting the template with the same parameters. Recor
 
 Retry and restart behaviour is covered by unit tests only. It has **not been tested** on the live cluster.
 
-## Packaging
+## Packaging, release, and rollback
 
-`box1-org/box1-templates` holds the canonical plugin in `plugins/box1-onboarding`. `box1-gitops/platform/developer-hub/onboarding/plugin` holds a generated copy. Do not edit the copy by hand.
-
-1. Change the canonical source in `box1-templates`.
-2. With both repositories checked out side by side, run `npm run package:onboarding` from `box1-templates`.
-3. Run `npm run check:onboarding-package` to confirm the copy and checksum match.
-4. Open PRs in both repositories.
-
-Merging the `box1-gitops` change updates `box1.org/onboarding-plugin-sha`, which restarts Developer Hub. Avoid merging during an onboarding run.
-
-The drift check is currently **manual**. The CI workflow for it is not yet published.
-
-## Rollback
-
-Revert the most recent `box1-gitops` packaging PR. Argo restores the previous plugin and checksum, and Developer Hub restarts. This procedure has **not been tested**.
-
-Reverting does not undo merged service PRs or deployed services.
+The plugin is delivered as a digest-pinned OCI image. See [rhdh-onboarding-plugin-oci.md](rhdh-onboarding-plugin-oci.md).
 
 ## Known limitations
 
