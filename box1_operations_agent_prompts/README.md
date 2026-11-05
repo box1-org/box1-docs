@@ -40,7 +40,7 @@ The sizing above describes the default `qwen-64k` profile. A long-horizon model 
 
 1. Read `00-shared/00_AGENT_CONTRACT.md`, `01_DOMAIN_CONTRACTS.md`, and `02_REPO_AND_GITOPS_CONVENTIONS.md`.
 2. Use `02-platform/01_contracts_and_data_foundation.md` to create versioned contracts and persistent infrastructure design.
-3. Implement `01-services/01_order_service.md`, then `02_inventory_service.md`, then `03_fulfillment_adapter.md` against a **deterministic ERP stub**.
+3. Implement `01-services/01_order_service.md`, then `02_inventory_service.md`, then `04_erp_vm_simulator.md` (file protocol and container harness), then `03_fulfillment_adapter.md` and `02-platform/05_virtualization_integration.md`, so the adapter reaches the ERP over SFTP.
 4. Implement `01-services/08_operator_console.md` (and `07_experience_bff.md` if needed) so the order lifecycle is visible.
 5. Add the rest in dependency order, enabling platform profiles only when required and supported.
 

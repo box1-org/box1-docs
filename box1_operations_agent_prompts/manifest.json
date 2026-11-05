@@ -1,6 +1,6 @@
 {
   "project": "box1 Operations",
-  "version": "1.1",
+  "version": "1.2",
   "created_on": "2026-10-25",
   "nominal_model_context_tokens": 65536,
   "gpu": {
@@ -30,13 +30,20 @@
     "frontier": {
       "execution_mode": "bounded_long_horizon",
       "definition": "00-shared/07_FRONTIER_EXECUTION_PROFILE.md",
-      "shared_inputs_add": ["00-shared/07_FRONTIER_EXECUTION_PROFILE.md"],
+      "shared_inputs_add": [
+        "00-shared/07_FRONTIER_EXECUTION_PROFILE.md"
+      ],
       "context_strategy": "retrieval_and_checkpoint",
       "adaptive_slicing": true,
       "mandatory_requirement_ledger": true,
       "mandatory_reviewer_passes": true,
       "mandatory_handoff": "at_stop_or_completion",
-      "prompts_with_frontier_section": ["01-services/01_order_service.md"]
+      "prompts_with_frontier_section": [
+        "01-services/01_order_service.md",
+        "01-services/04_erp_vm_simulator.md",
+        "01-services/03_fulfillment_adapter.md",
+        "02-platform/05_virtualization_integration.md"
+      ]
     }
   },
   "services": [
@@ -64,13 +71,13 @@
     "02-platform/01_contracts_and_data_foundation.md",
     "01-services/01_order_service.md",
     "01-services/02_inventory_service.md",
+    "01-services/04_erp_vm_simulator.md",
     "01-services/03_fulfillment_adapter.md",
+    "02-platform/05_virtualization_integration.md",
     "01-services/07_experience_bff.md",
     "01-services/08_operator_console.md",
     "02-platform/02_observability_stack.md",
     "01-services/09_scenario_controller.md",
-    "01-services/04_erp_vm_simulator.md",
-    "02-platform/05_virtualization_integration.md",
     "01-services/05_telemetry_service.md",
     "01-services/06_notification_service.md",
     "02-platform/03_mesh_and_rollouts.md",

@@ -16,7 +16,7 @@ Create a **safe demo orchestration API**, not an arbitrary command runner. Propo
 
 ## Interfaces, domain behavior and implementation constraints
 
-- Declarative catalog of named scenarios: `baseline-order`, `inventory-contention`, `broker-outage`, `erp-slowdown`, `ambiguous-erp-timeout`, `poison-event`, `bad-artifact-gate`. Each specifies prerequisites, fixture IDs, duration, expected observation and reset action.
+- Declarative catalog of named scenarios: `baseline-order`, `inventory-contention`, `broker-outage`, `erp-manual-hold`, `erp-delayed-processing`, `erp-crash-after-commit`, `erp-unavailable`, `poison-event`, `bad-artifact-gate`. Each specifies prerequisites, fixture IDs, duration, expected observation and reset action.
 - `POST /internal/v1/scenarios/{name}/start`, `/stop`, `/reset`, `GET /internal/v1/scenarios` behind admin/operator authorization and explicit namespace/environment allowlist. No arbitrary `exec`, unvalidated shell, unrestricted Kubernetes writes or arbitrary URL fetches.
 - For P0 local tests use service-level fault toggles / injected test dependencies rather than requiring cluster-admin powers. For platform-level faults, use pre-approved minimal resource patch permission **only** after compatible support is confirmed.
 - Every start creates `scenarioRunId` and stable correlation marker; emit audit record with actor, time, environment, mode, TTL, impact and reset result.
@@ -27,13 +27,13 @@ Create a **safe demo orchestration API**, not an arbitrary command runner. Propo
 
 - Attempt to run in a non-demo namespace fails closed; unknown scenario name rejected.
 - Every named fault has bounded duration, complete audit trail, stop/reset behavior and positive end-state verification.
-- ERP slowdown reproduces alert and long-running order without data loss; inventory contention shows one reservation.
+- ERP delayed processing or a manual hold reproduces alert and long-running order without data loss; inventory contention shows one reservation.
 - Interrupted orchestration process does not leave a fault permanently enabled beyond TTL.
 
 ## Recommended 64K-safe implementation slices
 
 1. Scenario schema/catalog, allowlist, audit and local deterministic modes.
-2. ERP and inventory fault control contracts with safeguards.
+2. ERP and inventory fault control contracts with safeguards. ERP faults use the appliance's own demo mode (`04_erp_vm_simulator.md`); there is no ERP HTTP fault API, so how the controller triggers them is a design decision.
 3. TTL reset and verification probes.
 4. Integrate demo runbook, UI action entry point and automated scenario tests.
 

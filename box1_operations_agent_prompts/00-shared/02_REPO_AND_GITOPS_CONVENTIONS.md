@@ -13,7 +13,7 @@
 
 `box1-org/box1-ops-order`, `box1-ops-inventory`, `box1-ops-fulfillment`, `box1-ops-telemetry`, `box1-ops-notification`, `box1-ops-bff`, `box1-ops-console`, `box1-ops-ai`, `box1-ops-erp-simulator`, `box1-ops-scenario-control`, plus shared `box1-ops-contracts`.
 
-For Quarkus: use Developer Hub Golden Path, keep `/q/health/live`, `/q/health/ready`, `/q/openapi`, Micrometer, tests, existing SHA identity `/api/info`, project naming conventions. Java 21 and Quarkus 3. Existing `quarkus-reference` is the baseline; only deviate with explicit justification. Prefer service repos to preserve the Golden Path's real workflow.
+For Quarkus: use Developer Hub Golden Path, keep `/q/health/live`, `/q/health/ready`, `/q/openapi`, Micrometer, tests, existing SHA identity `/api/info`, project naming conventions. Java 21 and Quarkus 3. Existing `quarkus-reference` is the baseline; only deviate with explicit justification. Prefer service repos to preserve the Golden Path's real workflow. The ERP appliance (`box1-ops-erp-simulator`) is not a Quarkus service: it is a Python application delivered as a pinned artifact into a VM image, so its CI and packaging are a design decision in its prompt.
 
 ## Environment assumptions to verify
 

@@ -27,7 +27,7 @@ Implement the visible **product**, not another cluster console. Proposed repo `b
 
 ## Acceptance evidence (automate where practical)
 
-- Playwright or equivalent E2E: seed order → submit → watch timeline; inject ERP slowdown → see exception with correct diagnosis links → recover → visibly complete.
+- Playwright or equivalent E2E: seed order → submit → watch timeline; hold the request in the ERP console or delay ERP processing → see the waiting state with correct diagnosis links → recover → visibly complete.
 - Browser role/customer checks and negative unauthorized API test.
 - Keyboard-only order and incident traversal; a11y scan and mobile-width smoke test.
 - Stable UI error/empty/loading states; no UI claim of resolution before the backend confirms it.

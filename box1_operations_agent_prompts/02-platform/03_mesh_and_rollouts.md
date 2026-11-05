@@ -12,14 +12,14 @@
 
 ## Mission
 
-Prove identity-aware communication and safe change—not a decorative Istio dashboard. Introduce service mesh on **one** business path first (`bff → order` or `adapter → ERP`) and scale only after real compatibility and resource data.
+Prove identity-aware communication and safe change—not a decorative Istio dashboard. Introduce service mesh on **one** business path first (`bff → order`; `adapter → ERP` is SFTP over TCP to a VM, so HTTP traffic policy does not apply to it) and scale only after real compatibility and resource data.
 
 ## Implementation scope and guardrails
 
 - Detect current OpenShift release/operator, supported Service Mesh mode and API schema (sidecar vs ambient only after validation); collect initial CPU/memory costs and avoid unsupported custom resources.
 - Select explicit namespace onboarding/workload enrollment, service accounts and least-privilege east-west authorization. Add mTLS only to paths demonstrated to work; avoid unintentional breakage of non-mesh peers, probes, metrics or service discovery.
 - Canary exercise: emit stable revision labels/digests from GitOps, route a bounded share of traffic to a faulty order/BFF/adapter revision, check API errors/latency AND business failure rate, then abort and GitOps rollback. Split routing policy is declarative and reviewed; no uncontrolled operator UI patching.
-- Define retry ownership to prevent multiplication: app retries only where idempotency present; mesh timeout/retry policies do not multiply ERP side effects.
+- Define retry ownership to prevent multiplication: app retries only where idempotency present; mesh timeout/retry policies do not multiply side effects, and the mesh never retries SFTP transfers to the ERP.
 - Baseline network policy on sensitive DB/Kafka and ERP paths where available; deny all is incremental and verified to avoid breaking platform webhooks/DNS/monitoring.
 - Alert and runbook link the route policy, deployed digest, trace span, and objective abort threshold. Explicitly state that one node cannot deliver failure-domain HA.
 
@@ -28,7 +28,7 @@ Prove identity-aware communication and safe change—not a decorative Istio dash
 - HTTP service path works before enrollment, during mesh protection, and after rollback; mTLS is actually negotiated/measurable.
 - Unauthorized service identity receives a deny response; authorized BFF succeeds.
 - Canary regression crosses an objective threshold and resulting GitOps rollback results in improved observed metric; actual PR, digest and config state recorded.
-- ERP replay under injected network resets does not duplicate shipments due to app-level idempotency.
+- SFTP transfer resets to the ERP do not duplicate shipments, because of request-ID deduplication in the adapter and the ERP.
 
 ## Nominal 64K-context implementation slices
 

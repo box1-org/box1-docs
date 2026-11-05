@@ -17,17 +17,17 @@ Make a business symptom navigable across metrics, logs, traces, events and deplo
 ## Implementation scope and guardrails
 
 - Discover existing OpenShift monitoring/user-workload monitoring and logging/tracing collectors, storage backends, operators/CRDs; record compatibility/cluster resource usage before proposing new deployments. Choice of Prometheus, Loki/Red Hat logging, Tempo/Jaeger/Red Hat tracing must follow available supported stack—**do not assume any specific stack is already installed**.
-- End-to-end trace: UI/BFF order POST → order outbox → Kafka → inventory → order consumer → fulfillment adapter → ERP HTTP and acknowledgment. Use W3C `traceparent`; for async delayed processing, represent producer/consumer spans or span links accurately. Ensure order ID and trace ID can be correlated even if sampling misses a span.
+- End-to-end trace: UI/BFF order POST → order outbox → Kafka → inventory → order consumer → fulfillment adapter → Camel SFTP dispatch, then ERP result ingestion. `traceparent` does not cross into the ERP; correlate across it by `fulfillmentRequestId` in the file records. Use W3C `traceparent`; for async delayed processing, represent producer/consumer spans or span links accurately. Ensure order ID and trace ID can be correlated even if sampling misses a span.
 - JSON structured logs include bounded fields `service.name`, `environment`, `orderId`, `correlationId`, `traceId`, `eventId`, `errorCode`; redact credentials, customer PII, prompt contents.
-- Application/business metrics: order-create latency, oldest unfulfilled order age, inventory rejection count, Kafka consumer lag/DLQ, outbox pending/age, ERP timeout and retry rates, notification backlog, telemetry alert count; keep metric label cardinality safe (never make orderId a Prometheus label).
-- SLO dashboards: proposed test targets order API p95 <800ms at 5 req/s with AI idle, 95% fulfillment <30s with healthy simulated ERP, >=95% correlation coverage of sampled order paths, ERP slowdown alert <2 minutes. Test and revise empirically; never call them guaranteed production SLAs.
+- Application/business metrics: order-create latency, oldest unfulfilled order age, inventory rejection count, Kafka consumer lag/DLQ, outbox pending/age, adapter backlog, oldest pending ERP request age, dispatch retries, quarantined ERP results, notification backlog, telemetry alert count; keep metric label cardinality safe (never make orderId a Prometheus label).
+- SLO dashboards: proposed test targets order API p95 <800ms at 5 req/s with AI idle, 95% fulfillment <30s with a healthy ERP in AUTO mode, >=95% correlation coverage of sampled order paths, ERP slowdown alert <2 minutes. Test and revise empirically; never call them guaranteed production SLAs.
 - Deployment change overlay from Git SHA, immutable image digest, source PR and rollout time; ensure operator can retrieve exact evidence through BFF and incident UI without kubectl permissions.
 - Retention, sampling and dashboard refresh tuned to SNO host RAM/storage. Introduce `operate` GitOps profile and make it disableable without destroying Core business state. Define response to observability backend outage (app business flow should continue).
 
 ## Verifiable acceptance evidence
 
 - Trace and log query given sample `orderId` reaches at least the order, inventory and adapter boundary; evidence links resolve or explicitly show missing source.
-- ERP slowdown triggers defined alert within measured window and a dashboard shows order-age and adapter errors.
+- ERP delay or a MANUAL-mode backlog triggers defined alert within measured window and a dashboard shows order-age and adapter errors.
 - Deployment SHA/digest time can be correlated with simulated regression.
 - Structured log audit shows no raw bearer tokens/credentials and no customer personal data.
 - Disabling operate profile does not break order POST or fulfillment correctness.
