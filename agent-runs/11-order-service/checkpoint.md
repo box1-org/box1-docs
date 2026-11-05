@@ -13,7 +13,7 @@
 | `box1-gitops` | `order-dlq-topic` | `fe11b0f` | [#52](https://github.com/box1-org/box1-gitops/pull/52) | Pass |
 | `box1-workloads-dev` | `order-service-runtime-config` | `de4a218` | [#50](https://github.com/box1-org/box1-workloads-dev/pull/50) | Pass |
 
-All four are merged by the user. Deployed: digest `sha256:fb669bff…83fd`, source `749ef13`. New and open: `box1-templates#23` then `#24`, branches `onboarding-postgres-networkpolicy` and `workload-runtime-baseline`, porting #50 into the template.
+All four are merged by the user. Also merged by the user: `order-service#2`, `#3`, `box1-gitops#53`, `#54`, `#55`. Promotion: `box1-workloads-dev#52`, merged by the pipeline. Deployed: digest `sha256:513c366d…b65d`, source `4ec33fb`. New and open: `box1-templates#25`, plus `#23` then `#24`, branches `onboarding-postgres-networkpolicy` and `workload-runtime-baseline`, porting #50 into the template.
 
 Local paths: `order-service`, `run11-contracts`, `run11-workloads`, `run11-gitops`, `box1-docs-agent-run-11`.
 
