@@ -2,7 +2,7 @@
 
 **Updated:** 2026-11-05 America/New_York
 **Current phase:** 7. The code is live and the Release pass ran. Acceptance is partial.
-**Stop reason:** the release from `order-service#4` did not start. See the exact next action.
+**Stop reason:** promote failed on a Pipelines as Code start failure. See the exact next action.
 
 ## Branches and PRs
 
@@ -66,12 +66,11 @@ Re-verify the baseline before relying on it.
 
 ## Exact next action
 
-`order-service#4` is merged but not deployed. `order-service-release-9kb6b` never started, because Pipelines as Code got a 404 from GitHub, and `/retest` also failed. See `evidence/09-release.txt`.
+`order-service#4` is merged but not deployed. Release `order-service-release-xgfj7` passed the gate, then failed in promote because its GitOps checks hit a Pipelines as Code start failure. See `evidence/09-release.txt` and the comment on box1-docs#42.
 
-Waiting on the user, each needing their approval:
+Waiting on the user:
 
-1. Cancel the orphaned `order-service-release-9kb6b`. The permission layer denied this for the agent.
-2. Push a new commit to `order-service` `main`, or approve the agent doing it, to start a release.
-3. Merge `box1-ops-contracts#4` (timeline `sequence` is global, decided by the user).
+1. Cancel the orphaned `box1-phase1-smoke-59r9f` and `box1-gitops-validate-694k6`, and close `box1-workloads-dev#55`.
+2. Approve another empty commit on `order-service` `main`.
 
-Then confirm `order-api-smoke`, the served OpenAPI and a relative `Location`, update the ledger and close box1-docs#11. The user asked to close it. Its follow-ups are box1-docs#40, #41, #42, #43, #44.
+Then confirm `order-api-smoke`, the served OpenAPI and a relative `Location`, update the ledger and close box1-docs#11.

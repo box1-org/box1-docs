@@ -88,3 +88,10 @@ Service PR: order-service#4 was opened for the OpenAPI, Location, smoke and runb
 Deployed is still 4ec33fb, sha256:513c366d...b65d. The order-service#4 changes are not live.
 16:26 /retest commit comment was received as retest-all-comment, then failed: "unexpected status code: 404 Not Found" after "Using PipelineRun definition from default_branch". So /retest did not work for a push on this setup, though earlier messages offered it as an option.
 Cancelling the orphaned run was denied by the permission layer. It remains Pending. Whether it would start after a watcher restart was not established.
+
+# Release order-service-release-xgfj7, source ee9a3b8, digest sha256:f4817f1f...9da4, 16:36 UTC
+Gate passed: SBOM urn:uuid:01a1ac91-3327-7124-919d-4b1d2d7e8332, scan and check exit 0.
+Promote failed: box1-workloads-dev#55 checks reported "pipelinerun start failure", from PATCH check-runs 404. The checks did not run. Smoke and order-api-smoke skipped.
+Orphans: box1-phase1-smoke-59r9f, box1-gitops-validate-694k6, both Pending.
+Controller log: 4 start failures out of about 56 runs created. Tracked in box1-docs#42.
+Deployed is still 4ec33fb, sha256:513c366d...b65d, with the old OpenAPI and http:// Location. box1-ops-contracts#4 is merged.
