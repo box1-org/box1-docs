@@ -26,7 +26,7 @@ Found by reviewer passes (Phase 5), fixed and retested. See `review-findings/` f
 8. Driver text reaching dead-letter headers.
 9. Reservations not checked against the order or their expiry.
 
-The reviewers found defects that 68 passing tests had missed. Passes 1, 3 and 4 flagged the same dead-letter and fail-fast issues independently, which raised confidence in them.
+The reviewers found defects that 68 passing tests had missed. Architecture and messaging independently flagged the dead-letter issue, and messaging and persistence independently flagged the fail-fast bug.
 
 Test harness repairs: stale container client connections on pause and resume now retry, and post-SIGKILL waits allow for the broker's 45 s session timeout.
 
