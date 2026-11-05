@@ -1,4 +1,4 @@
-# Agent handoff: stop 3, Phase 7, rollout live
+# Agent handoff: stop 5, Phase 7, ACS registry access
 
 ## Work completed
 
@@ -30,10 +30,10 @@
 
 ## Next agent session
 
-**Next smallest slice:** see the exact next action in `checkpoint.md`. Promote failed on the Argo wait and smoke was skipped (box1-docs#42). Then merge `box1-templates#23`, ship its plugin image, and merge `#24`.
+**Next smallest slice:** see the exact next action in `checkpoint.md`. Give ACS registry access through `box1-gitops#53`, then re-run the release with `gate`. Separately, merge `box1-templates#23`, ship its plugin image, and merge `#24`.
 
 - Exact files to read: `checkpoint.md`, `decisions/D-016-secrets-integration-choice.md`, `requirements.yaml`, the prompt and profile from `box1-docs` `origin/main`.
-- Blockers and required user decisions: approval for the `box1-kafka` sync and the ConfigMap prune; template merges. Vault is deferred to box1-docs#41.
+- Blockers and required user decisions: merge `box1-gitops#53`, approve the `pipelines-ci` sync, and create the Central integration or name the credential to use; template merges. Scanner and eviction work is box1-docs#43. Vault is deferred to box1-docs#41.
 
 ## Run state
 
@@ -69,5 +69,5 @@ gitops_commit: 5fd61de2479b899ab4f6e9e48055c527f13ac632
 review_passes_completed: [architecture, persistence, messaging, security, operations]
 open_decisions: []
 rollback_state: revert the promotion commit; V1 stays applied
-next_action: With approval, sync box1-kafka and prune the orphan ConfigMap; then confirm smoke and run the Release pass
+next_action: Merge box1-gitops#53, sync pipelines-ci, create the Central integration, test a scan, then re-run the release with gate
 ```

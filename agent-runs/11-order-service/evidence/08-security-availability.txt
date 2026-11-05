@@ -31,3 +31,23 @@ sbom-and-rhtpa raises on any upload failure in observe and gate alike.
 
 ## Service
 Still running source 749ef13, which has not passed the security gates or smoke.
+
+# Update 2026-11-05 (times UTC)
+
+## TPA restored, with user approval
+14:31:44 deleted evicted pod noobaa-default-backing-store-noobaa-pod-3aa907b4. Owner: BackingStore. PVC kept.
+14:32:30 backingstore Ready/OPTIMAL, same PVC, Bound.
+SBOM probe with the rhtpa-ci client: POST 201 in 0.39 s, download 200, content matches. DELETE 403.
+Probe document left in TPA: urn:uuid:01a1ac22-153b-724c-9fbb-753bb07d0606, label purpose=availability-probe.
+
+## Matcher memory, sampled every 30 s
+Limit 3,221,225,472 bytes, 1 CPU. Request 768Mi. ROX_MEMLIMIT from requests.memory; indexer's from limits.memory.
+Restart 665: OOMKilled exit 137 at 14:30:58, ran from 14:20:11, rhel-vex import unfinished.
+Next run: import 14:31:10 to 14:44:51, 4,011,719 records. CPU about 990m from 14:36.
+Peak 3,220,598,784 bytes at about 14:42, 626,688 under the limit. memory.events max 0, oom_kill 0.
+Earlier restarts are inferred from timing only; older logs are gone.
+Indexer last failure: refused connections to scanner-v4-db, exit 1. Stable since. Unrelated to memory.
+
+## Registry access
+box1-gitops#53 open: acs-registry-reader, pull only in box1-ci. Not merged. No integration exists yet, so ACS still cannot scan.
+Tracked: box1-docs#43.
