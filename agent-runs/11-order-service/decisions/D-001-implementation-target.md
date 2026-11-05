@@ -1,6 +1,6 @@
 # D-001 Implementation target repository
 
-**Status:** open, user decision. Blocks Phase 3 pushes and everything after it.
+**Status:** resolved 2026-11-05 by the user: option A, build in `box1-org/order-service`.
 
 **Conflict:** the prompt proposes `box1-org/box1-ops-order`, which does not exist. `box1-org/order-service` does exist. Developer Hub created it at 2026-11-05 02:08 EST, with description "Transactional state of customer requested orders", owner `user:default/mike4263`, PostgreSQL and Kafka both selected, and a deployed `order-service-dev` namespace. It holds only scaffold code. No prompt or doc mentions it, and the evidence does not show why it was created.
 

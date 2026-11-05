@@ -1,6 +1,6 @@
 # D-004 Database and login names
 
-**Status:** open, user decision. Blocks Phase 2 and the migration plan. Applies if D-001 selects `order-service`.
+**Status:** resolved 2026-11-05 by the user: option A, keep `order_service` and amend `OWNERSHIP.md` by PR.
 
 **Conflict:** `postgres/OWNERSHIP.md` assigns database `box1_order` and login `box1_order_app`, and says the runtime login must not own the schema. The template deployed database `order_service` with login `order_service`, a single login that would own its schema. The template names every service's database this way, so the conflict will recur for later services.
 

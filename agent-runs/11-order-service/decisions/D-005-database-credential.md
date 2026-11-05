@@ -1,6 +1,6 @@
 # D-005 Live database credential
 
-**Status:** open, user decision. Blocks Phase 6.
+**Status:** resolved 2026-11-05 by the user: option B, add a secrets integration first. Which integration is open as D-016. Still blocks Phase 6.
 
 **Finding:** the database credential for `order-service-dev` does not meet `postgres/SECRETS.md`, and real order data should not be deployed on it. The specifics were given to the user directly and are deliberately not recorded here, because `box1-docs` is public.
 

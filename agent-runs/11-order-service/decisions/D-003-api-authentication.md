@@ -1,6 +1,6 @@
 # D-003 API authentication boundary
 
-**Status:** open, user decision. Blocks the Phase 1 design and the `ORD-VS-AUTHZ` scenario.
+**Status:** resolved 2026-11-05 by the user: option B, no authentication for this pilot. Tracked in box1-docs#40.
 
 **Conflict:**
 
