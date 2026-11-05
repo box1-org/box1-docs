@@ -25,6 +25,10 @@ A 64K token context is a **ceiling for prompt + system instructions + tool resul
 
 Read **one service prompt at a time**, with only the shared files it references. Do not load the entire 16-page design document, every service prompt, and the entire repository in one agent session. Implement a **single acceptance slice per session**. New sessions get the previous handoff and current relevant files only.
 
+## Execution profiles
+
+The sizing above describes the default `qwen-64k` profile. A long-horizon model can run the `frontier` profile instead, which owns one whole prompt across phases and keeps its state outside the conversation; see `00-shared/07_FRONTIER_EXECUTION_PROFILE.md`. Both profiles use the same service and platform prompts, so requirements exist in one place. Profile definitions are in `manifest.json`. No automated runner enforces either profile yet: the profile is named when the agent is invoked.
+
 ## Directory layout
 
 - `00-shared/` — non-negotiable architectural rules, event schemas, GitOps conventions, acceptance policy, and handoff pattern.
@@ -43,6 +47,10 @@ Read **one service prompt at a time**, with only the shared files it references.
 ## Agent invocation template
 
 > You are implementing **box1 Operations**, using the attached service prompt. Respect `00_AGENT_CONTRACT.md` and the linked domain contracts. First inspect the relevant repository, identify the next *unmet* acceptance criterion, and propose a concise implementation plan. Then implement one scoped slice with tests, invoke the existing Golden Path, and report exact evidence. Do not invent cluster compatibility, CI status, or available credentials. Do not change unrelated services. Keep the full interaction within a nominal 64K context budget. If you hit a blocker, leave a clear handoff instead of guessing.
+
+For the `frontier` profile:
+
+> You are implementing **box1 Operations**, using the attached service prompt. Respect `00_AGENT_CONTRACT.md` and the linked domain contracts. Own this prompt from discovery through live acceptance under `07_FRONTIER_EXECUTION_PROFILE.md`, invoke the existing Golden Path, and report exact evidence. Do not invent cluster compatibility, CI status, or available credentials. Do not change unrelated services. Stop only at a stop condition listed in that profile, leaving a checkpoint and handoff instead of guessing.
 
 ## Repository approach
 

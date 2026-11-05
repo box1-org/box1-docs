@@ -1,6 +1,6 @@
 {
   "project": "box1 Operations",
-  "version": "1.0",
+  "version": "1.1",
   "created_on": "2026-10-25",
   "nominal_model_context_tokens": 65536,
   "gpu": {
@@ -20,6 +20,25 @@
     "00-shared/05_HANDOFF_TEMPLATE.md",
     "00-shared/06_RESOURCE_AND_SECURITY_BOUNDARIES.md"
   ],
+  "default_profile": "qwen-64k",
+  "profiles": {
+    "qwen-64k": {
+      "execution_mode": "single_slice",
+      "context_budget_tokens": 65536,
+      "mandatory_handoff": "every_session"
+    },
+    "frontier": {
+      "execution_mode": "bounded_long_horizon",
+      "definition": "00-shared/07_FRONTIER_EXECUTION_PROFILE.md",
+      "shared_inputs_add": ["00-shared/07_FRONTIER_EXECUTION_PROFILE.md"],
+      "context_strategy": "retrieval_and_checkpoint",
+      "adaptive_slicing": true,
+      "mandatory_requirement_ledger": true,
+      "mandatory_reviewer_passes": true,
+      "mandatory_handoff": "at_stop_or_completion",
+      "prompts_with_frontier_section": ["01-services/01_order_service.md"]
+    }
+  },
   "services": [
     "01-services/01_order_service.md",
     "01-services/02_inventory_service.md",

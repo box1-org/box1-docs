@@ -1,6 +1,6 @@
 # Execution plan — independent slices and dependencies
 
-This is the **recommended sequence**, not a requirement that one agent execute everything. Keep each slice small enough to finish within 64K context including tool outputs.
+This is the **recommended sequence**, not a requirement that one agent execute everything. Under the `qwen-64k` profile, keep each slice small enough to finish within 64K context including tool outputs. Under `frontier`, one run covers one row's prompt, not the whole table.
 
 | Slice | Files | First verifiable result |
 |---|---|---|
@@ -20,6 +20,8 @@ This is the **recommended sequence**, not a requirement that one agent execute e
 **Prerequisite nuance:** Our Golden Path's phases 1–4 are **already validated**; the table is an application build order, not a request to rerun platform installation. Initial demo may use a deterministic ERP container/stub until virtualization becomes safe to enable. Treat heavy platform features as **profiles**: `core`, `delivery`, `operate`, `hybrid`, `ai`.
 
 ## Session discipline
+
+This section applies to `qwen-64k`. `frontier` runs plan their own slices and follow the phases in `07_FRONTIER_EXECUTION_PROFILE.md`.
 
 Ask the agent to inspect relevant files, implement a single acceptance feature, test, and hand off. For example: **Order-01** idempotent create; **Order-02** state machine; **Order-03** outbox; **Order-04** consumption and timeline; **Order-05** metrics and failure recovery. Resist “build the entire service” in one 64K-window run.
 
