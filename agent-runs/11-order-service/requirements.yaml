@@ -1,319 +1,560 @@
 # Requirement ledger for box1-docs#11. Status is the highest level actually observed.
-# The prompt's FR-01, FR-03, FR-04, DAT-03/04 and OBS-01/02/03 tags are not defined anywhere on box1-docs main,
-# so IDs below derive from the prompt's behavior and acceptance text.
-
+# The prompt's FR-01, FR-03, FR-04, DAT-03/04 and OBS-01/02/03 tags are not defined on box1-docs main,
+# so IDs derive from the prompt's behavior and acceptance text.
+# Paths are in box1-org/order-service unless noted.
 - id: ORD-API-CREATE
-  description: "POST /api/v1/orders with Idempotency-Key atomically writes order, idempotency record and order.placed.v1 outbox row; 201 + Location on first request"
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
-  deployment: {image_digest: null, gitops_commit: null}
+  description: POST /api/v1/orders with Idempotency-Key atomically writes order, idempotency record and order.placed.v1 outbox row; 201 + Location on first request
+  status: locally_tested
+  implementation:
+  - src/main/java/org/box1/order/OrderService.java
+  - src/main/java/org/box1/order/api/OrdersResource.java
+  - src/main/java/org/box1/order/store/OrderStore.java
+  tests:
+  - src/test/java/org/box1/order/ApiScenariosTest.java
+  commands:
+  - "./mvnw verify -Pcontainers -DskipITs=false"
+  evidence:
+  - evidence/04-scenarios-local.txt
+  deployment:
+    image_digest: 
+    gitops_commit: 
   limitations: []
 - id: ORD-API-READ
-  description: "GET list, GET by id and /timeline with stable pagination, timestamps, state, status reason and trace/correlation references"
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
-  deployment: {image_digest: null, gitops_commit: null}
+  description: GET list, GET by id and /timeline with stable pagination, timestamps, state, status reason and trace/correlation references
+  status: locally_tested
+  implementation:
+  - src/main/java/org/box1/order/api/OrdersResource.java
+  - src/main/java/org/box1/order/store/OrderStore.java
+  tests:
+  - src/test/java/org/box1/order/ApiScenariosTest.java
+  commands:
+  - "./mvnw verify -Pcontainers -DskipITs=false"
+  evidence:
+  - evidence/04-scenarios-local.txt
+  deployment:
+    image_digest: 
+    gitops_commit: 
   limitations: []
 - id: ORD-API-PROBLEM
-  description: "404 and other errors are RFC 9457 Problem JSON"
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
-  deployment: {image_digest: null, gitops_commit: null}
+  description: 404 and other errors are RFC 9457 Problem JSON
+  status: locally_tested
+  implementation:
+  - src/main/java/org/box1/order/api/ProblemMappers.java
+  - src/main/java/org/box1/order/api/OrdersResource.java
+  tests:
+  - src/test/java/org/box1/order/ApiScenariosTest.java
+  commands:
+  - "./mvnw verify -Pcontainers -DskipITs=false"
+  evidence:
+  - evidence/04-scenarios-local.txt
+  deployment:
+    image_digest: 
+    gitops_commit: 
   limitations: []
 - id: ORD-DB-SCHEMA
-  description: "Flyway migrations for orders, order_state_history, idempotency_records, outbox, processed_event with unique constraints and lifecycle indexes"
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
-  deployment: {image_digest: null, gitops_commit: null}
-  limitations: []
+  description: Flyway migrations for orders, order_state_history, idempotency_records, outbox, processed_event with unique constraints and lifecycle indexes
+  status: locally_tested
+  implementation:
+  - src/main/resources/db/migration/V1__order_schema.sql
+  tests:
+  - src/test/java/org/box1/order/MigrationTest.java
+  commands:
+  - "./mvnw verify -Pcontainers -DskipITs=false"
+  evidence:
+  - evidence/04-scenarios-local.txt
+  deployment:
+    image_digest: 
+    gitops_commit: 
+  limitations:
+  - Tests fixed at postgres:15-alpine locally; the deployed image is the Red Hat PostgreSQL 15 build, which needs a registry login.
 - id: ORD-STATE-GUARD
-  description: "Guarded transitions on the documented path and alternates; FULFILLMENT_REQUESTED displayable as Awaiting ERP acknowledgement"
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
-  deployment: {image_digest: null, gitops_commit: null}
+  description: Guarded transitions on the documented path and alternates; FULFILLMENT_REQUESTED displayable as Awaiting ERP acknowledgement
+  status: locally_tested
+  implementation:
+  - src/main/java/org/box1/order/domain/Transitions.java
+  tests:
+  - src/test/java/org/box1/order/TransitionsTest.java
+  - src/test/java/org/box1/order/SagaScenariosTest.java
+  commands:
+  - "./mvnw verify -Pcontainers -DskipITs=false"
+  evidence:
+  - evidence/04-scenarios-local.txt
+  deployment:
+    image_digest: 
+    gitops_commit: 
   limitations: []
 - id: ORD-SAGA-RESERVED
-  description: "inventory.reserved.v1 once per event/order links reservationId, moves to RESERVED and enqueues fulfillment.requested.v1 in one transaction"
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
-  deployment: {image_digest: null, gitops_commit: null}
-  limitations: ["Contract fixture available; inventory is out of scope, so this stays fixture-driven."]
+  description: inventory.reserved.v1 once per event/order links reservationId, moves to RESERVED and enqueues fulfillment.requested.v1 in one transaction
+  status: locally_tested
+  implementation:
+  - src/main/java/org/box1/order/OrderService.java
+  - src/main/java/org/box1/order/messaging/LifecycleConsumer.java
+  tests:
+  - src/test/java/org/box1/order/SagaScenariosTest.java
+  commands:
+  - "./mvnw verify -Pcontainers -DskipITs=false"
+  evidence:
+  - evidence/04-scenarios-local.txt
+  deployment:
+    image_digest: 
+    gitops_commit: 
+  limitations:
+  - Contract fixture available; inventory is out of scope, so this stays fixture-driven.
 - id: ORD-SAGA-REJECTED
-  description: "inventory.rejected.v1 moves to REJECTED"
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
-  deployment: {image_digest: null, gitops_commit: null}
-  limitations: ["No schema or fixture in box1-ops-contracts at 5d44122."]
+  description: inventory.rejected.v1 moves to REJECTED
+  status: locally_tested
+  implementation:
+  - src/main/java/org/box1/order/OrderService.java
+  - src/main/java/org/box1/order/domain/Transitions.java
+  tests:
+  - src/test/java/org/box1/order/SagaScenariosTest.java
+  - src/test/java/org/box1/order/ContractTest.java
+  commands:
+  - "./mvnw verify -Pcontainers -DskipITs=false"
+  evidence:
+  - evidence/04-scenarios-local.txt
+  deployment:
+    image_digest: 
+    gitops_commit: 
+  limitations:
+  - No schema or fixture in box1-ops-contracts at 5d44122.
 - id: ORD-SAGA-SHIPPED
-  description: "shipment.confirmed.v1 moves to SHIPPED; COMPLETED only under an explicit completion policy"
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
-  deployment: {image_digest: null, gitops_commit: null}
-  limitations: ["Policy decided in D-010."]
+  description: shipment.confirmed.v1 moves to SHIPPED; COMPLETED only under an explicit completion policy
+  status: locally_tested
+  implementation:
+  - src/main/java/org/box1/order/OrderService.java
+  - src/main/java/org/box1/order/domain/Transitions.java
+  tests:
+  - src/test/java/org/box1/order/SagaScenariosTest.java
+  - src/test/java/org/box1/order/TransitionsTest.java
+  commands:
+  - "./mvnw verify -Pcontainers -DskipITs=false"
+  evidence:
+  - evidence/04-scenarios-local.txt
+  deployment:
+    image_digest: 
+    gitops_commit: 
+  limitations:
+  - Policy decided in D-010.
 - id: ORD-SAGA-NOREGRESS
-  description: "Late or duplicate events never regress state"
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
-  deployment: {image_digest: null, gitops_commit: null}
+  description: Late or duplicate events never regress state
+  status: locally_tested
+  implementation:
+  - src/main/java/org/box1/order/domain/Transitions.java
+  tests:
+  - src/test/java/org/box1/order/SagaScenariosTest.java
+  commands:
+  - "./mvnw verify -Pcontainers -DskipITs=false"
+  evidence:
+  - evidence/04-scenarios-local.txt
+  deployment:
+    image_digest: 
+    gitops_commit: 
   limitations: []
 - id: ORD-OUTBOX-PUBLISH
-  description: "Restart-safe publisher with bounded batch/lease or safe claiming, backoff retries, published only after broker confirmation, key = orderId"
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
-  deployment: {image_digest: null, gitops_commit: null}
+  description: Restart-safe publisher with bounded batch/lease or safe claiming, backoff retries, published only after broker confirmation, key = orderId
+  status: locally_tested
+  implementation:
+  - src/main/java/org/box1/order/messaging/OutboxPublisher.java
+  - src/main/java/org/box1/order/store/OutboxStore.java
+  tests:
+  - src/test/java/org/box1/order/OutboxScenariosTest.java
+  - src/test/java/org/box1/order/ProcessRestartIT.java
+  commands:
+  - "./mvnw verify -Pcontainers -DskipITs=false"
+  evidence:
+  - evidence/04-scenarios-local.txt
+  deployment:
+    image_digest: 
+    gitops_commit: 
   limitations: []
 - id: ORD-OUTBOX-METRICS
-  description: "box1_outbox_pending and oldest pending age metrics"
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
-  deployment: {image_digest: null, gitops_commit: null}
+  description: box1_outbox_pending and oldest pending age metrics
+  status: locally_tested
+  implementation:
+  - src/main/java/org/box1/order/OrderMetrics.java
+  tests:
+  - src/test/java/org/box1/order/ApiScenariosTest.java
+  - src/test/java/org/box1/order/OutboxScenariosTest.java
+  commands:
+  - "./mvnw verify -Pcontainers -DskipITs=false"
+  evidence:
+  - evidence/04-scenarios-local.txt
+  deployment:
+    image_digest: 
+    gitops_commit: 
   limitations: []
 - id: ORD-TRACE-PROPAGATE
-  description: "Valid W3C traceparent, correlationId and causationId are propagated across HTTP and events"
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
-  deployment: {image_digest: null, gitops_commit: null}
-  limitations: []
+  description: Valid W3C traceparent, correlationId and causationId are propagated across HTTP and events
+  status: locally_tested
+  implementation:
+  - src/main/java/org/box1/order/OrderService.java
+  - src/main/java/org/box1/order/messaging/LifecycleConsumer.java
+  - src/main/java/org/box1/order/messaging/EventFactory.java
+  tests:
+  - src/test/java/org/box1/order/ApiScenariosTest.java
+  commands:
+  - "./mvnw verify -Pcontainers -DskipITs=false"
+  evidence:
+  - evidence/04-scenarios-local.txt
+  deployment:
+    image_digest: 
+    gitops_commit: 
+  limitations:
+  - Span export is off; proven through IDs in responses, history, envelopes and logs, never in a trace backend. Tracked by D-006 and box1-docs#22.
 - id: ORD-LOG-JSON
-  description: "JSON logs carry orderId and event ID and no sensitive customer data"
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
-  deployment: {image_digest: null, gitops_commit: null}
+  description: JSON logs carry orderId and event ID and no sensitive customer data
+  status: locally_tested
+  implementation:
+  - src/main/java/org/box1/order/api/OrdersResource.java
+  - src/main/java/org/box1/order/messaging/LifecycleConsumer.java
+  tests:
+  - src/test/java/org/box1/order/ProcessRestartIT.java
+  - src/test/java/org/box1/order/SagaScenariosTest.java
+  commands:
+  - "./mvnw verify -Pcontainers -DskipITs=false"
+  evidence:
+  - evidence/04-scenarios-local.txt
+  deployment:
+    image_digest: 
+    gitops_commit: 
   limitations: []
 - id: ORD-METRICS-BUSINESS
-  description: "Business meters: order age, lifecycle rates, stuck order count, outbox lag"
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
-  deployment: {image_digest: null, gitops_commit: null}
+  description: 'Business meters: order age, lifecycle rates, stuck order count, outbox lag'
+  status: locally_tested
+  implementation:
+  - src/main/java/org/box1/order/OrderMetrics.java
+  tests:
+  - src/test/java/org/box1/order/ApiScenariosTest.java
+  commands:
+  - "./mvnw verify -Pcontainers -DskipITs=false"
+  evidence:
+  - evidence/04-scenarios-local.txt
+  deployment:
+    image_digest: 
+    gitops_commit: 
   limitations: []
 - id: ORD-AC-IDEMP-10X
-  description: "Issue AC 1: same key + same body 10x returns one order and one outbox event; same key + changed body returns 409"
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
-  deployment: {image_digest: null, gitops_commit: null}
+  description: 'Issue AC 1: same key + same body 10x returns one order and one outbox event; same key + changed body returns 409'
+  status: locally_tested
+  implementation:
+  - src/main/java/org/box1/order/OrderService.java
+  tests:
+  - src/test/java/org/box1/order/ApiScenariosTest.java
+  commands:
+  - "./mvnw verify -Pcontainers -DskipITs=false"
+  evidence:
+  - evidence/04-scenarios-local.txt
+  deployment:
+    image_digest: 
+    gitops_commit: 
   limitations: []
 - id: ORD-AC-CONCURRENT
-  description: "Issue AC 2: concurrent duplicate POSTs, including at the transaction boundary, return one persisted aggregate"
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
-  deployment: {image_digest: null, gitops_commit: null}
+  description: 'Issue AC 2: concurrent duplicate POSTs, including at the transaction boundary, return one persisted aggregate'
+  status: locally_tested
+  implementation:
+  - src/main/java/org/box1/order/OrderService.java
+  - src/main/java/org/box1/order/store/OrderStore.java
+  tests:
+  - src/test/java/org/box1/order/ApiScenariosTest.java
+  commands:
+  - "./mvnw verify -Pcontainers -DskipITs=false"
+  evidence:
+  - evidence/04-scenarios-local.txt
+  deployment:
+    image_digest: 
+    gitops_commit: 
   limitations: []
 - id: ORD-AC-KAFKA-FAIL
-  description: "Issue AC 3: Kafka failure after commit leaves an unpublished outbox record; recovery emits once logically; consumers remain idempotent"
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
-  deployment: {image_digest: null, gitops_commit: null}
+  description: 'Issue AC 3: Kafka failure after commit leaves an unpublished outbox record; recovery emits once logically; consumers remain idempotent'
+  status: locally_tested
+  implementation:
+  - src/main/java/org/box1/order/messaging/OutboxPublisher.java
+  tests:
+  - src/test/java/org/box1/order/OutboxScenariosTest.java
+  commands:
+  - "./mvnw verify -Pcontainers -DskipITs=false"
+  evidence:
+  - evidence/04-scenarios-local.txt
+  deployment:
+    image_digest: 
+    gitops_commit: 
   limitations: []
 - id: ORD-AC-REDELIVERY
-  description: "Issue AC 4: redelivery/out-of-order events do not duplicate fulfillment requests or regress status; timeline ordered and attributable"
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
-  deployment: {image_digest: null, gitops_commit: null}
+  description: 'Issue AC 4: redelivery/out-of-order events do not duplicate fulfillment requests or regress status; timeline ordered and attributable'
+  status: locally_tested
+  implementation:
+  - src/main/java/org/box1/order/OrderService.java
+  tests:
+  - src/test/java/org/box1/order/SagaScenariosTest.java
+  commands:
+  - "./mvnw verify -Pcontainers -DskipITs=false"
+  evidence:
+  - evidence/04-scenarios-local.txt
+  deployment:
+    image_digest: 
+    gitops_commit: 
   limitations: []
 - id: ORD-AC-LOCAL-OPS
-  description: "Issue AC 5: OpenAPI examples, DB migrations, readiness failing when DB is unavailable, metrics inspectable locally"
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
-  deployment: {image_digest: null, gitops_commit: null}
+  description: 'Issue AC 5: OpenAPI examples, DB migrations, readiness failing when DB is unavailable, metrics inspectable locally'
+  status: locally_tested
+  implementation:
+  - src/main/java/org/box1/order/DatabaseReadinessCheck.java
+  - src/main/java/org/box1/order/OrderMetrics.java
+  tests:
+  - src/test/java/org/box1/order/DatabaseDownTest.java
+  - src/test/java/org/box1/order/MigrationTest.java
+  - src/test/java/org/box1/order/ApiScenariosTest.java
+  - src/test/java/org/box1/order/ContractTest.java
+  commands:
+  - "./mvnw verify -Pcontainers -DskipITs=false"
+  evidence:
+  - evidence/04-scenarios-local.txt
+  deployment:
+    image_digest: 
+    gitops_commit: 
   limitations: []
 - id: ORD-VS-ROLLBACK
-  description: "Scenario: rollback during create"
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
-  deployment: {image_digest: null, gitops_commit: null}
+  description: 'Scenario: rollback during create'
+  status: locally_tested
+  implementation:
+  - src/main/java/org/box1/order/OrderService.java
+  tests:
+  - src/test/java/org/box1/order/ApiScenariosTest.java
+  commands:
+  - "./mvnw verify -Pcontainers -DskipITs=false"
+  evidence:
+  - evidence/04-scenarios-local.txt
+  deployment:
+    image_digest: 
+    gitops_commit: 
   limitations: []
 - id: ORD-VS-PUB-RESTART
-  description: "Scenario: publisher restart while claiming"
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
-  deployment: {image_digest: null, gitops_commit: null}
+  description: 'Scenario: publisher restart while claiming'
+  status: locally_tested
+  implementation:
+  - src/main/java/org/box1/order/store/OutboxStore.java
+  tests:
+  - src/test/java/org/box1/order/ProcessRestartIT.java
+  - src/test/java/org/box1/order/OutboxScenariosTest.java
+  commands:
+  - "./mvnw verify -Pcontainers -DskipITs=false"
+  evidence:
+  - evidence/04-scenarios-local.txt
+  deployment:
+    image_digest: 
+    gitops_commit: 
   limitations: []
 - id: ORD-VS-MALFORMED
-  description: "Scenario: malformed envelopes"
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
-  deployment: {image_digest: null, gitops_commit: null}
+  description: 'Scenario: malformed envelopes'
+  status: locally_tested
+  implementation:
+  - src/main/java/org/box1/order/messaging/EventParser.java
+  tests:
+  - src/test/java/org/box1/order/ContractTest.java
+  - src/test/java/org/box1/order/SagaScenariosTest.java
+  commands:
+  - "./mvnw verify -Pcontainers -DskipITs=false"
+  evidence:
+  - evidence/04-scenarios-local.txt
+  deployment:
+    image_digest: 
+    gitops_commit: 
   limitations: []
 - id: ORD-VS-DLQ
-  description: "Scenario: retry exhaustion to the dead-letter path"
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
-  deployment: {image_digest: null, gitops_commit: null}
-  limitations: ["No dead-letter topic exists on the cluster; local proof possible, live proof needs an approved shared-infrastructure PR."]
+  description: 'Scenario: retry exhaustion to the dead-letter path'
+  status: locally_tested
+  implementation:
+  - src/main/java/org/box1/order/messaging/LifecycleConsumer.java
+  tests:
+  - src/test/java/org/box1/order/SagaScenariosTest.java
+  commands:
+  - "./mvnw verify -Pcontainers -DskipITs=false"
+  evidence:
+  - evidence/04-scenarios-local.txt
+  deployment:
+    image_digest: 
+    gitops_commit: 
+  limitations:
+  - Replay covered by a test that re-produces the record. The runbook cluster commands have not been run. Consumer retries in that test use a short backoff.
+  - No dead-letter topic exists on the cluster; local proof possible, live proof needs an approved shared-infrastructure PR.
 - id: ORD-VS-DUP-FULFILL
-  description: "Scenario: duplicate fulfillment requests"
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
-  deployment: {image_digest: null, gitops_commit: null}
+  description: 'Scenario: duplicate fulfillment requests'
+  status: locally_tested
+  implementation:
+  - src/main/java/org/box1/order/OrderService.java
+  tests:
+  - src/test/java/org/box1/order/SagaScenariosTest.java
+  - src/test/java/org/box1/order/MigrationTest.java
+  commands:
+  - "./mvnw verify -Pcontainers -DskipITs=false"
+  evidence:
+  - evidence/04-scenarios-local.txt
+  deployment:
+    image_digest: 
+    gitops_commit: 
   limitations: []
 - id: ORD-VS-MIGRATION-RERUN
-  description: "Scenario: migration rerun"
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
-  deployment: {image_digest: null, gitops_commit: null}
-  limitations: []
+  description: 'Scenario: migration rerun'
+  status: locally_tested
+  implementation:
+  - src/main/resources/db/migration/V1__order_schema.sql
+  tests:
+  - src/test/java/org/box1/order/MigrationTest.java
+  commands:
+  - "./mvnw verify -Pcontainers -DskipITs=false"
+  evidence:
+  - evidence/04-scenarios-local.txt
+  deployment:
+    image_digest: 
+    gitops_commit: 
+  limitations:
+  - Tests fixed at postgres:15-alpine locally; the deployed image is the Red Hat PostgreSQL 15 build, which needs a registry login.
 - id: ORD-VS-RESTART-MSG
-  description: "Scenario: restart during message processing"
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
-  deployment: {image_digest: null, gitops_commit: null}
+  description: 'Scenario: restart during message processing'
+  status: locally_tested
+  implementation:
+  - src/main/java/org/box1/order/messaging/LifecycleConsumer.java
+  tests:
+  - src/test/java/org/box1/order/ProcessRestartIT.java
+  commands:
+  - "./mvnw verify -Pcontainers -DskipITs=false"
+  evidence:
+  - evidence/04-scenarios-local.txt
+  deployment:
+    image_digest: 
+    gitops_commit: 
   limitations: []
 - id: ORD-VS-AUTHZ
-  description: "Scenario: unauthorized access to internal endpoints"
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
-  deployment: {image_digest: null, gitops_commit: null}
-  limitations: ["By D-003 the API has no authentication and no internal endpoints exist. Provable only as: representative internal paths return 404. Access control is tracked in box1-docs#40."]
+  description: 'Scenario: unauthorized access to internal endpoints'
+  status: locally_tested
+  implementation:
+  - src/main/java/org/box1/order/api/OrdersResource.java
+  tests:
+  - src/test/java/org/box1/order/ApiScenariosTest.java
+  commands:
+  - "./mvnw verify -Pcontainers -DskipITs=false"
+  evidence:
+  - evidence/04-scenarios-local.txt
+  deployment:
+    image_digest: 
+    gitops_commit: 
+  limitations:
+  - 'By D-003 the API has no authentication and no internal endpoints exist. Provable only as: representative internal paths return 404. Access control is tracked in box1-docs#40.'
 - id: ORD-VS-PII
-  description: "Scenario: customer data in logs or events"
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
-  deployment: {image_digest: null, gitops_commit: null}
+  description: 'Scenario: customer data in logs or events'
+  status: locally_tested
+  implementation:
+  - src/main/java/org/box1/order/messaging/EventFactory.java
+  tests:
+  - src/test/java/org/box1/order/SagaScenariosTest.java
+  - src/test/java/org/box1/order/ProcessRestartIT.java
+  commands:
+  - "./mvnw verify -Pcontainers -DskipITs=false"
+  evidence:
+  - evidence/04-scenarios-local.txt
+  deployment:
+    image_digest: 
+    gitops_commit: 
   limitations: []
 - id: ORD-CONTRACT-OPENAPI
-  description: "OpenAPI covers the prompt and examples validate against box1-ops-contracts"
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
-  deployment: {image_digest: null, gitops_commit: null}
-  limitations: ["Order schema at 5d44122 rejects every valid order; see evidence/03-local-baselines.txt."]
+  description: OpenAPI covers the prompt and examples validate against box1-ops-contracts
+  status: locally_tested
+  implementation:
+  - src/main/java/org/box1/order/api/OrdersResource.java
+  tests:
+  - src/test/java/org/box1/order/ContractTest.java
+  commands:
+  - "./mvnw verify -Pcontainers -DskipITs=false"
+  evidence:
+  - evidence/04-scenarios-local.txt
+  deployment:
+    image_digest: 
+    gitops_commit: 
+  limitations:
+  - Order schema at 5d44122 rejects every valid order; see evidence/03-local-baselines.txt.
 - id: ORD-CONTRACT-EVENTS
-  description: "Event schemas and fixtures cover every event this service produces or consumes"
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
-  deployment: {image_digest: null, gitops_commit: null}
-  limitations: ["Missing at 5d44122: inventory.rejected, inventory.reservation-expired, order.state-changed, shipment.failed."]
+  description: Event schemas and fixtures cover every event this service produces or consumes
+  status: locally_tested
+  implementation:
+  - src/main/java/org/box1/order/messaging/EventParser.java
+  - src/main/java/org/box1/order/messaging/EventFactory.java
+  tests:
+  - src/test/java/org/box1/order/ContractTest.java
+  commands:
+  - "./mvnw verify -Pcontainers -DskipITs=false"
+  evidence:
+  - evidence/04-scenarios-local.txt
+  deployment:
+    image_digest: 
+    gitops_commit: 
+  limitations:
+  - 'Missing at 5d44122: inventory.rejected, inventory.reservation-expired, order.state-changed, shipment.failed.'
 - id: ORD-DOCS
-  description: "README, docs/architecture.md, docs/runbook.md, config documentation and Developer Hub metadata"
-  status: proposed
-  implementation: []
+  description: README, docs/architecture.md, docs/runbook.md, config documentation and Developer Hub metadata
+  status: implemented
+  implementation:
+  - README.md
+  - docs/architecture.md
+  - docs/runbook.md
+  - mkdocs.yml
+  - docs/index.md
   tests: []
   commands: []
   evidence: []
-  deployment: {image_digest: null, gitops_commit: null}
+  deployment:
+    image_digest: 
+    gitops_commit: 
   limitations: []
 - id: ORD-OPS-RESOURCES
-  description: "Measured request/limit proposal and security boundaries recorded"
-  status: proposed
-  implementation: []
+  description: Measured request/limit proposal and security boundaries recorded
+  status: implemented
+  implementation:
+  - box1-workloads-dev workloads/order-service
   tests: []
   commands: []
-  evidence: []
-  deployment: {image_digest: null, gitops_commit: null}
-  limitations: ["Scaffold postgres Deployment has no requests or limits."]
+  evidence:
+  - evidence/05-resource-sample.txt
+  deployment:
+    image_digest: 
+    gitops_commit: 
+  limitations:
+  - Sample is one workstation run at about 5 POST/s for 60 s, not a cluster measurement.
 - id: ORD-DELIVERY-GITOPS
-  description: "Immutable image, promotion PR for this service only, Argo reports the expected revision, pod runs the digest"
+  description: Immutable image, promotion PR for this service only, Argo reports the expected revision, pod runs the digest
   status: proposed
   implementation: []
   tests: []
   commands: []
   evidence: []
-  deployment: {image_digest: null, gitops_commit: null}
-  limitations: ["Blocked on D-016 and on merge approvals."]
+  deployment:
+    image_digest: 
+    gitops_commit: 
+  limitations:
+  - Blocked on D-016 and on merge approvals.
 - id: ORD-LIVE-LIFECYCLE
-  description: "One order lifecycle followed through logs, metrics, traces and timeline as far as deployed dependencies allow"
+  description: One order lifecycle followed through logs, metrics, traces and timeline as far as deployed dependencies allow
   status: proposed
   implementation: []
   tests: []
   commands: []
   evidence: []
-  deployment: {image_digest: null, gitops_commit: null}
-  limitations: ["No trace backend or user workload monitoring is installed; see D-006."]
+  deployment:
+    image_digest: 
+    gitops_commit: 
+  limitations:
+  - No trace backend or user workload monitoring is installed; see D-006.
 - id: ORD-GUARD-DEMO
-  description: "Do not overwrite the validated orders-service example; promotion leaves orders-service unchanged"
+  description: Do not overwrite the validated orders-service example; promotion leaves orders-service unchanged
   status: superseded
   implementation: []
   tests: []
   commands: []
-  evidence: [evidence/00-repositories.txt, evidence/01-cluster-baseline.txt]
-  deployment: {image_digest: null, gitops_commit: null}
-  limitations: ["orders-service no longer exists as a repository, namespace or Argo Application, so the guard has nothing to protect. Superseded after the user chose D-001 A and did not object to the stated default."]
+  evidence:
+  - evidence/00-repositories.txt
+  - evidence/01-cluster-baseline.txt
+  deployment:
+    image_digest: 
+    gitops_commit: 
+  limitations:
+  - orders-service no longer exists as a repository, namespace or Argo Application, so the guard has nothing to protect. Superseded after the user chose D-001 A and did not object to the stated default.
