@@ -5,13 +5,13 @@ All implementation prompts are standalone Markdown. See `manifest.json` for mach
 - `02-platform/01_contracts_and_data_foundation.md`
 - `01-services/01_order_service.md`
 - `01-services/02_inventory_service.md`
+- `01-services/04_erp_vm_simulator.md`
 - `01-services/03_fulfillment_adapter.md`
+- `02-platform/05_virtualization_integration.md`
 - `01-services/07_experience_bff.md`
 - `01-services/08_operator_console.md`
 - `02-platform/02_observability_stack.md`
 - `01-services/09_scenario_controller.md`
-- `01-services/04_erp_vm_simulator.md`
-- `02-platform/05_virtualization_integration.md`
 - `01-services/05_telemetry_service.md`
 - `01-services/06_notification_service.md`
 - `02-platform/03_mesh_and_rollouts.md`

@@ -19,13 +19,13 @@ Map every changed behavior to acceptance evidence. Priority convention: **P0** =
 2. Concurrent requests for scarce stock allocate **no more than available**.
 3. Replaying `order.placed.v1`, `inventory.reserved.v1`, and `fulfillment.requested.v1` leaves one reservation and at most one ERP shipment.
 4. Broker outage after order commit leaves an outbox row that publishes after recovery.
-5. ERP slowdown raises measurable fulfillment lag; order remains durable; no retry storm.
+5. ERP delay, an outage, or a MANUAL-mode backlog raises measurable fulfillment lag; accepted work remains durable; no retry storm.
 6. The UI displays time-ordered events and diagnostic IDs without access to the OpenShift console.
 7. Fault reset restores seeded state using a documented, non-destructive method.
 
 ## SLO experiments: candidate, not promises
 
-On warmed Core profile with AI workload isolated and synthetic **5 req/s**, test order-create p95 under **800 ms**. With healthy deterministic ERP, target **95% fulfilled within 30 s**. For sampled paths, target **≥95% correlation coverage**. For injected ERP slowdown, target alert creation **within two minutes**. Record actual values and lab conditions; if targets fail, update evidence rather than asserting success.
+On warmed Core profile with AI workload isolated and synthetic **5 req/s**, test order-create p95 under **800 ms**. With a healthy ERP in AUTO mode, target **95% fulfilled within 30 s**; MANUAL mode waits for an operator by design. For sampled paths, target **≥95% correlation coverage**. For injected ERP slowdown, target alert creation **within two minutes**. Record actual values and lab conditions; if targets fail, update evidence rather than asserting success.
 
 ## Explicit limitations
 

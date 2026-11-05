@@ -7,17 +7,16 @@ This is the **recommended sequence**, not a requirement that one agent execute e
 | 0 | Platform `01_contracts_and_data_foundation` | Versioned schemas, Postgres/Kafka resource plan, compatibility tests |
 | 1 | Service `01_order_service` | Idempotent POST and transactional outbox |
 | 2 | Service `02_inventory_service` | Concurrent reserve, denial and duplicate event handling |
-| 3 | Service `03_fulfillment_adapter` | Replay-safe adapter against HTTP ERP stub |
+| 3 | Service `04_erp_vm_simulator`, then `03_fulfillment_adapter` and Platform `05_virtualization` in parallel | Shared legacy file protocol; adapter round trip over SFTP to the boot-to-TUI ERP VM |
 | 4 | Service `07_experience_bff` + `08_operator_console` | Full visible order lifecycle and timeline |
 | 5 | Platform `02_observability_stack` | Order ID links logs, trace and metrics |
 | 6 | Service `09_scenario_controller` | Deterministic broker/ERP fault and recovery demo |
-| 7 | Service `04_erp_vm_simulator` + Platform `05_virtualization` | Same contract moved behind VM endpoint |
-| 8 | Services `05_telemetry` + `06_notification` | Sensor alerts and async notification path |
-| 9 | Platform `03_mesh_and_rollouts` | Canary/mTLS/fault injection validated |
-| 10 | Platform `04_trusted_delivery` | Negative supply-chain gate and digest proof |
-| 11 | Platform `06_ai_inference` + Service `10_ai_operations` | Read-only cited incident answer |
+| 7 | Services `05_telemetry` + `06_notification` | Sensor alerts and async notification path |
+| 8 | Platform `03_mesh_and_rollouts` | Canary/mTLS/fault injection validated |
+| 9 | Platform `04_trusted_delivery` | Negative supply-chain gate and digest proof |
+| 10 | Platform `06_ai_inference` + Service `10_ai_operations` | Read-only cited incident answer |
 
-**Prerequisite nuance:** Our Golden Path's phases 1–4 are **already validated**; the table is an application build order, not a request to rerun platform installation. Initial demo may use a deterministic ERP container/stub until virtualization becomes safe to enable. Treat heavy platform features as **profiles**: `core`, `delivery`, `operate`, `hybrid`, `ai`.
+**Prerequisite nuance:** Our Golden Path's phases 1–4 are **already validated**; the table is an application build order, not a request to rerun platform installation. Development may use the ERP's container harness over SFTP, but ERP acceptance requires the VM appliance; the ERP never exposes HTTP. Treat heavy platform features as **profiles**: `core`, `delivery`, `operate`, `hybrid`, `ai`.
 
 ## Session discipline
 
