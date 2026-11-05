@@ -2,8 +2,8 @@
   "issue": "box1-org/box1-docs#11",
   "profile": "frontier",
   "current_phase": 7,
-  "phase_state": "release_gate_blocked_on_acs_registry_access",
-  "updated_at": "2026-11-05T10:00:00-05:00",
+  "phase_state": "release_gate_blocked_on_image_cves",
+  "updated_at": "2026-11-05T10:20:00-05:00",
   "open_decisions": [],
   "repositories": {
     "box1-docs": {
@@ -13,9 +13,9 @@
     "order-service": {
       "role": "implementation target",
       "main": "fba518d8aec8982b69aad75076c780cfda030896",
-      "run_branch": "order-domain",
-      "commit": "078f341e9014a38daf826719cf67b5bf8f4fc6bd",
-      "pr": 1
+      "run_branch": "release-gate-image-fixes",
+      "commit": "121d7e617666fd93dfd2cf16f3072ae8d51b6190",
+      "pr": 3
     },
     "box1-ops-order": {
       "role": "proposed by prompt, does not exist",
@@ -32,8 +32,7 @@
       "role": "shared infrastructure",
       "main": "6dc869d",
       "run_branch": "order-dlq-topic",
-      "pr": 52,
-      "pr_open": 53
+      "pr": 52
     },
     "box1-workloads-dev": {
       "role": "service workloads",

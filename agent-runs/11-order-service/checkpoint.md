@@ -2,7 +2,7 @@
 
 **Updated:** 2026-11-05 America/New_York
 **Current phase:** 7, partially complete. The code is live, but acceptance is limited, the release smoke is at risk, and the Release pass has not run.
-**Stop reason:** ACS registry access needs a merge, a sync and RHACS admin rights. See the exact next action.
+**Stop reason:** `order-service#3` needs a merge. See the exact next action.
 
 ## Branches and PRs
 
@@ -65,13 +65,10 @@ Re-verify the baseline before relying on it.
 
 ## Exact next action
 
-TPA uploads work again: the NooBaa backing store was restored with approval and proven with a real upload. See `evidence/08-security-availability.txt`.
+The ACS test scan works, but `gate` would reject the deployed image: 14 violations of the `FAIL_BUILD` policy `Fixable Severity at least Important`. See `evidence/08-security-availability.txt`.
 
-ACS registry access is still blocked, in this order:
+1. The user merges `order-service#3`. It pins the current base image and overrides Guava. Merging to `main` should start the release with `gate`.
+2. Follow the release: gate results, digest, promotion, smoke.
+3. Run the Release reviewer pass in a fresh subagent and update the ledger.
 
-1. The user merges `box1-gitops#53` and approves a `pipelines-ci` sync (it has no automated sync).
-2. The integration is created in Central. This needs RHACS admin rights, which this run does not hold. The user does it, or says which credential to use.
-3. Test by scanning the deployed digest with the CI token. Check registry TLS trust here.
-4. Re-trigger the release with `gate`. It needs a new commit on `main` or a `/retest` comment.
-
-Scanner and eviction work is in box1-docs#43. It is not fixed, and the matcher may still restart during a release.
+The same base digest is pinned in `box1-templates` and `quarkus-reference`. Scanner and eviction work is in box1-docs#43, and the matcher may still restart during a release.

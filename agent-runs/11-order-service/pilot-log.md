@@ -91,3 +91,4 @@ None in product code. One harness adjustment: the scaffold's `verify` failed loc
 - Opened PRs: `box1-templates#23`, `box1-templates#24`, `order-service#1`, `box1-ops-contracts#3`, `box1-gitops#52`, `box1-workloads-dev#50`. Filed issues box1-docs#40, #41 and #42 at the user's request.
 - With approval: deleted the evicted NooBaa agent pod, which the operator recreated. One SBOM probe document remains in TPA, because the CI client cannot delete it. Details in `evidence/08-security-availability.txt`.
 - Opened `box1-gitops#53`. Filed box1-docs#43 at the user's request.
+- Opened `order-service#3`. Scanned the deployed digest and two base image digests in RHACS with the CI token.

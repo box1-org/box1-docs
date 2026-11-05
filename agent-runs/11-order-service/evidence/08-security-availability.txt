@@ -51,3 +51,16 @@ Indexer last failure: refused connections to scanner-v4-db, exit 1. Stable since
 ## Registry access
 box1-gitops#53 open: acs-registry-reader, pull only in box1-ci. Not merged. No integration exists yet, so ACS still cannot scan.
 Tracked: box1-docs#43.
+
+# Test scan 2026-11-05, 15:07 UTC, CI token, deployed digest sha256:fb669bff...83fd
+Prerequisites: box1-gitops#53 merged, pipelines-ci Synced/Healthy, integration created by the user.
+POST /v1/images/scan: 200 in 2.6 s. Scanner V4, indexer and matcher 4.11.6, os rhel:9. The integration's TLS setting is not verified: the CI token gets 403 reading integrations.
+373 components, 298 unique CVEs: 1 Critical, 16 Important, 187 Moderate, 94 Low.
+POST /v1/detect/build: 200, 3 alerts:
+  Fixable Severity at least Important: FAIL_BUILD, 14 violations (13 base image, 1 guava)
+  90-Day Image Age: inform only, Jib's 1970 timestamp, false positive for reproducible builds
+  Red Hat Package Manager in Image: inform only, microdnf and rpm in base
+Base image policy check: pinned 856ee654 has 13 FAIL_BUILD violations; latest cfa544ef (1.24-3.1793323798) has none.
+Matcher during the test: 665 restarts, no change, ready.
+Fix proposed in order-service#3. Full suite passes locally. Built image not yet scanned.
+The same base digest is pinned in box1-templates and quarkus-reference, so new builds there should expect the same 13 violations. Not scanned.
