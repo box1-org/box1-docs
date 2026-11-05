@@ -1,6 +1,6 @@
 # box1 Operations — prompt manifest
 
-All implementation prompts are standalone Markdown. See `manifest.json` for machine-readable order. Each file is intentionally **far below 64K tokens** because Qwen's configured 64K context also includes tool output, repository contents, history and model output. Use one service prompt per coding session plus the shared contracts; preserve ~6K tokens for safety margin.
+All implementation prompts are standalone Markdown. See `manifest.json` for machine-readable order. Each file is intentionally **far below 64K tokens** because Qwen's configured 64K context also includes tool output, repository contents, history and model output. Use one service prompt per coding session plus the shared contracts; preserve ~6K tokens for safety margin. That sizing is for the default `qwen-64k` profile; the `frontier` profile is defined in `00-shared/07_FRONTIER_EXECUTION_PROFILE.md`.
 
 - `02-platform/01_contracts_and_data_foundation.md`
 - `01-services/01_order_service.md`

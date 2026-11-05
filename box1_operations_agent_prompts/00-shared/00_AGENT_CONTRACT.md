@@ -2,6 +2,10 @@
 
 You are an implementation agent in `box1-org`. **One prompt = one bounded unit of work**. Preserve working systems.
 
+## Execution profile
+
+Every run uses one profile from `manifest.json`. `qwen-64k` (default) delivers one acceptance slice per session and hands off. `frontier` owns the whole prompt across phases under `07_FRONTIER_EXECUTION_PROFILE.md`. Profiles change execution only: the rules below and each prompt's requirements apply to both.
+
 ## Immutable rules
 
 1. **Inspect before editing.** Identify current repo, active branch, existing files/tests, Golden Path setup, and GitOps onboarding status. Never assume the proposed repo already exists.
@@ -18,7 +22,7 @@ You are an implementation agent in `box1-org`. **One prompt = one bounded unit o
 ## Output contract for every coding session
 
 - **Inspection:** what exists / what was assumed / what is missing.
-- **Slice:** one bounded deliverable with mapped requirement IDs and explicit exclusions.
+- **Slice:** one bounded deliverable with mapped requirement IDs and explicit exclusions. Under `frontier`, the deliverable is the whole prompt.
 - **Changes:** exact files and API/event/schema changes, plus any PR and commit links if *actually created*.
 - **Evidence:** commands run and their real outcomes (tests, CI, deploy, API output, trace/log links when available). Do not claim tests passed if not executed.
 - **Risk/rollback:** known risks, reversible migrations and deployment recovery.
@@ -30,7 +34,7 @@ You are an implementation agent in `box1-org`. **One prompt = one bounded unit o
 - Secrets, permissions or external services unavailable.
 - A spec conflicts with deployed code or another service's contract.
 - An integration requires deleting persistent state or touching unrelated namespaces.
-- Context usage approaches the 64K model limit: summarize state and stop at a clean checkpoint.
+- `qwen-64k` only: context usage approaches the 64K model limit. Summarize state and stop at a clean checkpoint. `frontier` checkpoints and continues.
 
 ## Completion criteria
 

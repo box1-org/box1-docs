@@ -28,4 +28,32 @@
 - Next smallest slice:
 - Exact files to read (not whole repo):
 - Blockers and required user decisions:
-- Context budget warning if near the 64K limit:
+- Context budget warning if near the 64K limit (`qwen-64k` only):
+
+## Run state (`frontier` only)
+
+```yaml
+profile: frontier
+issue:
+current_phase:
+repositories:
+  - name:
+    branch:
+    commit:
+run_state_path:
+requirements:          # counts by ledger status
+  proposed: 0
+  implemented: 0
+  locally_tested: 0
+  ci_verified: 0
+  deployed: 0
+  live_verified: 0
+  blocked: 0
+  superseded: 0
+image_digest:
+gitops_commit:
+review_passes_completed: []
+open_decisions: []
+rollback_state:
+next_action:
+```
