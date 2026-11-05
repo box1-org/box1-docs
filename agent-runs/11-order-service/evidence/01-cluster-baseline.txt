@@ -1,0 +1,79 @@
+# captured 2026-11-05 02:35 EST
+## cluster
+Server Version: 5.0.0-rc.7
+<node> Ready v1.36.5
+<node>   3946m   12%   65865Mi   51%   
+  cpu                            15810m (50%)   64183m (203%)
+  memory                         63276Mi (49%)  174688Mi (136%)
+
+## Argo
+NAME                 SYNC     HEALTH    REV
+box1-workloads-dev   Synced   Healthy   b52ec2e7d84e304e1257c5020103be8185910240
+order-service        Synced   Healthy   b52ec2e7d84e304e1257c5020103be8185910240
+box1-kafka           Synced   Healthy   3951caf9aaf7e2abe1d53e860c0c4fa25d0d6049
+kafka-operator       Synced   Healthy   3951caf9aaf7e2abe1d53e860c0c4fa25d0d6049
+
+## order-service-dev
+NAME                                     READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/order-service            1/1     1            1           26m
+deployment.apps/order-service-postgres   1/1     1            1           26m
+
+NAME                             TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
+service/order-service            ClusterIP   <cluster-ip>   <none>        8080/TCP   26m
+service/order-service-postgres   ClusterIP   <cluster-ip>   <none>        5432/TCP   26m
+
+NAME                                     HOST/PORT                             PATH   SERVICES        PORT   TERMINATION     WILDCARD
+route.route.openshift.io/order-service   order-service-dev.apps.ocp.box1.org          order-service   http   edge/Redirect   None
+
+NAME                                                STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+persistentvolumeclaim/order-service-postgres-data   Bound    <pv>   5Gi        RWO            lvms-vg1       <unset>                 26m
+NAME                                      CPU(cores)   MEMORY(bytes)   
+order-service-68499cfc94-7ssm2            2m           146Mi           
+order-service-postgres-5644c55f57-tttw2   4m           21Mi            
+image=image-registry.openshift-image-registry.svc:5000/box1-ci/order-service@sha256:7c206ee34db79bc2f505098642cd4388a6fe5511d12426f736a20060c872aa54
+resources={"limits":{"cpu":"1","memory":"512Mi"},"requests":{"cpu":"100m","memory":"128Mi"}}
+postgres resources={}
+
+## endpoints from workstation, unauthenticated
+{"name":"order-service","version":"1.0.0-SNAPSHOT","javaVersion":21,"deliveryMode":"tekton-gitops","gitRef":"fba518d8aec8982b69aad75076c780cfda030896"}
+/q/health/ready 200
+/q/metrics 200
+/q/openapi 200
+/q/swagger-ui/ 200
+/api/v1/orders 404
+route DNS: <private-lan-address>  (internet reachability not tested)
+
+## Kafka
+box1-kafka   True         4.2.0   4.2-IV1
+box1.fulfillment.events.v1    box1-kafka   3     1     True
+box1.inventory.events.v1      box1-kafka   3     1     True
+box1.notification.events.v1   box1-kafka   3     1     True
+box1.order.events.v1          box1-kafka   3     1     True
+box1.telemetry.events.v1      box1-kafka   6     1     True
+listeners: [{"name":"plain","port":9092,"tls":false,"type":"internal"}]
+authorization: 
+config: {"default.replication.factor":1,"min.insync.replicas":1,"offsets.topic.replication.factor":1,"transaction.state.log.min.isr":1,"transaction.state.log.replication.factor":1}
+KafkaUsers: 1 ('No resources' line counts as 1)
+entity operators watch: box1-kafka
+topics matching dlq|dlt|retry: 0
+
+## Observability and secrets tooling
+CRDs matching opentelemetry|tempo|loki: 0
+CRDs matching externalsecret|sealedsecret|vault: 0
+Error from server (NotFound): configmaps "cluster-monitoring-config" not found
+No resources found in openshift-user-workload-monitoring namespace.
+
+## CI task
+box1-quarkus-maven sidecars: 
+verify cmd: ['/workspace/tools/apache-maven-3.9.16/bin/mvn -B -ntp -Dmaven.repo.local=/workspace/m2 verify -DskipITs=false']
+smoke asserts:
+  assert re.fullmatch('[a-f0-9]{40}',revision) and re.fullmatch('sha256:[a-f0-9]{64}',digest)
+  assert re.fullmatch('[a-z][a-z0-9-]{2,39}',name)
+  assert re.fullmatch('[a-z][a-z0-9-]{2,62}',namespace)
+  base='https://'+namespace+'.apps.ocp.box1.org'
+  assert json.loads(get('/api/greetings?name=OpenShift'))['message']=='Hello from box1, OpenShift!'
+  assert info['javaVersion']==21 and info['name']==name and info['gitRef']==revision
+  assert 'box1_greetings_total' in get('/q/metrics','text/plain')
+  get('/api/greetings?name=%20')
+release pipeline security-gates: value: disabled
+onb-order-service-fba518d8   True   Succeeded   26m   24m

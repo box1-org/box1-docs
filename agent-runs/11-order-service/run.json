@@ -1,0 +1,16 @@
+{
+  "issue": "box1-org/box1-docs#11",
+  "profile": "frontier",
+  "current_phase": 0,
+  "phase_state": "exit_criteria_met_stopped_for_user_decisions",
+  "updated_at": "2026-11-05T02:40:00-05:00",
+  "open_decisions": ["D-001", "D-002", "D-003", "D-004", "D-005"],
+  "repositories": {
+    "box1-docs": {"branch": "agent-run/11-order-service", "base": "c151c2f"},
+    "order-service": {"role": "candidate target, inspected only", "main": "fba518d8aec8982b69aad75076c780cfda030896", "run_branch": null},
+    "box1-ops-order": {"role": "proposed by prompt, does not exist", "run_branch": null},
+    "box1-ops-contracts": {"role": "shared contracts, inspected only", "main": "5d44122", "run_branch": null},
+    "box1-gitops": {"role": "shared infrastructure, inspected only", "main": "3951caf", "run_branch": null},
+    "box1-workloads-dev": {"role": "service workloads, inspected only", "main": "b52ec2e", "run_branch": null}
+  }
+}

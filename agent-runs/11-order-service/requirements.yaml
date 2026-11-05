@@ -1,0 +1,319 @@
+# Requirement ledger for box1-docs#11. Status is the highest level actually observed.
+# The prompt's FR-01, FR-03, FR-04, DAT-03/04 and OBS-01/02/03 tags are not defined anywhere on box1-docs main,
+# so IDs below derive from the prompt's behavior and acceptance text.
+
+- id: ORD-API-CREATE
+  description: "POST /api/v1/orders with Idempotency-Key atomically writes order, idempotency record and order.placed.v1 outbox row; 201 + Location on first request"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {image_digest: null, gitops_commit: null}
+  limitations: []
+- id: ORD-API-READ
+  description: "GET list, GET by id and /timeline with stable pagination, timestamps, state, status reason and trace/correlation references"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {image_digest: null, gitops_commit: null}
+  limitations: []
+- id: ORD-API-PROBLEM
+  description: "404 and other errors are RFC 9457 Problem JSON"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {image_digest: null, gitops_commit: null}
+  limitations: []
+- id: ORD-DB-SCHEMA
+  description: "Flyway migrations for orders, order_state_history, idempotency_records, outbox, processed_event with unique constraints and lifecycle indexes"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {image_digest: null, gitops_commit: null}
+  limitations: []
+- id: ORD-STATE-GUARD
+  description: "Guarded transitions on the documented path and alternates; FULFILLMENT_REQUESTED displayable as Awaiting ERP acknowledgement"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {image_digest: null, gitops_commit: null}
+  limitations: []
+- id: ORD-SAGA-RESERVED
+  description: "inventory.reserved.v1 once per event/order links reservationId, moves to RESERVED and enqueues fulfillment.requested.v1 in one transaction"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {image_digest: null, gitops_commit: null}
+  limitations: ["Contract fixture available; inventory is out of scope, so this stays fixture-driven."]
+- id: ORD-SAGA-REJECTED
+  description: "inventory.rejected.v1 moves to REJECTED"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {image_digest: null, gitops_commit: null}
+  limitations: ["No schema or fixture in box1-ops-contracts at 5d44122."]
+- id: ORD-SAGA-SHIPPED
+  description: "shipment.confirmed.v1 moves to SHIPPED; COMPLETED only under an explicit completion policy"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {image_digest: null, gitops_commit: null}
+  limitations: ["Completion policy is an unrecorded Phase 1 decision."]
+- id: ORD-SAGA-NOREGRESS
+  description: "Late or duplicate events never regress state"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {image_digest: null, gitops_commit: null}
+  limitations: []
+- id: ORD-OUTBOX-PUBLISH
+  description: "Restart-safe publisher with bounded batch/lease or safe claiming, backoff retries, published only after broker confirmation, key = orderId"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {image_digest: null, gitops_commit: null}
+  limitations: []
+- id: ORD-OUTBOX-METRICS
+  description: "box1_outbox_pending and oldest pending age metrics"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {image_digest: null, gitops_commit: null}
+  limitations: []
+- id: ORD-TRACE-PROPAGATE
+  description: "Valid W3C traceparent, correlationId and causationId are propagated across HTTP and events"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {image_digest: null, gitops_commit: null}
+  limitations: []
+- id: ORD-LOG-JSON
+  description: "JSON logs carry orderId and event ID and no sensitive customer data"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {image_digest: null, gitops_commit: null}
+  limitations: []
+- id: ORD-METRICS-BUSINESS
+  description: "Business meters: order age, lifecycle rates, stuck order count, outbox lag"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {image_digest: null, gitops_commit: null}
+  limitations: []
+- id: ORD-AC-IDEMP-10X
+  description: "Issue AC 1: same key + same body 10x returns one order and one outbox event; same key + changed body returns 409"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {image_digest: null, gitops_commit: null}
+  limitations: []
+- id: ORD-AC-CONCURRENT
+  description: "Issue AC 2: concurrent duplicate POSTs, including at the transaction boundary, return one persisted aggregate"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {image_digest: null, gitops_commit: null}
+  limitations: []
+- id: ORD-AC-KAFKA-FAIL
+  description: "Issue AC 3: Kafka failure after commit leaves an unpublished outbox record; recovery emits once logically; consumers remain idempotent"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {image_digest: null, gitops_commit: null}
+  limitations: []
+- id: ORD-AC-REDELIVERY
+  description: "Issue AC 4: redelivery/out-of-order events do not duplicate fulfillment requests or regress status; timeline ordered and attributable"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {image_digest: null, gitops_commit: null}
+  limitations: []
+- id: ORD-AC-LOCAL-OPS
+  description: "Issue AC 5: OpenAPI examples, DB migrations, readiness failing when DB is unavailable, metrics inspectable locally"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {image_digest: null, gitops_commit: null}
+  limitations: []
+- id: ORD-VS-ROLLBACK
+  description: "Scenario: rollback during create"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {image_digest: null, gitops_commit: null}
+  limitations: []
+- id: ORD-VS-PUB-RESTART
+  description: "Scenario: publisher restart while claiming"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {image_digest: null, gitops_commit: null}
+  limitations: []
+- id: ORD-VS-MALFORMED
+  description: "Scenario: malformed envelopes"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {image_digest: null, gitops_commit: null}
+  limitations: []
+- id: ORD-VS-DLQ
+  description: "Scenario: retry exhaustion to the dead-letter path"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {image_digest: null, gitops_commit: null}
+  limitations: ["No dead-letter topic exists on the cluster; local proof possible, live proof needs an approved shared-infrastructure PR."]
+- id: ORD-VS-DUP-FULFILL
+  description: "Scenario: duplicate fulfillment requests"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {image_digest: null, gitops_commit: null}
+  limitations: []
+- id: ORD-VS-MIGRATION-RERUN
+  description: "Scenario: migration rerun"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {image_digest: null, gitops_commit: null}
+  limitations: []
+- id: ORD-VS-RESTART-MSG
+  description: "Scenario: restart during message processing"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {image_digest: null, gitops_commit: null}
+  limitations: []
+- id: ORD-VS-AUTHZ
+  description: "Scenario: unauthorized access to internal endpoints"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {image_digest: null, gitops_commit: null}
+  limitations: ["Depends on open decision D-003."]
+- id: ORD-VS-PII
+  description: "Scenario: customer data in logs or events"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {image_digest: null, gitops_commit: null}
+  limitations: []
+- id: ORD-CONTRACT-OPENAPI
+  description: "OpenAPI covers the prompt and examples validate against box1-ops-contracts"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {image_digest: null, gitops_commit: null}
+  limitations: ["Order schema at 5d44122 rejects every valid order; see evidence/03-local-baselines.txt."]
+- id: ORD-CONTRACT-EVENTS
+  description: "Event schemas and fixtures cover every event this service produces or consumes"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {image_digest: null, gitops_commit: null}
+  limitations: ["Missing at 5d44122: inventory.rejected, inventory.reservation-expired, order.state-changed, shipment.failed."]
+- id: ORD-DOCS
+  description: "README, docs/architecture.md, docs/runbook.md, config documentation and Developer Hub metadata"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {image_digest: null, gitops_commit: null}
+  limitations: []
+- id: ORD-OPS-RESOURCES
+  description: "Measured request/limit proposal and security boundaries recorded"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {image_digest: null, gitops_commit: null}
+  limitations: ["Scaffold postgres Deployment has no requests or limits."]
+- id: ORD-DELIVERY-GITOPS
+  description: "Immutable image, promotion PR for this service only, Argo reports the expected revision, pod runs the digest"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {image_digest: null, gitops_commit: null}
+  limitations: ["Depends on open decisions D-001, D-002 and D-005."]
+- id: ORD-LIVE-LIFECYCLE
+  description: "One order lifecycle followed through logs, metrics, traces and timeline as far as deployed dependencies allow"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {image_digest: null, gitops_commit: null}
+  limitations: ["No trace backend or user workload monitoring is installed; see D-006."]
+- id: ORD-GUARD-DEMO
+  description: "Do not overwrite the validated orders-service example; promotion leaves orders-service unchanged"
+  status: blocked
+  implementation: []
+  tests: []
+  commands: []
+  evidence: [evidence/00-repositories.txt, evidence/01-cluster-baseline.txt]
+  deployment: {image_digest: null, gitops_commit: null}
+  limitations: ["orders-service no longer exists as a repository, namespace or Argo Application, so the guard has nothing to protect. Awaiting user confirmation in D-001 before marking superseded."]
