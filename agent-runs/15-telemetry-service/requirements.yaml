@@ -27,19 +27,19 @@
   implementation: ["src/main/java/org/box1/asset/store/TelemetryStore.java", "src/main/resources/db/migration/V1__telemetry_schema.sql"]
   tests: ["src/test/java/org/box1/asset/it/TelemetryFlowTest.java#burstWithDuplicatesStoresEachReadingOnceAndPagesStably"]
   commands: ["./mvnw verify -Pcontainers"]
-  evidence: ["evidence/03-tests-local.txt"]
+  evidence: ["evidence/03-tests-local.txt", "evidence/04-scenarios-local.txt"]
   deployment: {}
   limitations: []
 
 - id: TEL-STORE-001
   description: "Recent readings are kept in owned persistence with bounded retention and a documented partition/cleanup strategy"
-  status: implemented
+  status: locally_tested
   implementation: ["src/main/java/org/box1/asset/ops/RetentionJob.java", "src/main/resources/db/migration/V1__telemetry_schema.sql"]
-  tests: []
-  commands: []
-  evidence: []
+  tests: ["src/test/java/org/box1/asset/it/RetentionTest.java"]
+  commands: ["./mvnw verify -Pcontainers"]
+  evidence: ["evidence/03-tests-local.txt"]
   deployment: {}
-  limitations: ["Retention deletes not yet exercised by a test"]
+  limitations: ["Row-cap branch not exercised; age retention and audit guard are"]
 
 - id: TEL-READ-001
   description: "GET /api/v1/assets/{assetId}/readings supports time range and pagination with stable ordering (AC3)"
@@ -67,7 +67,7 @@
   implementation: ["src/main/java/org/box1/asset/domain/ThresholdEngine.java", "src/main/java/org/box1/asset/consume/ReadingProjector.java"]
   tests: ["src/test/java/org/box1/asset/ThresholdEngineTest.java", "src/test/java/org/box1/asset/it/TelemetryFlowTest.java#flappingGivesOneAlertOneEventThenOneClearWithLinkedIds"]
   commands: ["./mvnw verify", "./mvnw verify -Pcontainers"]
-  evidence: ["evidence/03-tests-local.txt"]
+  evidence: ["evidence/03-tests-local.txt", "evidence/04-scenarios-local.txt"]
   deployment: {}
   limitations: []
 
@@ -87,9 +87,9 @@
   implementation: ["src/main/java/org/box1/asset/ingest/ReadingPublisher.java"]
   tests: ["src/test/java/org/box1/asset/ReadingPublisherTest.java"]
   commands: ["./mvnw verify"]
-  evidence: ["evidence/03-tests-local.txt"]
+  evidence: ["evidence/03-tests-local.txt", "evidence/04-scenarios-local.txt"]
   deployment: {}
-  limitations: ["Unit-tested with MockProducer; a real broker pause is a Phase 4 scenario"]
+  limitations: []
 
 - id: TEL-DLQ-001
   description: "Invalid events go to a telemetry dead-letter path"
@@ -103,13 +103,13 @@
 
 - id: TEL-OBS-001
   description: "Structured logs, traces and metrics for ingestion rate, drops, lag, alert counts and stale assets (OBS-04/05/06)"
-  status: implemented
+  status: locally_tested
   implementation: ["src/main/java/org/box1/asset/ops/OperationalGauges.java", "src/main/java/org/box1/asset/ops/Readouts.java"]
-  tests: []
-  commands: []
-  evidence: []
+  tests: ["scripts/scenarios.py (outage, pause, rejections read /q/metrics and readouts)"]
+  commands: ["python3 -I scenarios.py outage pause rejections"]
+  evidence: ["evidence/04-scenarios-local.txt"]
   deployment: {}
-  limitations: ["Metric names listed in docs/architecture.md; trace export off until box1-docs#22"]
+  limitations: ["Trace export off until box1-docs#22; stale-asset gauge observed but not asserted"]
 
 - id: TEL-OBS-002
   description: "Source event IDs and trace IDs appear in telemetry and incident evidence (AC5)"
@@ -127,17 +127,17 @@
   implementation: ["src/main/resources/application.properties"]
   tests: ["src/test/java/org/box1/asset/SecurityTest.java"]
   commands: ["./mvnw verify"]
-  evidence: ["evidence/03-tests-local.txt"]
+  evidence: ["evidence/03-tests-local.txt", "evidence/04-scenarios-local.txt"]
   deployment: {}
   limitations: []
 
 - id: TEL-CON-001
   description: "Console is plain HTML/CSS/JS served by the same Quarkus pod, no build toolchain or CDN, calls only this service's control API"
-  status: implemented
+  status: locally_tested
   implementation: ["src/main/resources/META-INF/resources/console/"]
-  tests: []
-  commands: []
-  evidence: []
+  tests: ["scripts/console-check.mjs"]
+  commands: ["node console-check.mjs"]
+  evidence: ["evidence/05-browser-local.txt"]
   deployment: {}
   limitations: []
 
@@ -147,9 +147,9 @@
   implementation: ["src/main/resources/application.properties", "src/main/java/org/box1/asset/api/ControlResource.java"]
   tests: ["src/test/java/org/box1/asset/SecurityTest.java#consoleAndControlNeedABrowserLoginAndNeverAcceptAnonymousOrBearerAlone"]
   commands: ["./mvnw verify"]
-  evidence: ["evidence/03-tests-local.txt"]
+  evidence: ["evidence/03-tests-local.txt", "evidence/04-scenarios-local.txt"]
   deployment: {}
-  limitations: ["Real Keycloak login is a Phase 4 scenario; live needs D-013"]
+  limitations: ["Local Keycloak 26.4, not RH-SSO 7.6; live needs D-013"]
 
 - id: TEL-LOAD-001
   description: "Load generator takes sites, assets, metrics, rate per asset and duration; uses the same validation and publication path as ingestion"
@@ -167,7 +167,7 @@
   implementation: ["src/main/java/org/box1/asset/control/SeededRandom.java", "src/main/java/org/box1/asset/control/RunScript.java", "src/main/java/org/box1/asset/control/SequenceDigest.java"]
   tests: ["src/test/java/org/box1/asset/RunScriptTest.java", "src/test/java/org/box1/asset/it/ControlTest.java#sameSeedReplaysTheSameSequenceAndRunsEndWithoutABrowser"]
   commands: ["./mvnw verify", "./mvnw verify -Pcontainers"]
-  evidence: ["evidence/03-tests-local.txt"]
+  evidence: ["evidence/03-tests-local.txt", "evidence/04-scenarios-local.txt"]
   deployment: {}
   limitations: []
 
@@ -177,7 +177,7 @@
   implementation: ["src/main/java/org/box1/asset/control/ChaosEntry.java", "src/main/java/org/box1/asset/control/RunScript.java"]
   tests: ["src/test/java/org/box1/asset/RunScriptTest.java#chaosUsesOnlyTheCatalogWithinItsBounds", "src/test/java/org/box1/asset/it/ControlTest.java#chaosRunsInjectOnlyCatalogEntriesAndStopAllResumesTheProducer"]
   commands: ["./mvnw verify", "./mvnw verify -Pcontainers"]
-  evidence: ["evidence/03-tests-local.txt"]
+  evidence: ["evidence/03-tests-local.txt", "evidence/04-scenarios-local.txt"]
   deployment: {}
   limitations: []
 
@@ -187,7 +187,7 @@
   implementation: ["src/main/java/org/box1/asset/control/RunManager.java", "src/main/java/org/box1/asset/control/RunTransitions.java", "src/main/java/org/box1/asset/api/ConsoleHeaderFilter.java"]
   tests: ["src/test/java/org/box1/asset/it/ControlTest.java#capsHoldAgainstRequestsThatBypassThePage", "src/test/java/org/box1/asset/it/ControlTest.java#armThenConfirmWithTokenAndTypedNamespaceThenConcurrencyCapThenStopAll"]
   commands: ["./mvnw verify -Pcontainers"]
-  evidence: ["evidence/03-tests-local.txt"]
+  evidence: ["evidence/03-tests-local.txt", "evidence/04-scenarios-local.txt"]
   deployment: {}
   limitations: []
 
@@ -197,7 +197,7 @@
   implementation: ["src/main/java/org/box1/asset/control/RunManager.java"]
   tests: ["src/test/java/org/box1/asset/it/ControlTest.java#armThenConfirmWithTokenAndTypedNamespaceThenConcurrencyCapThenStopAll"]
   commands: ["./mvnw verify -Pcontainers"]
-  evidence: ["evidence/03-tests-local.txt"]
+  evidence: ["evidence/03-tests-local.txt", "evidence/04-scenarios-local.txt"]
   deployment: {}
   limitations: []
 
@@ -217,17 +217,17 @@
   implementation: ["src/main/java/org/box1/asset/control/RunTransitions.java#reap"]
   tests: ["src/test/java/org/box1/asset/it/ControlTest.java#reaperAbortsRunsWhoseOwnerStoppedAndExpiresRunsPastTtl"]
   commands: ["./mvnw verify -Pcontainers"]
-  evidence: ["evidence/03-tests-local.txt"]
+  evidence: ["evidence/03-tests-local.txt", "evidence/04-scenarios-local.txt"]
   deployment: {}
-  limitations: ["Simulated with a stale row; a real process kill is a Phase 4 scenario"]
+  limitations: []
 
 - id: TEL-CHAOS-006
   description: "The page reports state honestly and shows unknown when the backend cannot confirm it"
-  status: implemented
+  status: locally_tested
   implementation: ["src/main/resources/META-INF/resources/console/console.js"]
-  tests: []
-  commands: []
-  evidence: []
+  tests: ["scripts/console-check.mjs (state calls aborted)"]
+  commands: ["node console-check.mjs"]
+  evidence: ["evidence/05-browser-local.txt", "evidence/screenshots/06-unknown-state.png"]
   deployment: {}
   limitations: []
 
@@ -237,7 +237,7 @@
   implementation: ["src/main/java/org/box1/asset/control/RunManager.java", "src/main/java/org/box1/asset/control/RunTransitions.java#reap"]
   tests: ["src/test/java/org/box1/asset/it/ControlTest.java#sameSeedReplaysTheSameSequenceAndRunsEndWithoutABrowser", "src/test/java/org/box1/asset/it/ControlTest.java#reaperAbortsRunsWhoseOwnerStoppedAndExpiresRunsPastTtl"]
   commands: ["./mvnw verify -Pcontainers"]
-  evidence: ["evidence/03-tests-local.txt"]
+  evidence: ["evidence/03-tests-local.txt", "evidence/04-scenarios-local.txt"]
   deployment: {}
   limitations: []
 
@@ -247,27 +247,27 @@
   implementation: ["src/main/java/org/box1/asset/control/ChaosGate.java"]
   tests: ["src/test/java/org/box1/asset/ChaosGateTest.java", "src/test/java/org/box1/asset/it/GateNotAllowlistedTest.java", "src/test/java/org/box1/asset/it/GateDisabledTest.java"]
   commands: ["./mvnw verify", "./mvnw verify -Pcontainers"]
-  evidence: ["evidence/03-tests-local.txt"]
+  evidence: ["evidence/03-tests-local.txt", "evidence/04-scenarios-local.txt"]
   deployment: {}
   limitations: ["The namespace to allowlist is open (D-015)"]
 
 - id: TEL-UX-001
   description: "Console follows the box1 design ethos and brand-kit cube 1 mark; keyboard operable; reduced motion; passes automated accessibility checks (AC10)"
-  status: implemented
+  status: locally_tested
   implementation: ["src/main/resources/META-INF/resources/console/"]
-  tests: []
-  commands: []
-  evidence: []
+  tests: ["scripts/console-check.mjs"]
+  commands: ["node console-check.mjs"]
+  evidence: ["evidence/05-browser-local.txt", "evidence/screenshots/"]
   deployment: {}
-  limitations: ["Brand mark open (D-016)"]
+  limitations: ["Brand mark open (D-016): text wordmark only"]
 
 - id: TEL-UX-002
   description: "Live readouts of rate, alerts and producer lag come from the service's own metrics"
-  status: implemented
+  status: locally_tested
   implementation: ["src/main/java/org/box1/asset/ops/Readouts.java"]
-  tests: []
-  commands: []
-  evidence: []
+  tests: ["scripts/console-check.mjs", "scripts/scenarios.py"]
+  commands: ["node console-check.mjs"]
+  evidence: ["evidence/05-browser-local.txt", "evidence/screenshots/03-running-chaos.png"]
   deployment: {}
   limitations: []
 

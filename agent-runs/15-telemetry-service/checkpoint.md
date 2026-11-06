@@ -1,34 +1,33 @@
 # Checkpoint: box1-docs#15, frontier
 
-**Current phase:** 3 complete; Phase 4 (verification scenarios) in progress.
-**Updated:** 2026-11-05 ~19:00 EST.
+**Current phase:** 4 complete; Phase 5 (reviewer passes) starting.
+**Updated:** 2026-11-05 ~19:20 EST.
 
-## Branches and commits
-| Repo | Branch | Commit | Worktree |
+## Branches, commits and PRs (none merged)
+| Repo | Branch | Commit | PR |
 |---|---|---|---|
-| asset-service | telemetry-service | 18dddb0 | ../run15-asset-service (clone) |
-| box1-ops-contracts | asset-service-v1 | 8764f7d | ../run15-contracts |
-| box1-workloads-dev | asset-service-runtime-config | uncommitted edits | ../run15-workloads |
-| box1-gitops | telemetry-dlq-topic | 8bca2c0 | ../run15-gitops |
-| box1-gitops | asset-service-keycloak-client | 95206e7 | ../run15-gitops (current branch) |
-| box1-docs | agent-run/15-telemetry-service | this commit | ../run15-docs |
+| asset-service | telemetry-service | 3c40e8c | https://github.com/box1-org/asset-service/pull/1 |
+| box1-ops-contracts | asset-service-v1 | 8764f7d | https://github.com/box1-org/box1-ops-contracts/pull/7 |
+| box1-workloads-dev | asset-service-runtime-config | df641af | https://github.com/box1-org/box1-workloads-dev/pull/64 |
+| box1-gitops | telemetry-dlq-topic | 8bca2c0 | https://github.com/box1-org/box1-gitops/pull/62 |
+| box1-gitops | asset-service-keycloak-client | 95206e7 | https://github.com/box1-org/box1-gitops/pull/63 |
 
-## Tests
-- `./mvnw verify` (no containers) and `./mvnw test -Pcontainers`: 50 tests, 0 failures at d5646c2; verify passes static analysis at 18dddb0. Evidence `evidence/03-tests-local.txt`.
-- Contracts: `npm test` 5/5, `npm run validate` 10 fixtures, 11 schemas, 18 examples.
+## Tests and evidence
+- `./mvnw clean verify -Pcontainers` at 5fdfe89: 52 tests, 0 failures, static analysis clean; RetentionTest (2) added at 3c40e8c and passing.
+- Phase 4 scenarios all PASS locally: `evidence/04-scenarios-local.txt`. Browser checks (headless Firefox, axe, keyboard): `evidence/05-browser-local.txt`, `evidence/screenshots/`.
+- Ledger: 29 locally_tested, 1 implemented (docs), 2 proposed (delivery, live).
 
-## Local environment (for Phase 4)
-- Containers `run15-pg` :15432, `run15-kafka` :19092, `run15-keycloak` :18180 (realm built from the proposed KeycloakClient; users and local-only passwords in the session scratch directory, never published).
-- App: scratch `run-local.sh` on :18080, `POD_NAMESPACE=run15-local`, chaos allowlisted for `run15-local` only.
-- E2E client: scratch `e2e/console_client.py` (real code-flow login).
+## Local environment
+Containers run15-pg :15432, run15-kafka :19092, run15-keycloak :18180; app on :18080 (scratch run-local.sh, PID file app.pid). Scratch scripts mirrored in evidence/scripts.
 
-## Open decisions (report together at the next stop)
-- D-012 DLQ topic merge + box1-kafka selective sync (approval).
-- D-013 Keycloak client merge (approval); who drives live console runs.
-- D-014 database Secret: recommended out-of-band Secret, no password in Git.
+## Open decisions (report together at the Phase 6 stop)
+- D-012 merge box1-gitops#62 and selectively sync KafkaTopic box1.telemetry.dlq.v1.
+- D-013 merge box1-gitops#63; assign chaos-operator; who drives the live console runs.
+- D-014 database Secret: recommended out of band (runbook command), no password in Git.
 - D-015 chaos namespace name.
-- D-016 brand mark asset (console uses a text wordmark until answered).
-- Private discovery findings: reported directly to the user; not recorded here.
+- D-016 brand mark asset.
+- Then merges in order: workloads#64, contracts#7 (repin if rewritten), asset-service#1.
+- Private discovery findings: reported directly to the user.
 
 ## Exact next action
-Run Phase 4 scenarios against the local jar: seed replay via session, TTL with no client, stop-all mid-run, kill -9 restart mid-run, anonymous and no-role, non-allowlisted namespace, broker pause (podman pause run15-kafka) and producer-pause chaos, caps via direct API, invalid/oversize, axe scan and keyboard-only with headless Firefox, screenshots. Then commit workloads branch and open PRs.
+Run reviewer passes (architecture, persistence, messaging, security incl. console and Route, operations) on asset-service 3c40e8c vs 0dc14dc plus the four other PR diffs; record findings in review-findings/; fix; rerun the full suite. The Release pass waits for deployment.

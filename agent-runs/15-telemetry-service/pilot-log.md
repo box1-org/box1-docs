@@ -19,7 +19,12 @@ Found during implementation and local tests (Phase 3), fixed and retested:
 4. **A meter registration error wedged the consumer.** The clear path registered `asset.alerts.transitions` with different tag keys from activation; Prometheus threw, and the consumer retried the non-transient error forever, holding the partition. Fixed the tags, and the consumer now retries only transient database errors indefinitely; anything else gets five attempts and is dead-lettered as `PROJECTION_FAILED`. This is the same defect class the inventory reviewers found (permanent errors retried), reached by a different route.
 5. **Config keys that would break startup.** The strict `asset.*` mapping would have rejected the scheduler interval keys if anyone set them. Moved them under `box1.*`.
 
-Test harness and test defects: wrong expected codes for a form post (415 is a refusal too) and an expired arm (409 once the reaper closed it), non-hex run IDs in a reaper test, a URL-encoding mistake, a deleted test file from a failed split script (recreated), and the `latest`-offset race in a fresh test group (tests now wait for a probe reading).
+Found by verification (Phase 4), fixed and retested:
+
+6. **A console session cookie authenticated the bearer-only API.** Against the real app, anonymous data-API calls from a client that had visited `/console/` got a login redirect, not 401. Quarkus picked the `console` tenant from the session cookie ahead of `tenant-paths`, so a logged-in browser could authenticate reads and, with `telemetry-writer`, ingestion: a CSRF surface the design ruled out (D-002). The WireMock tests had sent no cookies, so they passed. A path-only `TenantResolver` fixed it, and a test now sends console cookies to the data API.
+7. **Accessibility and narrow layout.** axe-core found 20 buttons whose accessible name did not contain their visible text (WCAG 2.5.3), and the page overflowed 116 px at 390 px, from crushed tables and a fieldset's `min-width: min-content`. Both fixed, then rerun clean.
+
+Test harness and test defects: wrong expected codes for a form post (415 is a refusal too) and an expired arm (409 once the reaper closed it), non-hex run IDs in a reaper test, a URL-encoding mistake, a deleted test file from a failed split script (recreated), and the `latest`-offset race in a fresh test group (tests now wait for a probe reading). In Phase 4: the metric parser read OpenMetrics exemplar timestamps as counter values (printing 1.79 billion rejections), a rejection scenario relied on counters that an app restart had reset, and a test reader scanned the whole local topic from the beginning and timed out once earlier runs had filled it.
 
 ## Profile ambiguity and friction
 
@@ -31,7 +36,21 @@ Test harness and test defects: wrong expected codes for a form post (415 is a re
 
 ## Did earlier pilots' lessons prevent repeats?
 
-(filled in as the run proceeds)
+| Earlier lesson | Applied here | Result |
+|---|---|---|
+| Permanent errors retried forever (inventory review) | Retry loop written to hold on database failures | **Repeated, then fixed in Phase 3.** My loop retried every exception; a meter-registration bug wedged a partition. Now transient-only, with a bounded path to the DLQ. |
+| One cause looks like many failures (order, inventory) | Read causes before counting | **Prevented misdiagnosis.** 5 failures: 3 test defects and 1 product defect. |
+| Exemplar timestamps parsed as metric values (inventory saga script) | Not applied: I did not reread that note before writing the parser | **Repeated.** Caught because the number was implausible. |
+| ConfigMap literal changes fail promote (#42) | New settings are Deployment `env` entries | Applied; promote not yet exercised |
+| Guava CVE fails the gate; template gate disabled (#42) | Guava override and `security-gates: gate` from the start | Applied; gate not yet exercised |
+| Roles from a top-level `groups` claim (inventory review) | `role-claim-path` only; a test sends roles in `groups` and expects 403 | **Prevented.** |
+| Role check after body binding gives 400 not 403 (inventory) | Path policy plus `@RolesAllowed`; tests assert 403 with invalid bodies | **Prevented.** |
+| DLQ topic must exist first (order, inventory) | Separate PR and documented merge order | Applied; not yet merged |
+| Don't publish live weaknesses (order) | Discovery findings reported to the user directly; pointers only | Applied |
+| Check that a release-gate dependency actually works (order) | Not yet: Phase 6 | Pending |
+| Laptop sleep | `caffeinate -ims` on every long run; clocks checked before each | No sleep observed so far |
+| Clock domains (order) | Run timing, heartbeats, reaper and outbox use the database clock | No clock-domain defect found so far |
+| Start reviewers after Phase 4 (inventory) | Reviewers start after this commit | Applied |
 
 ## Environment findings
 
