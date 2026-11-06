@@ -1,6 +1,6 @@
 {
   "project": "box1 Operations",
-  "version": "1.5",
+  "version": "1.6",
   "created_on": "2026-10-25",
   "nominal_model_context_tokens": 65536,
   "gpu": {
@@ -44,7 +44,8 @@
         "01-services/03_fulfillment_adapter.md",
         "02-platform/05_virtualization_integration.md",
         "01-services/05_telemetry_service.md",
-        "01-services/08_operator_console.md"
+        "01-services/08_operator_console.md",
+        "01-services/06_notification_service.md"
       ]
     }
   },
