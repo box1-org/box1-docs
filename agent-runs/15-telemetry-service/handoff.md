@@ -55,13 +55,13 @@
 - Blockers and required user decisions:
   - The user assigns `chaos-operator` and runs the console.
   - D-015, for any chaos run.
-- Follow-ups for the backlog:
-  - REL-2: OpenAPI scopes for the reads.
-  - VertxTracer log noise.
-  - ARCH-10: machine client for `telemetry-writer` (needs approval).
-  - SEC-5: Secret-backed session key (needs approval).
-  - OPS-11: catch-up memory measurement.
-  - MDC trace IDs on run threads.
+- Follow-ups, filed:
+  - #59: the Keycloak operator skips `spec.roles` (README note in box1-gitops#71, open).
+  - #60: OpenAPI scopes for the reads (REL-2).
+  - #61: VertxTracer log noise.
+  - #62: machine client for `telemetry-writer` (needs approval).
+  - #63: Secret-backed session key (needs approval).
+  - Not filed: catch-up memory measurement (OPS-11) and MDC trace IDs on run threads, both recorded in `review-findings/operations.md`.
 
 ## Run state
 
