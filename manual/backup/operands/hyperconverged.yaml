@@ -1,0 +1,61 @@
+# Cleaned export from the Box1 cluster (status and live metadata removed).
+apiVersion: hco.kubevirt.io/v1
+kind: HyperConverged
+metadata:
+  annotations:
+    platform.kubevirt.io/managed-by: virt-platform-autopilot
+    platform.kubevirt.io/version: 1.0.0
+  labels:
+    app: kubevirt-hyperconverged
+    platform.kubevirt.io/managed-by: virt-platform-autopilot
+  name: kubevirt-hyperconverged
+  namespace: openshift-cnv
+spec:
+  deployment:
+    applicationAwareConfig:
+      allowApplicationAwareClusterResourceQuota: false
+      enable: false
+      vmiCalcConfigName: DedicatedVirtualResources
+    deployNetworkResourcesInjector: true
+    deployVmConsoleProxy: false
+    uninstallStrategy: BlockUninstallIfWorkloadsExist
+  security:
+    certConfig:
+      ca:
+        duration: 48h0m0s
+        renewBefore: 24h0m0s
+      server:
+        duration: 24h0m0s
+        renewBefore: 12h0m0s
+  storage:
+    workloadResourceRequirements:
+      limits:
+        cpu: '2'
+        memory: 4Gi
+      requests:
+        cpu: 250m
+        memory: 1Gi
+  virtualization:
+    evictionStrategy: None
+    higherWorkloadDensity:
+      memoryOvercommitPercentage: 100
+    ksmConfiguration: {}
+    liveMigrationConfig:
+      allowAutoConverge: false
+      allowPostCopy: false
+      allowWorkloadDisruption: false
+      completionTimeoutPerGiB: 20
+      parallelMigrationsPerCluster: 5
+      parallelOutboundMigrationsPerNode: 1
+      progressTimeout: 150
+    virtualMachineOptions:
+      disableFreePageReporting: false
+      disableSerialConsoleLog: false
+    vmiCPUAllocationRatio: 10
+    workloadUpdateStrategy:
+      batchEvictionInterval: 1m0s
+      batchEvictionSize: 10
+      workloadUpdateMethods:
+      - LiveMigrate
+  workloadSources:
+    enableCommonBootImageImport: true

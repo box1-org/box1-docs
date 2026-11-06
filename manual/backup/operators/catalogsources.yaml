@@ -1,0 +1,28 @@
+# Cleaned export from the Box1 cluster (status and live metadata removed).
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: redhat-operators-v422
+  namespace: openshift-marketplace
+spec:
+  displayName: Red Hat Operators Snapshot
+  grpcPodConfig:
+    securityContextConfig: restricted
+  image: quay.io/rhpds/olm_snapshot_redhat_catalog:v4.22_2026_08_03
+  priority: -500
+  publisher: Red Hat AgnosticD
+  sourceType: grpc
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: certified-operators-v422
+  namespace: openshift-marketplace
+spec:
+  displayName: Certified Operators v422
+  image: registry.redhat.io/redhat/certified-operator-index:v4.22
+  publisher: Red Hat
+  sourceType: grpc
+  updateStrategy:
+    registryPoll:
+      interval: 30m

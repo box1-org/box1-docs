@@ -1,0 +1,46 @@
+# Cleaned export from the Box1 cluster (status and live metadata removed).
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-production
+spec:
+  acme:
+    email: mike.battles@gmail.com
+    privateKeySecretRef:
+      name: letsencrypt-production-account
+    server: https://acme-v02.api.letsencrypt.org/directory
+    solvers:
+    - dns01:
+        cloudflare:
+          apiTokenSecretRef:
+            key: api-token
+            name: cloudflare-api-token
+      selector:
+        dnsZones:
+        - box1.org
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: openshift-api
+  namespace: openshift-config
+spec:
+  dnsNames:
+  - api.ocp.box1.org
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt-production
+  secretName: openshift-api-tls
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: openshift-apps
+  namespace: openshift-ingress
+spec:
+  dnsNames:
+  - '*.apps.ocp.box1.org'
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt-production
+  secretName: openshift-apps-tls
