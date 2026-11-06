@@ -24,10 +24,10 @@ Each item is a separate approval. A-1 to A-6 were approved at stop 2.
 | A-5 | New Secret `scenario-controller-inventory-token` | Created by pipe, value never shown | **Done** |
 | A-6 | Merge **box1-org/box1-workloads-dev#103** | Merged (`e28c020`); Argo Synced and Healthy; Recreate | **Done** |
 | A-7 | Assign `scenario-operator` (client scenario-controller) to the person who runs scenarios, and get a token from `scenario-controller-cli` | Needed to call the controller. Whether RH-SSO 7.6 enables the device grant by attribute is not established | **Done** (the user issued a test user with the role; device grant works with PKCE; evidence/09) |
-| A-8 | **Cluster seeding** (**done by the user** 15:41 EST, created=26; a second seed for idempotence still to run) | `POST /internal/v1/fixtures/seed`: four sites and 22 stock records through inventory's API; nothing else changes | After A-4b (#79), A-7 |
+| A-8 | **Cluster seeding** (**done by the user**: created=26, then created=0 unchanged=26) | `POST /internal/v1/fixtures/seed`: four sites and 22 stock records through inventory's API; nothing else changes | After A-4b (#79), A-7 |
 | A-9 | **Live run: The Trouble with Tribbles** (**done by the user**, VERIFIED, evidence/11) | Two fixture orders; one reserved, one rejected; additive reset | After A-8 |
-| A-10 | **Live run: Make it so** | One fixture order; you ship it in the ERP console when the run shows the step (or switch the ERP to AUTO) | After A-8 |
-| A-11 | **Live run: Hold that order, Number One** (the guided ERP scenario) | One fixture order; you hold and then release it in the ERP console (`virtctl console legacy-erp -n legacy-erp-dev`). It needs no demo faults. If you don't do the step, it times out as not verified | After A-8 |
+| A-10 | **Live run: Make it so** (**done by the user**, VERIFIED, evidence/12) | One fixture order; you ship it in the ERP console when the run shows the step (or switch the ERP to AUTO) | After A-8 |
+| A-11 | **Live run: Hold that order, Number One** (**done by the user**, VERIFIED, evidence/12) | One fixture order; you hold and then release it in the ERP console (`virtctl console legacy-erp -n legacy-erp-dev`). It needs no demo faults. If you don't do the step, it times out as not verified | After A-8 |
 
 ## Decisions
 

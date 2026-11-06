@@ -32,7 +32,8 @@
   limitations: [The controller enables no fault itself; ERP faults are set and undone at the ERP console (RESET_GUIDED). Five scenarios are not yet possible and have no fault code.]
 - id: AC-3
   description: ERP delayed processing or a manual hold reproduces alert and long-running order without data loss; inventory contention shows one reservation
-  status: locally_tested
+  status: live_verified
+  live_evidence: ["evidence/12: erp-manual-hold VERIFIED on the cluster; evidence/11 contention; alert = fulfillment_held gauge (no alert rule)"]
   implementation: [src/main/java/org/box1/scenario/scenarios/ErpManualHold.java, ErpDelayedProcessing.java, InventoryContention.java]
   tests: [ScenarioRunsTest.holdThatOrderNumberOneIsVerifiedThroughTheAdapter, ScenarioRunsTest.impulsePowerOnlyNeedsAVisibleDelay]
   commands: ["evidence/scripts/e2e.py hold delay tribbles"]
@@ -48,7 +49,8 @@
   limitations: [Pod-level restart on the cluster not exercised]
 - id: AC-5
   description: Fixtures seed idempotently through service APIs; seeding twice gives the same state; nothing outside the fixture set is changed or deleted
-  status: deployed
+  status: live_verified
+  live_evidence: ["evidence/11 and 12: seeds created=26 then created=0 unchanged=26 on the cluster"]
   live_evidence: ["evidence/11: first cluster seed created=26 through inventory's API; a second seed (idempotence) not yet run live"]
   implementation: [src/main/java/org/box1/scenario/fixtures/, inventory-service#3]
   tests: [ScenarioRunsTest.seedingTwiceGivesTheSameStateAndTouchesOnlyFixtures, inventory ReservationScenariosTest.sitesAndStockRecordsAreCreatedOnceAndNeverChanged]
@@ -132,14 +134,17 @@
 - id: VS-TTL-KILL
   description: TTL expiry with the controller killed mid-run
   status: locally_tested
+  limitations: ["Cluster pod restart mid-run: marked overtaken by events (OBE) by the user, 2026-11-06"]
   evidence: [evidence/04-local-e2e.txt, evidence/07-local-e2e-after-review.txt]
 - id: VS-STOP-RESET
   description: Stop and reset
-  status: locally_tested
+  status: live_verified
+  live_evidence: ["evidence/12 seq 28-32: STOP, STOPPED, RESET_GUIDED with stock restored"]
   evidence: [evidence/04-local-e2e.txt, evidence/07-local-e2e-after-review.txt]
 - id: VS-SEED-TWICE
   description: Seeding twice
-  status: locally_tested
+  status: live_verified
+  live_evidence: ["evidence/12 seq 16"]
   evidence: [evidence/04-local-e2e.txt, evidence/07-local-e2e-after-review.txt]
 - id: VS-TRIBBLE
   description: Tribble contention with two simultaneous orders
@@ -165,7 +170,8 @@
   limitations: [red-alert is not yet possible (D-010, P-5): asset-service accepts only azp=asset-service and chaos is disabled on the cluster]
 - id: VS-AUDIT
   description: Audit record complete for every run
-  status: locally_tested
+  status: live_verified
+  live_evidence: ["evidence/11 and 12: START/STOP/SEED under the user, RESULT/RESET under the system actor, for every live run"]
   evidence: [evidence/04-local-e2e.txt, evidence/07-local-e2e-after-review.txt]
 - id: VS-NO-COLLATERAL
   description: No data outside the fixture set changed
@@ -174,12 +180,14 @@
 
 - id: LIVE-BASELINE
   description: '"Make it so" on the cluster with audit and end-state evidence, after approval'
-  status: proposed
+  status: live_verified
+  live_evidence: ["evidence/12: Make it so VERIFIED, ERP step by the user"]
 - id: LIVE-TRIBBLES
   description: '"The Trouble with Tribbles" on the cluster with audit and end-state evidence, after approval'
   status: live_verified
   live_evidence: ["evidence/11-live-seed-and-tribbles.md (run by the user from the console)"]
 - id: LIVE-GUIDED-ERP
   description: One guided ERP scenario on the cluster with audit and end-state evidence, after approval
-  status: proposed
+  status: live_verified
+  live_evidence: ["evidence/12: Hold that order VERIFIED, hold and release by the user"]
   limitations: ["Became feasible during the run: box1-workloads-dev#100 enabled adapter SFTP to the ERP VM (01:07 EST). erp-manual-hold needs no demo faults."]
