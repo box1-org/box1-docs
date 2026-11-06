@@ -1,7 +1,15 @@
 # Checkpoint: box1-docs#18 operator console (frontier)
 
-**Current phase:** 7 Live acceptance, stopped. The checks need a signed-in session through the Route.
-**Updated:** 2026-11-06 ~00:27 EST.
+**Current phase:** 7 Live acceptance, in progress. Read-only live checks are done (`evidence/06`). Stopped for approvals.
+**Updated:** 2026-11-06 ~00:37 EST.
+
+## Live results
+- Pass: sign-in, tokens absent, hosts, CSP, axe in light and dark, mobile, keyboard to the order list, CSRF.
+- **Logout FAILED**: the SSO session survives on RH-SSO 7.6. Fix in box1-gitops#77.
+- AC8 ticked (cluster proof).
+- Test user `claude` was issued by the user. Its password is in `$RUN_DIR/live-password` (mode 600, private, never committed).
+- Run the live checks with: `LIVE=1 LIVE_USER=claude RUN_DIR=… npx playwright test` in `src/test/e2e` (spec in operations-console#4).
+
 
 ## Deployed state (`evidence/05-delivery.md`)
 - operations-console `main` `267152e` → image `sha256:584e7e37…`. Promotion box1-workloads-dev#96 merged at `b3a1a52`. Argo Synced and Healthy.
@@ -15,6 +23,7 @@
   - delivery and revision consistency.
 
 ## Exact next action
+0. After box1-gitops#77 merges and Argo `keycloak` syncs, rerun the live logout test: the signed-out page shows, and a revisit shows the login form.
 Once the user has signed in, or has approved a run test user, work through this checklist on `https://operations-console-dev.apps.ocp.box1.org` in Firefox:
 
 1. Sign in. Navigation matches the roles; Delivery is shown only with `console-developer`.
