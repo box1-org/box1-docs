@@ -36,3 +36,13 @@ Live state, read-only checks 2026-11-06 ~01:59Z (20:59 EST):
   "chaos gate: CHAOS_DISABLED"; started in 4.773 s. Warnings: OpenTelemetry VertxTracer "delegate not set" per request
   (exporter off until box1-docs#22; log noise, follow-up) and the expected per-pod session key notice.
 - The user-driven console load run (Phase 7) has not happened yet. Chaos is deferred (D-015).
+
+Second release (CORS fix, asset-service#2 merged by the user as 828065e1), 2026-11-06 ~02:40 UTC:
+- asset-service-release-qr6nl Succeeded: digest sha256:4d8623986033b87bea25bed9461f0731e6616f47de00cc1bf21132dbbf0675d0,
+  promotion box1-workloads-dev#74, gitops revision aa0b4b04. Argo asset-service Synced/Healthy at aa0b4b04; pod imageID matches;
+  /api/info gitRef 828065e16c67ddbe980f591dc8c3beac8df1e300.
+- On the Route: POST /api/v1/control/stop-all anonymous with Origin https://asset-service-dev.apps.ocp.box1.org -> 499
+  (reaches authentication; was 403 CORS for the user's browser before); with Origin https://evil.example -> 403.
+- Client roles chaos-operator, telemetry-writer, telemetry-reader created by hand by the user in the admin console
+  (the RH-SSO 7.6 operator did not apply KeycloakClient spec.roles). The user's login with chaos-operator reached the
+  control API on the cluster (observed as the CORS 403, i.e. after authentication, before the fix).

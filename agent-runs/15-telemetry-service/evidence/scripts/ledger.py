@@ -90,8 +90,8 @@ for _rid in ['TEL-INGEST-001', 'TEL-INGEST-002', 'TEL-ALERT-002', 'TEL-BP-001', 
     L[_rid]['limitations'].append(CI_NOTE)
 
 EV10 = 'evidence/10-delivery.txt'
-DEPLOY = {'image_digest': 'sha256:6d8e8c172b2885f35a551eb34c53429e1ac85a1771263ba841795c683fbde944',
-          'gitops_commit': '7a90162e4ed31aba2fa9e98e07bc765d321c30d9', 'source': '1706dd0b0123cbddd510d1fb6bf9d44cc020fee5'}
+DEPLOY = {'image_digest': 'sha256:4d8623986033b87bea25bed9461f0731e6616f47de00cc1bf21132dbbf0675d0',
+          'gitops_commit': 'aa0b4b044d96ce42a26e0119d2823c6591811250', 'source': '828065e16c67ddbe980f591dc8c3beac8df1e300'}
 for _rid, _e in L.items():
     if _rid in ('TEL-LIVE-001',):
         continue
