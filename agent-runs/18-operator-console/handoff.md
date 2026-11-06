@@ -1,4 +1,4 @@
-# Handoff: box1-docs#18 operator console (frontier), stopped at Phase 6 for approvals
+# Handoff: box1-docs#18 operator console (frontier), stopped at Phase 7 for a signed-in session
 
 ## Work completed
 - **Service / platform workstream:** Service 08, web application / operator console.
@@ -34,8 +34,15 @@
   - Implementation `-l6jv2` (`d007f00`).
   - Repairs `-8pkct` (`1d65b2b`).
   - All Succeeded with the unchanged Golden Path task.
-- **GitOps PR and deployed image digest:** none deployed. The deployed console is still the onboarding scaffold (`sha256:00c55736…`).
-- **Routes / endpoints verified:** none for the console implementation. The upstreams' anonymous read behaviour was observed in discovery.
+- **GitOps PR and deployed image digest:**
+  - box1-workloads-dev#96 → `b3a1a52`.
+  - `sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f`, source `267152e`.
+  - Release `operations-console-release-859h8`: gate, smoke and console-smoke passed (`evidence/05-delivery.md`). The first release `-mtdgc` failed the gate on the Guava CVE and was fixed by #3.
+- **Routes / endpoints verified:**
+  - Anonymous 401 Problem JSON on all console API paths through the Route.
+  - Page redirect to RH-SSO with PKCE; RH-SSO login page served for the client.
+  - Headers; brand mark hash.
+  - `/api/info` gitRef equals the deployment annotation.
 
 ## Contract state
 - **OpenAPI / event schemas changed:** new console contract `META-INF/openapi.yaml` 1.0.0, using #17's paths, Problem JSON and `sources`. No other service's contract was changed. No events.
@@ -73,34 +80,34 @@
 ```yaml
 profile: frontier
 issue: box1-org/box1-docs#18
-current_phase: 6 (stopped at entry; merges need approval)
+current_phase: 7 (stopped: live checks need a signed-in session through the Route)
 repositories:
   - name: box1-org/operations-console
-    branch: issue-18-console
-    commit: 1d65b2b
+    branch: main
+    commit: 267152e3d1e25d6308cd00d5b1389db2507d55f8
   - name: box1-org/box1-gitops
-    branch: run18-operations-console-keycloak
-    commit: 16d561e
+    branch: main
+    commit: 09cd71abeab264fc16473ce3d5d0080fac614b83
   - name: box1-org/box1-workloads-dev
-    branch: run18-operations-console-runtime
-    commit: see PR #90
+    branch: main
+    commit: b3a1a52001a9a83a3dd65c4e66c8a16277ed3167
   - name: box1-org/box1-docs
     branch: agent-run/18-operator-console
     commit: (this commit)
 run_state_path: agent-runs/18-operator-console/
 requirements:
-  proposed: 1
-  implemented: 3
+  proposed: 0
+  implemented: 2
   locally_tested: 19
-  ci_verified: 12
-  deployed: 0
-  live_verified: 0
+  ci_verified: 8
+  deployed: 3
+  live_verified: 3
   blocked: 1
   superseded: 0
-image_digest: null
-gitops_commit: null
+image_digest: sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f
+gitops_commit: b3a1a52001a9a83a3dd65c4e66c8a16277ed3167
 review_passes_completed: [architecture, persistence, messaging, security, operations, release, frontend]
-open_decisions: [O-1 order-fulfillment link, O-2 asset-service azp, O-3 session key secret, O-4 favicon, O-5 customer role, O-6 cluster fixtures, O-7 Keycloak merge + role assignment, O-8 no held ERP on cluster, O-9 upstream token strategy]
-rollback_state: nothing deployed; all changes are unmerged PRs
-next_action: user approves merges in order box1-gitops#73 -> assign roles -> box1-workloads-dev#90 -> operations-console#2; then Phase 6 observation and Phase 7 live acceptance
+open_decisions: [O-1 order-fulfillment link, O-2 asset-service azp, O-3 session key secret, O-4 favicon, O-5 customer role, O-6 cluster fixtures, O-8 no held ERP on cluster, O-9 upstream token strategy, P7 how to obtain a signed-in session for live checks]
+rollback_state: deployed; rollback = revert box1-workloads-dev promotion commit b3a1a52 via PR (untested)
+next_action: user signs in (or approves a run test user); then run the Phase 7 checklist in checkpoint.md against the Route in Firefox
 ```

@@ -3,13 +3,13 @@
 - id: CON-BUILD-001
   description: 'React/TypeScript front end built by the existing Golden Path pipeline from a pinned lockfile and served from the console pod'
   source: 'AC8'
-  status: ci_verified
+  status: deployed
   implementation: [pom.xml, src/main/webui/package-lock.json, src/main/webui/.npmrc]
   tests: [src/test/java/org/box1/FrontendServedTest.java]
   commands: ["PR pipeline operations-console-validate-l6jv2 (d007f00)", "probe: operations-console-validate-zqk5s"]
-  evidence: ["evidence/01-frontend-build-probe.md", "evidence/04-ci-implementation.md"]
-  deployment: {}
-  limitations: ["Served from the deployed pod: Phase 6/7"]
+  evidence: ["evidence/01-frontend-build-probe.md", "evidence/04-ci-implementation.md", "evidence/05-delivery.md"]
+  deployment: {"image_digest": "sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f", "gitops_commit": "b3a1a52001a9a83a3dd65c4e66c8a16277ed3167", "source": "267152e"}
+  limitations: ["The SPA bundle is behind login; serving it from the pod is to be observed on sign-in (Phase 7). Public build outputs (signed-out page, brand mark) are served from the pod."]
 - id: CON-BUILD-002
   description: 'No CDN or external font at runtime; the browser requests only the console Route and Keycloak'
   source: 'AC8; scenario: no other hosts'
@@ -18,7 +18,7 @@
   tests: ["FrontendServingTest.indexReferencesNoThirdPartyHost", "e2e session.spec (hosts)"]
   commands: ["./mvnw -B -ntp verify -DskipITs=false", "cd src/test/e2e && npx playwright test (local stack, Firefox)"]
   evidence: ["evidence/03-local-tests.md"]
-  deployment: {}
+  deployment: {"image_digest": "sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f", "gitops_commit": "b3a1a52001a9a83a3dd65c4e66c8a16277ed3167", "source": "267152e"}
   limitations: ["Not yet observed through the real Route"]
 - id: CON-SESSION-001
   description: 'Console backend holds the session; no access or refresh token readable by page JavaScript or stored in browser storage'
@@ -28,18 +28,18 @@
   tests: ["e2e session.spec"]
   commands: ["cd src/test/e2e && npx playwright test (local stack, Firefox)"]
   evidence: ["evidence/03-local-tests.md"]
-  deployment: {}
+  deployment: {"image_digest": "sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f", "gitops_commit": "b3a1a52001a9a83a3dd65c4e66c8a16277ed3167", "source": "267152e"}
   limitations: ["Local Keycloak 26.4, not RH-SSO 7.6; Route proof in Phase 7"]
 - id: CON-AUTHZ-001
   description: 'Anonymous console API calls get 401 through the real Route, on every console API path'
   source: 'AC6; scenario: anonymous request to every path'
-  status: ci_verified
+  status: live_verified
   implementation: ["security/ApiAwareAuthenticationMechanism.java"]
   tests: ["ConsoleSecurityTest.anonymousCallsToEveryConsoleApiPathGet401ProblemJson", "e2e session.spec anonymous"]
-  commands: ["PR pipeline operations-console-validate-l6jv2 (d007f00)", "./mvnw -B -ntp verify -DskipITs=false", "cd src/test/e2e && npx playwright test (local stack, Firefox)"]
-  evidence: ["evidence/04-ci-implementation.md", "evidence/03-local-tests.md"]
-  deployment: {}
-  limitations: ["Through the real Route: Phase 7"]
+  commands: ["curl anonymous on all 9 GET paths + POST through the Route"]
+  evidence: ["evidence/05-delivery.md"]
+  deployment: {"image_digest": "sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f", "gitops_commit": "b3a1a52001a9a83a3dd65c4e66c8a16277ed3167", "source": "267152e"}
+  limitations: []
 - id: CON-AUTHZ-002
   description: 'Signed-in user without the needed role gets 403 through the real Route; every role check is in the backend'
   source: 'AC6, AC2; scenario: user without role'
@@ -48,7 +48,7 @@
   tests: ["ConsoleSecurityTest.signedInWithoutRolesGets403OnEveryRoleProtectedPath", "e2e roles.spec"]
   commands: ["PR pipeline operations-console-validate-l6jv2 (d007f00)", "./mvnw -B -ntp verify -DskipITs=false", "cd src/test/e2e && npx playwright test (local stack, Firefox)"]
   evidence: ["evidence/04-ci-implementation.md", "evidence/03-local-tests.md"]
-  deployment: {}
+  deployment: {"image_digest": "sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f", "gitops_commit": "b3a1a52001a9a83a3dd65c4e66c8a16277ed3167", "source": "267152e"}
   limitations: ["Through the real Route: Phase 7"]
 - id: CON-ROLE-001
   description: 'Role-specific navigation and forbidden states in the browser reflect backend checks'
@@ -58,7 +58,7 @@
   tests: ["e2e roles.spec"]
   commands: ["cd src/test/e2e && npx playwright test (local stack, Firefox)"]
   evidence: ["evidence/03-local-tests.md"]
-  deployment: {}
+  deployment: {"image_digest": "sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f", "gitops_commit": "b3a1a52001a9a83a3dd65c4e66c8a16277ed3167", "source": "267152e"}
   limitations: []
 - id: CON-CUST-001
   description: 'Customer role checks (customer sees only own orders)'
@@ -78,7 +78,7 @@
   tests: ["ConsoleSecurityTest.stateChangingCallsNeedTheConsoleHeaderJsonAndOwnOrigin", "ConsoleSecurityTest.consoleHeaderIsNeverAllowedCrossOrigin", "e2e roles.spec CSRF"]
   commands: ["PR pipeline operations-console-validate-l6jv2 (d007f00)", "./mvnw -B -ntp verify -DskipITs=false", "cd src/test/e2e && npx playwright test (local stack, Firefox)"]
   evidence: ["evidence/04-ci-implementation.md", "evidence/03-local-tests.md"]
-  deployment: {}
+  deployment: {"image_digest": "sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f", "gitops_commit": "b3a1a52001a9a83a3dd65c4e66c8a16277ed3167", "source": "267152e"}
   limitations: []
 - id: CON-LOGOUT-001
   description: 'Logout ends the session'
@@ -88,7 +88,7 @@
   tests: ["e2e session.spec logout"]
   commands: ["cd src/test/e2e && npx playwright test (local stack, Firefox)"]
   evidence: ["evidence/03-local-tests.md"]
-  deployment: {}
+  deployment: {"image_digest": "sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f", "gitops_commit": "b3a1a52001a9a83a3dd65c4e66c8a16277ed3167", "source": "267152e"}
   limitations: ["RH-SSO 7.6 logout through the Route: Phase 7"]
 - id: CON-RESTART-001
   description: 'Pod restart behavior of the session observed and recorded'
@@ -98,7 +98,7 @@
   tests: []
   commands: ["restart probe script (evidence/03)"]
   evidence: ["evidence/03-local-tests.md"]
-  deployment: {}
+  deployment: {"image_digest": "sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f", "gitops_commit": "b3a1a52001a9a83a3dd65c4e66c8a16277ed3167", "source": "267152e"}
   limitations: ["Observed: restart ends sessions (per-process key). Pod restart on cluster to observe in Phase 7. Stable key needs approval (O-3)."]
 - id: CON-ERP-001
   description: 'Order detail distinguishes queued, awaiting ERP acknowledgement, accepted by ERP, held, shipped, rejected and needs attention from the adapter status'
@@ -108,7 +108,7 @@
   tests: ["ErpProgressMapperTest", "UpstreamBehaviourTest", "e2e flow.spec"]
   commands: ["PR pipeline operations-console-validate-l6jv2 (d007f00)", "./mvnw -B -ntp verify -DskipITs=false", "cd src/test/e2e && npx playwright test (local stack, Firefox)"]
   evidence: ["evidence/04-ci-implementation.md", "evidence/03-local-tests.md"]
-  deployment: {}
+  deployment: {"image_digest": "sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f", "gitops_commit": "b3a1a52001a9a83a3dd65c4e66c8a16277ed3167", "source": "267152e"}
   limitations: ["Live needs the order-to-fulfillment link decision (G-1/O-1); deployed default is none"]
 - id: CON-ERP-002
   description: "Adapter unreachable shows the order-service state with 'ERP detail unavailable', never a guessed adapter state"
@@ -118,7 +118,7 @@
   tests: ["UpstreamBehaviourTest.adapterDownShowsErpDetailUnavailableNeverAGuess", "e2e flow.spec adapter unreachable"]
   commands: ["PR pipeline operations-console-validate-l6jv2 (d007f00)", "./mvnw -B -ntp verify -DskipITs=false", "cd src/test/e2e && npx playwright test (local stack, Firefox)"]
   evidence: ["evidence/04-ci-implementation.md", "evidence/03-local-tests.md"]
-  deployment: {}
+  deployment: {"image_digest": "sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f", "gitops_commit": "b3a1a52001a9a83a3dd65c4e66c8a16277ed3167", "source": "267152e"}
   limitations: []
 - id: CON-ERP-003
   description: 'A held ERP request shows as held, not failed'
@@ -128,7 +128,7 @@
   tests: ["UpstreamBehaviourTest.heldRequestShowsAsHeldNotFailedAlongsideTheOrderState", "e2e flow.spec"]
   commands: ["PR pipeline operations-console-validate-l6jv2 (d007f00)", "./mvnw -B -ntp verify -DskipITs=false", "cd src/test/e2e && npx playwright test (local stack, Firefox)"]
   evidence: ["evidence/04-ci-implementation.md", "evidence/03-local-tests.md"]
-  deployment: {}
+  deployment: {"image_digest": "sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f", "gitops_commit": "b3a1a52001a9a83a3dd65c4e66c8a16277ed3167", "source": "267152e"}
   limitations: ["HELD produced by stubbed adapter; no ERP can hold on the cluster (G-3)"]
 - id: CON-PARTIAL-001
   description: 'Each upstream slow or down in turn gives a partial page with the failed source named, not infinite loading'
@@ -138,7 +138,7 @@
   tests: ["UpstreamBehaviourTest", "e2e flow.spec each upstream"]
   commands: ["PR pipeline operations-console-validate-l6jv2 (d007f00)", "./mvnw -B -ntp verify -DskipITs=false", "cd src/test/e2e && npx playwright test (local stack, Firefox)"]
   evidence: ["evidence/04-ci-implementation.md", "evidence/03-local-tests.md"]
-  deployment: {}
+  deployment: {"image_digest": "sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f", "gitops_commit": "b3a1a52001a9a83a3dd65c4e66c8a16277ed3167", "source": "267152e"}
   limitations: []
 - id: CON-IDEMP-001
   description: 'Order submitted twice with the same idempotency key creates one order'
@@ -148,7 +148,7 @@
   tests: ["UpstreamBehaviourTest.placingTwiceWithTheSameKeyReturnsTheSameOrderAndForwardsTheKey", "e2e flow.spec same key"]
   commands: ["./mvnw -B -ntp verify -DskipITs=false", "cd src/test/e2e && npx playwright test (local stack, Firefox)"]
   evidence: ["evidence/03-local-tests.md"]
-  deployment: {}
+  deployment: {"image_digest": "sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f", "gitops_commit": "b3a1a52001a9a83a3dd65c4e66c8a16277ed3167", "source": "267152e"}
   limitations: ["Deduplication itself is order-service's; the console forwards the key and locks the key and values after an unconfirmed create (UI test, local). Live check needs fixture approval (O-6)."]
 - id: CON-STATES-001
   description: 'Stable loading, empty and error states with typed Problem JSON errors'
@@ -158,7 +158,7 @@
   tests: ["e2e flow.spec", "e2e roles.spec"]
   commands: ["cd src/test/e2e && npx playwright test (local stack, Firefox)"]
   evidence: ["evidence/03-local-tests.md"]
-  deployment: {}
+  deployment: {"image_digest": "sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f", "gitops_commit": "b3a1a52001a9a83a3dd65c4e66c8a16277ed3167", "source": "267152e"}
   limitations: []
 - id: CON-NOCLAIM-001
   description: 'No UI claim of resolution before the backend confirms it'
@@ -168,7 +168,7 @@
   tests: ["e2e flow.spec (adapter SHIPPED while order FULFILLMENT_REQUESTED shows no completion)"]
   commands: ["cd src/test/e2e && npx playwright test (local stack, Firefox)"]
   evidence: ["evidence/03-local-tests.md"]
-  deployment: {}
+  deployment: {"image_digest": "sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f", "gitops_commit": "b3a1a52001a9a83a3dd65c4e66c8a16277ed3167", "source": "267152e"}
   limitations: []
 - id: CON-A11Y-001
   description: 'Keyboard-only order and incident traversal'
@@ -178,7 +178,7 @@
   tests: ["e2e a11y.spec keyboard"]
   commands: ["cd src/test/e2e && npx playwright test (local stack, Firefox)"]
   evidence: ["evidence/03-local-tests.md"]
-  deployment: {}
+  deployment: {"image_digest": "sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f", "gitops_commit": "b3a1a52001a9a83a3dd65c4e66c8a16277ed3167", "source": "267152e"}
   limitations: ["Firefox pref accessibility.tabfocus=7 (full keyboard access)"]
 - id: CON-A11Y-002
   description: 'Automated accessibility scan'
@@ -188,7 +188,7 @@
   tests: ["e2e a11y.spec axe"]
   commands: ["cd src/test/e2e && npx playwright test (local stack, Firefox)"]
   evidence: ["evidence/03-local-tests.md"]
-  deployment: {}
+  deployment: {"image_digest": "sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f", "gitops_commit": "b3a1a52001a9a83a3dd65c4e66c8a16277ed3167", "source": "267152e"}
   limitations: []
 - id: CON-MOBILE-001
   description: 'Mobile-width smoke test'
@@ -198,18 +198,18 @@
   tests: ["e2e a11y.spec 390px"]
   commands: ["cd src/test/e2e && npx playwright test (local stack, Firefox)"]
   evidence: ["evidence/03-local-tests.md"]
-  deployment: {}
+  deployment: {"image_digest": "sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f", "gitops_commit": "b3a1a52001a9a83a3dd65c4e66c8a16277ed3167", "source": "267152e"}
   limitations: []
 - id: CON-BRAND-001
   description: 'Logo and favicon follow the provided box1 brand asset and are project-owned'
   source: 'AC5'
-  status: ci_verified
+  status: live_verified
   implementation: ["webui/public/brand/box1-mark.png"]
   tests: ["FrontendServingTest.brandMarkIsTheUnmodifiedProjectAsset"]
   commands: ["PR pipeline operations-console-validate-l6jv2 (d007f00)", "./mvnw -B -ntp verify -DskipITs=false"]
-  evidence: ["evidence/04-ci-implementation.md", "decisions/D-014-brand-and-favicon.md"]
-  deployment: {}
-  limitations: ["Favicon is the unmodified mark; a resized favicon awaits permission (O-4). Brand-kit identity of the mark to be confirmed by the user."]
+  evidence: ["evidence/05-delivery.md"]
+  deployment: {"image_digest": "sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f", "gitops_commit": "b3a1a52001a9a83a3dd65c4e66c8a16277ed3167", "source": "267152e"}
+  limitations: ["Favicon is the unmodified mark; resized favicon awaits permission (O-4)"]
 - id: CON-E2E-001
   description: 'E2E: seed order, submit, watch timeline; hold in ERP or delay ERP; see waiting state with diagnosis links; recover; visibly complete'
   source: 'AC1; phase 7'
@@ -218,7 +218,7 @@
   tests: ["e2e flow.spec seed→hold→complete"]
   commands: ["cd src/test/e2e && npx playwright test (local stack, Firefox)"]
   evidence: ["evidence/03-local-tests.md"]
-  deployment: {}
+  deployment: {"image_digest": "sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f", "gitops_commit": "b3a1a52001a9a83a3dd65c4e66c8a16277ed3167", "source": "267152e"}
   limitations: ["Hold is a stubbed adapter state, not an ERP console action; live hold blocked by G-3 (adapter SFTP disabled)"]
 - id: CON-PAGE-HOME
   description: 'Operator home: business indicators and exception queue'
@@ -228,7 +228,7 @@
   tests: ["e2e"]
   commands: ["cd src/test/e2e && npx playwright test (local stack, Firefox)"]
   evidence: ["evidence/03-local-tests.md"]
-  deployment: {}
+  deployment: {"image_digest": "sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f", "gitops_commit": "b3a1a52001a9a83a3dd65c4e66c8a16277ed3167", "source": "267152e"}
   limitations: []
 - id: CON-PAGE-ORDERS
   description: 'Order list with filters, sort and pagination'
@@ -238,7 +238,7 @@
   tests: ["UpstreamBehaviourTest.listFilters…", "e2e"]
   commands: ["./mvnw -B -ntp verify -DskipITs=false", "cd src/test/e2e && npx playwright test (local stack, Firefox)"]
   evidence: ["evidence/03-local-tests.md"]
-  deployment: {}
+  deployment: {"image_digest": "sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f", "gitops_commit": "b3a1a52001a9a83a3dd65c4e66c8a16277ed3167", "source": "267152e"}
   limitations: ["Filter and sort within the 200 most recent orders (D-013)"]
 - id: CON-PAGE-DETAIL
   description: 'Order detail: state, customer-safe metadata, reservation and fulfillment status, timeline'
@@ -248,7 +248,7 @@
   tests: ["e2e flow.spec"]
   commands: ["cd src/test/e2e && npx playwright test (local stack, Firefox)"]
   evidence: ["evidence/03-local-tests.md"]
-  deployment: {}
+  deployment: {"image_digest": "sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f", "gitops_commit": "b3a1a52001a9a83a3dd65c4e66c8a16277ed3167", "source": "267152e"}
   limitations: []
 - id: CON-PAGE-INCIDENT
   description: 'Incident/evidence view'
@@ -258,7 +258,7 @@
   tests: ["e2e a11y.spec keyboard"]
   commands: ["cd src/test/e2e && npx playwright test (local stack, Firefox)"]
   evidence: ["evidence/03-local-tests.md"]
-  deployment: {}
+  deployment: {"image_digest": "sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f", "gitops_commit": "b3a1a52001a9a83a3dd65c4e66c8a16277ed3167", "source": "267152e"}
   limitations: ["Derived incidents until an incident contract exists (#17)"]
 - id: CON-PAGE-SITES
   description: 'Sites/assets view'
@@ -268,7 +268,7 @@
   tests: ["UpstreamBehaviourTest.assetServiceRefusal…", "e2e flow.spec"]
   commands: ["./mvnw -B -ntp verify -DskipITs=false", "cd src/test/e2e && npx playwright test (local stack, Firefox)"]
   evidence: ["evidence/03-local-tests.md"]
-  deployment: {}
+  deployment: {"image_digest": "sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f", "gitops_commit": "b3a1a52001a9a83a3dd65c4e66c8a16277ed3167", "source": "267152e"}
   limitations: ["Telemetry refused by asset-service (G-2)"]
 - id: CON-PAGE-DELIVERY
   description: 'Developer delivery panel (P1, optional)'
@@ -278,7 +278,7 @@
   tests: ["e2e roles.spec developer"]
   commands: ["cd src/test/e2e && npx playwright test (local stack, Firefox)"]
   evidence: ["evidence/03-local-tests.md"]
-  deployment: {}
+  deployment: {"image_digest": "sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f", "gitops_commit": "b3a1a52001a9a83a3dd65c4e66c8a16277ed3167", "source": "267152e"}
   limitations: []
 - id: CON-DEMO-001
   description: 'Demo control (P1): named scenarios via #19 when it exists; link to telemetry console'
@@ -288,7 +288,7 @@
   tests: ["UpstreamBehaviourTest.scenariosReportTheControllerAsNotConfigured"]
   commands: []
   evidence: []
-  deployment: {}
+  deployment: {"image_digest": "sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f", "gitops_commit": "b3a1a52001a9a83a3dd65c4e66c8a16277ed3167", "source": "267152e"}
   limitations: ["Deferred until #19 exists (D-010); read-only page with telemetry console link"]
 - id: CON-EVID-001
   description: 'Each business state connects to trace ID / correlation ID / evidence links without OpenShift admin access'
@@ -298,7 +298,7 @@
   tests: ["e2e flow.spec evidence"]
   commands: ["cd src/test/e2e && npx playwright test (local stack, Firefox)"]
   evidence: ["evidence/03-local-tests.md"]
-  deployment: {}
+  deployment: {"image_digest": "sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f", "gitops_commit": "b3a1a52001a9a83a3dd65c4e66c8a16277ed3167", "source": "267152e"}
   limitations: ["Trace, log and dashboard deep links unavailable until #22; IDs and Git SHA links shown"]
 - id: CON-API-001
   description: 'Console backend versioned OpenAPI; one typed client generated from it; Problem JSON and sourceStatus semantics compatible with #17'
@@ -308,7 +308,7 @@
   tests: ["ContractDriftTest", "ConsoleSecurityTest"]
   commands: ["PR pipeline operations-console-validate-l6jv2 (d007f00)", "./mvnw -B -ntp verify -DskipITs=false"]
   evidence: ["evidence/04-ci-implementation.md", "evidence/02-contract.md"]
-  deployment: {}
+  deployment: {"image_digest": "sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f", "gitops_commit": "b3a1a52001a9a83a3dd65c4e66c8a16277ed3167", "source": "267152e"}
   limitations: []
 - id: CON-UPSTREAM-001
   description: 'Calls to each service use a token that service accepts, least privilege, short timeouts'
@@ -318,27 +318,27 @@
   tests: ["UpstreamBehaviourTest", "e2e (stub request log)"]
   commands: ["cd src/test/e2e && npx playwright test (local stack, Firefox)"]
   evidence: ["evidence/03-local-tests.md"]
-  deployment: {}
+  deployment: {"image_digest": "sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f", "gitops_commit": "b3a1a52001a9a83a3dd65c4e66c8a16277ed3167", "source": "267152e"}
   limitations: ["No user token forwarded (security review SEC-1): upstream reads are open in dev today. When they close, a confidential client or service account is needed (O-9). asset-service refuses the console (G-2)."]
 - id: CON-KC-001
   description: 'Keycloak client and roles for the console declared through GitOps'
   source: 'Keycloak'
-  status: implemented
+  status: deployed
   implementation: ["box1-gitops#73 platform/identity/keycloak/realm/operations-console-client.yaml"]
   tests: []
   commands: ["oc kustomize; oc apply --dry-run=server"]
-  evidence: ["https://github.com/box1-org/box1-gitops/pull/73"]
+  evidence: ["evidence/05-delivery.md"]
   deployment: {}
-  limitations: ["Merge needs approval; roles assigned to people by the user"]
+  limitations: ["KeycloakClient ready and synced; roles on the client not checked (admin credentials not issued to the run); role assignment is the user's"]
 - id: CON-OBS-001
   description: 'Health, Micrometer metrics, structured logs, trace propagation'
   source: 'operating constraints'
-  status: ci_verified
+  status: deployed
   implementation: ["application.properties logging/otel", "Upstreams metrics"]
   tests: ["GreetingResourceTest health/metrics", "UpstreamBehaviourTest traceparent"]
   commands: ["PR pipeline operations-console-validate-l6jv2 (d007f00)", "./mvnw -B -ntp verify -DskipITs=false"]
   evidence: ["evidence/04-ci-implementation.md", "evidence/03-local-tests.md"]
-  deployment: {}
+  deployment: {"image_digest": "sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f", "gitops_commit": "b3a1a52001a9a83a3dd65c4e66c8a16277ed3167", "source": "267152e"}
   limitations: ["Trace export off until #22"]
 - id: CON-DOC-001
   description: 'docs/demo-walkthrough.md with synthetic fixtures and screenshots; README, architecture, runbook'
@@ -348,15 +348,15 @@
   tests: []
   commands: []
   evidence: []
-  deployment: {}
+  deployment: {"image_digest": "sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f", "gitops_commit": "b3a1a52001a9a83a3dd65c4e66c8a16277ed3167", "source": "267152e"}
   limitations: ["Screenshots are from the local stack; cluster screenshots after Phase 7"]
 - id: CON-DELIV-001
   description: 'Delivered through PaC build, gates, GitOps promotion and Argo; release smoke passes'
   source: 'phase 6'
-  status: proposed
+  status: live_verified
   implementation: []
   tests: []
-  commands: []
-  evidence: []
-  deployment: {}
-  limitations: ["Release pipeline now gated (security-gates: gate) with console-smoke; merges need approval (operations-console#2, box1-workloads-dev#90, box1-gitops#73)"]
+  commands: ["operations-console-release-859h8", "oc get application/pods; curl /api/info"]
+  evidence: ["evidence/05-delivery.md"]
+  deployment: {"image_digest": "sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f", "gitops_commit": "b3a1a52001a9a83a3dd65c4e66c8a16277ed3167", "source": "267152e"}
+  limitations: ["First gated release failed on Guava CVE; fixed by operations-console#3. Rollback not exercised."]

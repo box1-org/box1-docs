@@ -6,6 +6,7 @@ No comparison with `qwen-64k`, because no baseline exists.
 
 | # | Time (America/New_York) | Phase | Stop condition | Reason |
 |---|---|---|---|---|
+| 2 | 2026-11-06 ~00:27 EST | 7 | Requirement cannot be proven with available evidence; a new credential would need approval | Delivery is live-verified. Every remaining Phase 7 check needs a signed-in browser session through the Route, and the run holds no Keycloak user. It must not use a credential not issued to it. Either the user signs in, or approves a run-specific test user. Fixtures (O-6) and a pod restart for the session observation also need approval. |
 | 1 | 2026-11-06 ~00:05 EST | 6 entry | Next action needs approval; user decisions required | Delivery needs three merges (Keycloak client box1-gitops#73, Deployment env box1-workloads-dev#90, console operations-console#2). Live acceptance also needs role assignment and approved fixtures. Gaps G-1, G-2 and G-3 need other services. All independent work (Phases 0–5) is finished first, and the open decisions are reported together (`open-decisions.md` O-1…O-9). |
 
 ## Repairs
@@ -40,6 +41,10 @@ Found by reviewer passes (Phase 5), fixed and retested. See `review-findings/` f
     - security: narrower public paths, Idempotency-Key pattern, exact redirect URI;
     - accessibility: table semantics at narrow widths, input contrast, titles, a pause control.
 15. **A duplicated YAML key passed the Java tests.** Jackson's YAML parser tolerates duplicate keys; the front end's generator failed on it. The contract loader now uses strict duplicate detection.
+
+Found on the cluster (Phase 6), fixed and retested:
+
+16. **The first gated release failed RHACS on Guava 33.6.0-jre (CVE-2026-102554).** I had turned the gate on (REL-1) without the Guava override that asset-service and inventory-service carry, although discovery recorded that pairing as a run 11 lesson. The user reported it. Fixed in operations-console#3; the second release passed the gate with high findings down from 11 to 10, and nothing was promoted from the failed run.
 
 Test harness and test defects:
 - The logout URL carried `?state=`, which my regex did not allow.
@@ -77,7 +82,8 @@ Test harness and test defects:
 | CI runs `-DskipITs=false` (run 15 repair 16) | `quarkus.test.integration-test-profile=test` from the start; local runs use `-DskipITs=false` | **Prevented** |
 | A CSP blocking axe hides failures behind "0 failures" (run 15 repair 17) | The axe spec asserts `passes.length > 0` per page, and failures are listed, not counted | **Prevented** |
 | WCAG 2.5.3 button and link names (run 15 repair 7) | axe on 10 views | **Repeated, then fixed** (repair 8) |
-| Runtime settings in Deployment env, not ConfigMap literals (run 11) | box1-workloads-dev#90 uses `env` | **Prevented** |
+| Runtime settings in Deployment env, not ConfigMap literals (run 11) | box1-workloads-dev#90 uses `env`; Argo stayed Synced and smoke passed | **Prevented** (confirmed live) |
+| Guava CVE override goes with `security-gates: gate` (runs 11, 15) | Gate enabled in review repair REL-1; the override was not added | **Repeated, then fixed** (repair 16). The lesson was in my own discovery notes; a checklist item tying the gate to known overrides would have caught it |
 | Re-read upstream state before relying on it | Re-compared order, inventory and asset main at 23:28 EST: only `.tekton` changed | Applied |
 
 ## Environment findings
@@ -128,6 +134,7 @@ Test harness and test defects:
 - Opened box1-org/box1-gitops#73 (branch `run18-operations-console-keycloak`, worktree `run18-gitops`) and box1-org/box1-workloads-dev#90 (branch `run18-operations-console-runtime`, worktree `run18-workloads`). Neither is merged.
 - Ran one server-side dry run (`oc apply --dry-run=server`) of the KeycloakClient. Nothing was persisted.
 - Local: container `run18-keycloak` (port 18280), a Node stub process (18081) and a console JVM (18080), all started and stopped by `src/test/e2e/local-*.sh`. Playwright Firefox was installed into `~/Library/Caches/ms-playwright` (shared cache).
-- Three issue comments on box1-docs#18.
+- Four issue comments on box1-docs#18.
+- Opened operations-console#3 (Guava). The user merged #73, #90, #2 and #3. Release `-mtdgc` failed at the gate; release `-859h8` promoted via box1-workloads-dev#96 (auto-merged by the pipeline).
 - Five reviewer subagents. Two scratch clones (`rev-security`, `rev-ops`), and a prod jar the ops reviewer ran on port 18555, all in the scratchpad.
 - One process stopped by PID (12735, my own console from the restart probe, confirmed by start time and working directory).
