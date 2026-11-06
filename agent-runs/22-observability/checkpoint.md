@@ -28,17 +28,19 @@ Updated 2026-11-06T15:53:13-05:00. Phase 7 is partial. **The first acceptance cr
 6. Done for order-service only: box1-workloads-dev#119 merged as `b8513c1`, per the user's "just the order-service for now".
 7. Pending: box1-gitops#83 (tidy-up; syncing it restarts the collector).
 
-## Exact next action (updated 2026-11-06T17:29:55-05:00)
-**Metrics/alerts slice (decision 008):** box1-workloads-dev#138 (ServiceMonitors and PrometheusRules) and box1-gitops#90 (Perses dashboard) are open and have passed review.
+## Exact next action (updated 2026-11-06T17:39:19-05:00)
+**Metrics, alerts and dashboard are live:** box1-workloads-dev#138 (`210c25f`) and box1-gitops#90 (`6988746`); evidence `evidence/phase6-metrics-alerts-dashboard.md`.
+- All 7 services are scraped and all dashboard panels have data.
+- `Box1OrdersStuck` is firing in Alertmanager on 2 pre-existing stuck orders.
+- The AUTO acknowledgement baseline is 5–7 s.
 
-After user approval:
-1. Merge #138, 10 s apart from other merges (box1-docs#64). Verify:
-   - 7 targets up in user-workload monitoring;
-   - the rules loaded;
-   - `Box1OrdersStuck` firing as the expected baseline.
-2. Merge #90 and sync `observability-dashboards`. Verify the dashboard appears in Observe → Dashboards with data.
-3. Measure the normal AUTO acknowledgement latency (`max_over_time`).
-4. **Needs separate approval:** put the ERP in MANUAL mode or stall it in a demo namespace. Measure `Box1ErpAcknowledgementDelayed` and `Box1ErpAwaitingOperator` latency against the 2-minute target, then tick criterion 2 with the proof level.
+**Criterion 2 is still open. Needs user approval for fault injection** (a MANUAL-mode or stalled ERP) to measure:
+- `Box1ErpAcknowledgementDelayed` latency against the under-2-minute target;
+- `Box1ErpAwaitingOperator` latency.
+
+**Waiting on the user:**
+- Look at the dashboard in the console.
+- Decide what to do about the 2 stuck orders.
 
 **Follow-up:** fix the adapter gauge to exclude NEEDS_ATTENTION (adapter repo).
 

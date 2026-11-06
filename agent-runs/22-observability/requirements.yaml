@@ -57,12 +57,12 @@
   limitations: [Centralized log store deferred to box1-docs#82]
 - id: OBS-METRICS-ALERTS
   description: ServiceMonitors, ERP slowdown/backlog alert, order-age and adapter-error dashboard
-  status: proposed
-  implementation: []
+  status: deployed
+  implementation: [box1-workloads-dev#138 (210c25f), box1-gitops#90 (6988746)]
   tests: []
   commands: []
-  evidence: []
-  limitations: [Depends on OBS-UWM]
+  evidence: [evidence/phase6-metrics-alerts-dashboard.md]
+  limitations: [Alert path proven live (Box1OrdersStuck firing in Alertmanager); ERP-delay and MANUAL-backlog alert latency not yet measured (needs approved fault injection); adapter gauge includes NEEDS_ATTENTION rows]
 - id: OBS-DEPLOY-OVERLAY
   description: Deployment SHA/digest/time correlated with a simulated regression
   status: proposed
