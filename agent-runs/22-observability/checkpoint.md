@@ -28,13 +28,17 @@ Updated 2026-11-06T15:53:13-05:00. Phase 7 is partial. **The first acceptance cr
 6. Done for order-service only: box1-workloads-dev#119 merged as `b8513c1`, per the user's "just the order-service for now".
 7. Pending: box1-gitops#83 (tidy-up; syncing it restarts the collector).
 
-## Exact next action
-- **Orphans pruned** for order, inventory and the adapter (approved). All three apps are Synced/Healthy, so their next releases can pass promote.
-- **Remaining export:**
-  - notification (#123) and asset (#126): re-run the checks, merge, export.
-  - scenario-controller and operations-console: export ConfigMap only.
-  Each export change creates one orphan; prune it right after rollout (needs approval) until #42 is fixed.
-- **Next slices:** metrics and alerts (ERP backlog/slowdown, order age), a dashboard, the deployment overlay, then fault scenarios.
+## Exact next action (updated 2026-11-06T16:27:01-05:00)
+**Done since the last update:**
+- notification promotion #123 merged after a second `/retest`. The first validate run was stranded in `PipelineRunPending`, as in box1-docs#64. notification runs `24dda0f` with export off.
+- On user instruction, the box1-docs#80 PRs were merged one at a time, 10 s apart (box1-docs#64): box1-gitops#85, asset-service#5 (after fixing its SecurityTest for the no-database CI build), operations-console#9, then box1-workloads-dev#130. Both releases and promotions (#132, #131) succeeded.
+- asset-service now runs `c75b6dc`, which includes the trace-export build, so promotion **#126 is superseded. Close it; do not merge** (it would roll back to `0bfca82`).
+- box1-gitops#83 (tidy-up) was merged by someone else as `450a5ce`. `observability-tracing` is manual-sync, so it is not applied yet. Syncing restarts the collector.
+
+**Next:**
+- notification export: branch `observability-trace-export-notification` is pushed (`9956f90`); **no PR opened**. Open the PR, merge it, prune the orphan ConfigMap (needs approval), then verify the notification spans in an order trace.
+- Then: asset, scenario-controller and operations-console export (ConfigMap only, one at a time, 10 s apart, prune each orphan).
+- Then the metrics/alerts slice.
 
 ## Open risks
 - Vendor support on OpenShift 5.0.0-rc.7 is not established.
