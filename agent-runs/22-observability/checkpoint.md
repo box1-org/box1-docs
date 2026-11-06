@@ -34,7 +34,7 @@ Updated 2026-11-06T15:53:13-05:00. Phase 7 is partial. **The first acceptance cr
 - `Box1OrdersStuck` is firing in Alertmanager on 2 pre-existing stuck orders.
 - The AUTO acknowledgement baseline is 5–7 s.
 
-**Criterion 2 is still open. Needs user approval for fault injection** (a MANUAL-mode or stalled ERP) to measure:
+**Criterion 2 is still open.** On 2026-11-06 the user answered "Not now" to the ERP MANUAL-mode latency test; ask again before running it. It **needs user approval for fault injection** (a MANUAL-mode or stalled ERP) to measure:
 - `Box1ErpAcknowledgementDelayed` latency against the under-2-minute target;
 - `Box1ErpAwaitingOperator` latency.
 
