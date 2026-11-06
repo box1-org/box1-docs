@@ -43,6 +43,8 @@ Second release (CORS fix, asset-service#2 merged by the user as 828065e1), 2026-
   /api/info gitRef 828065e16c67ddbe980f591dc8c3beac8df1e300.
 - On the Route: POST /api/v1/control/stop-all anonymous with Origin https://asset-service-dev.apps.ocp.box1.org -> 499
   (reaches authentication; was 403 CORS for the user's browser before); with Origin https://evil.example -> 403.
-- Client roles chaos-operator, telemetry-writer, telemetry-reader created by hand by the user in the admin console
-  (the RH-SSO 7.6 operator did not apply KeycloakClient spec.roles). The user's login with chaos-operator reached the
-  control API on the cluster (observed as the CORS 403, i.e. after authentication, before the fix).
+- Client roles chaos-operator, telemetry-writer, telemetry-reader: present on the client. CORRECTION: an earlier version
+  of this line said the user created them by hand because the operator had skipped spec.roles. That was wrong. The user
+  rechecked and found them present, and had not created them. The operator created them; the first look most likely
+  came before they appeared (not established). The user's login with chaos-operator reached the control API on the
+  cluster (observed as the CORS 403, i.e. after authentication, before the fix).

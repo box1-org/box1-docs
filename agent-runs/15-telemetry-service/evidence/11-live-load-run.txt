@@ -1,7 +1,7 @@
 Phase 7 live load run, driven by the user in the console on the cluster, 2026-11-06 (UTC). Proof level: CLUSTER.
 Service: asset-service sha256:4d8623986033b87bea25bed9461f0731e6616f47de00cc1bf21132dbbf0675d0 (source 828065e1), asset-service-dev.
 
-- Login: the user signed in through Keycloak realm box1 (client asset-service, client role chaos-operator, created by hand)
+- Login: the user signed in through Keycloak realm box1 (client asset-service, client role chaos-operator created by the operator from the KeycloakClient CR)
   and used the console page served by the pod. The agent used no credential.
 - Run run_b63ce49d56084ec0b32a, LOAD, seed 9b989764c116cd40, defaults (2 sites x 3 assets x 4 metrics x 1/s = 24/s, 120 s).
   Pod log: "02:45:52.210 INFO Run run_b63ce49d56084ec0b32a started: LOAD seed 9b989764c116cd40, 24 readings/s for 120 s".

@@ -39,7 +39,7 @@
 ## Operations and safety
 - Secrets externalized / auth boundaries:
   - **Database:** the Secret was created out of band by the user, and no password is in Git.
-  - **Keycloak client:** public client with PKCE; roles `chaos-operator`, `telemetry-writer` and `telemetry-reader`, assigned to no one yet.
+  - **Keycloak client:** public client with PKCE; roles `chaos-operator`, `telemetry-writer` and `telemetry-reader`, created by the operator from the CR. `chaos-operator` is assigned to the user.
   - **Chaos:** off (D-015 deferred). Load control is on in dev.
 - Telemetry evidence: `asset_*` metrics are on `/q/metrics`. Trace export is off (#22). OpenTelemetry logs a "VertxTracer delegate not set" warning per request: log noise, follow-up.
 - Resource settings:
@@ -56,7 +56,6 @@
   - The user assigns `chaos-operator` and runs the console.
   - D-015, for any chaos run.
 - Follow-ups, filed:
-  - #59: the Keycloak operator skips `spec.roles` (README note in box1-gitops#71, open).
   - #60: OpenAPI scopes for the reads (REL-2).
   - #61: VertxTracer log noise.
   - #62: machine client for `telemetry-writer` (needs approval).
