@@ -4,9 +4,10 @@ import sys
 
 P = 'src/main/java/org/box1/asset/'
 T = 'src/test/java/org/box1/asset/'
-DEFAULT = './mvnw verify'
-CONT = './mvnw verify -Pcontainers'
+DEFAULT = './mvnw -B clean verify -DskipITs=false'
+CONT = './mvnw clean verify -Pcontainers'
 EV3 = 'evidence/03-tests-local.txt'
+EV7 = 'evidence/07-review-repairs-local.txt'
 L = {}
 
 
@@ -69,6 +70,24 @@ req('TEL-CONTRACT-001', 'locally_tested', ['box1-ops-contracts: events/v1/equipm
 req('TEL-DOC-001', 'implemented', ['README.md', 'docs/architecture.md', 'docs/runbook.md'], [], [], [])
 req('TEL-DEL-001', 'proposed', [], [], [], [], ['Needs merges and approvals'])
 req('TEL-LIVE-001', 'proposed', [], [], [], [], ['Needs D-012 to D-015 and approval'])
+
+for _rid in L:
+    if L[_rid]['status'] == 'locally_tested' and EV7 not in L[_rid]['evidence']:
+        L[_rid]['evidence'].append(EV7)
+L['TEL-READ-001']['limitations'].append('Reads need telemetry-reader, telemetry-writer or chaos-operator (SEC-2)')
+L['TEL-BP-001']['limitations'] = ['Catch-up memory not measured (OPS-11)']
+L['TEL-CHAOS-002']['tests'].append('scripts/scenarios.py burst (actual rate incl. bursts)')
+L['TEL-CHAOS-005']['tests'].append('scripts/scenarios.py dboutage (fail-safe without the database)')
+L['TEL-CON-002']['limitations'].append('Cluster login (https redirect, RH-SSO 7.6) not exercised')
+
+EV8 = 'evidence/08-ci.txt'
+CI_NOTE = 'ci_verified covers only the container-free tests in CI; the rest of the proof is local'
+for _rid in ['TEL-INGEST-001', 'TEL-INGEST-002', 'TEL-ALERT-002', 'TEL-BP-001', 'TEL-LOAD-002', 'TEL-CHAOS-001', 'TEL-GATE-001',
+             'TEL-SEC-001', 'TEL-SMOKE-001', 'TEL-CONTRACT-001']:
+    L[_rid]['status'] = 'ci_verified'
+    L[_rid]['evidence'].append(EV8)
+    L[_rid]['commands'] = list(dict.fromkeys(L[_rid]['commands'] + ['CI asset-service-validate-zr7tn at 11fa5a1']))
+    L[_rid]['limitations'].append(CI_NOTE)
 
 if __name__ == '__main__':
     updates = json.loads(sys.argv[1]) if len(sys.argv) > 1 else {}

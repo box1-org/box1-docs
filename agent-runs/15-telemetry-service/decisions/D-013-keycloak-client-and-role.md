@@ -16,3 +16,7 @@ A `KeycloakClient` CR `asset-service` in `box1-gitops/platform/identity/keycloak
 - With it: positive console login, a live load run and chaos run, live wrong-role 403 (needs a second account or a token before role assignment).
 - Without it: live anonymous rejection only. Positive proof stays local, against a Keycloak container configured from the same client definition.
 - The live runs must be started by a logged-in person. This run has no credential and will not use one it was not issued. Either the user drives the console for Phase 7, or issues this run a short-lived token by a method they choose.
+
+## Amendment after Phase 5
+
+The proposed client now also defines client role `telemetry-reader` (security review SEC-2). Still public, no secret, and no role assigned by the change.

@@ -109,13 +109,13 @@ def metric(name, **labels):
     return total
 
 
-def find_seed(console, entry, body, limit=400):
+def find_seed(console, entry, body, limit=400, accept=lambda marker: True):
     """A seed whose first chaos injection is `entry`, found with the preview endpoint (publishes nothing)."""
     for n in range(1, limit):
         seed = '%016x' % (0x5eed000000000000 + n)
         status, preview = console.call('/api/v1/control/preview?limit=200', 'POST', dict(body, seed=seed))
         markers = [l for l in preview['lines'] if '|I|' in l]
-        if markers and markers[0].split('|I|')[1].startswith(entry + ' '):
+        if markers and markers[0].split('|I|')[1].startswith(entry + ' ') and accept(markers[0].split('|I|')[1]):
             return seed, markers[0]
     raise AssertionError('no seed found for ' + entry)
 
@@ -357,6 +357,48 @@ def s_rejections():
 SCENARIOS = {'access': s_access, 'caps': s_caps, 'replay': s_replay, 'ttl': s_ttl_no_browser, 'stopall': s_stop_all,
              'restart': s_restart, 'gate': s_gate, 'outage': s_broker_outage, 'pause': s_producer_pause, 'flap': s_flap_chaos,
              'rejections': s_rejections}
+
+
+def s_db_outage():
+    """Review OPS-4: with the database down nobody can stop a run, so the pod stops its own runs."""
+    op = operator()
+    armed = start_run(op, dict(LOAD, durationSeconds=300))
+    wait('emissions', lambda: run(op, armed['runId'])['emitted'] > 20, 20)
+    log('pausing run15-pg for 45 s')
+    subprocess.check_call(['podman', 'pause', 'run15-pg'])
+    try:
+        time.sleep(32)
+        before = metric('asset_ingest_admitted_total', source='load')
+        time.sleep(10)
+        after = metric('asset_ingest_admitted_total', source='load')
+        check('run stopped emitting after heartbeats failed past 20 s', after == before, 'admitted %.0f -> %.0f' % (before, after))
+    finally:
+        subprocess.check_call(['podman', 'unpause', 'run15-pg'])
+    fresh = operator()
+    done = wait('reaper', lambda: (lambda r: r if r['state'] in ('ABORTED', 'STOPPED') else None)(run(fresh, armed['runId'])), 40)
+    check('the run is closed in the database after the outage', done['state'] == 'ABORTED', done['stopReason'])
+
+
+def s_burst():
+    """Review ARCH-2: a burst cannot push a run past its own rate cap."""
+    op = operator()
+    body = {'kind': 'CHAOS', 'sites': 2, 'assetsPerSite': 10, 'metrics': ['power'], 'ratePerAsset': 1, 'durationSeconds': 60}
+    seed, first = find_seed(op, 'BURST', body, accept=lambda marker: int(marker.split()[3].replace('x', '')) >= 3)
+    log('burst seed', seed, first.split('|I|')[1])
+    start_ms = int(first.split('|')[1])
+    armed = start_run(op, dict(body, seed=seed))
+    before = metric('asset_ingest_admitted_total', source='chaos')
+    t0 = time.time()
+    time.sleep(start_ms / 1000.0 + 6)
+    admitted = metric('asset_ingest_admitted_total', source='chaos') - before
+    elapsed = time.time() - t0
+    capped = metric('asset_ingest_rejected_total', source='chaos', reason='run_rate') + metric('asset_ingest_rejected_total', source='chaos', reason='rate_limited')
+    check('admitted rate during the burst stayed within the 50/s run cap', admitted / elapsed <= 52, '%.1f/s over %.0f s' % (admitted / elapsed, elapsed))
+    check('burst excess was refused by the rate caps', capped > 0, '%d refused' % capped)
+    op.call('/api/v1/control/stop-all', 'POST')
+
+
+SCENARIOS.update({'dboutage': s_db_outage, 'burst': s_burst})
 
 if __name__ == '__main__':
     for name in sys.argv[1:]:

@@ -36,3 +36,10 @@ Option 2, enforced by the backend with HTTP permissions plus `@RolesAllowed`:
 
 - `/q/metrics` and `/q/openapi` remain public, like every Golden Path service today. This is the template's contract, not a choice of this run; changing it needs a smoke-task change outside scope.
 - Positive live proof of console login needs D-013. Negative proof (anonymous 401/302, wrong role 403) does not.
+
+## Amendments after Phase 4 and Phase 5
+
+- **Tenant by path only (Phase 4 repair).** `tenant-paths` lost to the session cookie: a console cookie selected the code-flow tenant on the data API. `PathTenantResolver` now decides by path alone.
+- **Reads need a role (security review SEC-2).** Any realm user could obtain a token through the public client. Reads now need `telemetry-reader`, `telemetry-writer` or `chaos-operator`.
+- **Tokens must be issued to this client (SEC-3).** `required-claims.azp=asset-service` on both tenants, because Keycloak adds `asset-service` to other clients' `aud` when the user holds its roles.
+- **Behind the edge (SEC-1).** https redirect URIs, Secure cookies and HSTS; CSP and frame denial on the console (SEC-4).

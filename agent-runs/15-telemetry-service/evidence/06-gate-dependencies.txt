@@ -1,0 +1,9 @@
+Release-gate dependency check, read-only, 2026-11-06 ~00:16 UTC (19:16 EST). Order-run lesson: check that a gate dependency works,
+not only that its pod runs. This run may not probe TPA or RHACS with credentials, so the evidence is the pipeline's own recent runs.
+
+- rhel-image-poc-release-cwrwr-security (00:11Z, enforcement=observe): sbom-and-rhtpa Completed (SBOM uploaded to TPA),
+  rhacs-scan-and-check Completed (scan-exit=0, policy=fail, observe so not blocking).
+- box1-ops-erp-simulator-release-5dgjm-security (00:13Z, enforcement=observe): both steps Completed, scan-exit=0, policy=pass.
+- inventory-service-release-vgkx9 (22:10Z) Succeeded with security-gates: gate.
+Conclusion: the TPA write path and the RHACS scan path worked within the last hour. Whether asset-service's own image passes
+policy under `gate` is not established until its release runs (new dependencies: quarkus-oidc, OpenTelemetry, Flyway, JDBC).
