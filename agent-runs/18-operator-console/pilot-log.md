@@ -6,6 +6,7 @@ No comparison with `qwen-64k`, because no baseline exists.
 
 | # | Time (America/New_York) | Phase | Stop condition | Reason |
 |---|---|---|---|---|
+| 1 | 2026-11-06 ~00:05 EST | 6 entry | Next action needs approval; user decisions required | Delivery needs three merges (Keycloak client box1-gitops#73, Deployment env box1-workloads-dev#90, console operations-console#2). Live acceptance also needs role assignment and approved fixtures. Gaps G-1, G-2 and G-3 need other services. All independent work (Phases 0–5) is finished first, and the open decisions are reported together (`open-decisions.md` O-1…O-9). |
 
 ## Repairs
 
@@ -25,6 +26,20 @@ Found by verification (Phase 4), fixed and retested:
 
 7. **Login lost the deep link.** The SPA fallback rerouted `/orders/new` to `/index.html` before authentication, so OIDC saved `/index.html` as the restore path and users landed on "Page not found" after sign-in. The fallback now runs at `ROUTE_ORDER_AFTER_DEFAULT`, after security and the static routes. A regression test checks the restore cookie.
 8. **Brand link accessible name did not contain its visible text** (axe `label-content-name-mismatch`, WCAG 2.5.3, on every page). Removed the `aria-label`. This is the same class of finding as run 15 repair 7.
+
+Found by reviewer passes (Phase 5), fixed and retested. See `review-findings/` for all 43 findings and their outcomes:
+
+9. **A public client must not carry other services' audiences** (SEC-1). My Keycloak PR would have let any realm user mint inventory and fulfillment tokens by running a PKCE flow themselves. Removed the mappers, and the console now forwards no user token. This is the most consequential finding, and the reviewer caught it before any merge.
+10. **Absent values reported as zero** (ARCH-1): when order-service failed, the overview showed "0 exceptions". **An incident invented for any order** (ARCH-2). **ERP detail hidden for EXCEPTION orders** (ARCH-3).
+11. **Unconfirmed creates could duplicate** (ARCH-4/FE-4). After a timeout, editing the form or leaving the page minted a new key. The key and values are now locked and kept in sessionStorage. A Firefox test drives a real ambiguous timeout and then a page change, and shows one order.
+12. **Polling side effects** (FE-2/FE-3): spinners on pause, data wiped by a failed background refresh, late responses landing on the wrong page.
+13. **CSP blocked react-aria's injected stylesheet.** The front-end reviewer had cleared the CSP by reading code. The CSP-violation listener added for FE-10 found it in the first run. Fixed by allowing that exact hash. This is a case where a test the review asked for beat the review's own conclusion.
+14. Smaller fixes:
+    - ops: log line per failed upstream call, latency timer, page budget for lists, probe cache, bounded metric URIs, runbook rows;
+    - release: security gate on, plus a read-only console-smoke step;
+    - security: narrower public paths, Idempotency-Key pattern, exact redirect URI;
+    - accessibility: table semantics at narrow widths, input contrast, titles, a pause control.
+15. **A duplicated YAML key passed the Java tests.** Jackson's YAML parser tolerates duplicate keys; the front end's generator failed on it. The contract loader now uses strict duplicate detection.
 
 Test harness and test defects:
 - The logout URL carried `?state=`, which my regex did not allow.
@@ -67,6 +82,14 @@ Test harness and test defects:
 
 ## Environment findings
 
+- 23:52–23:59 EST: the workstation's `oc` session returned Unauthorized, then worked again without action from me. That window covered only background polling, and the `gh` PR checks confirmed CI independently. Auth was not touched.
+
+- **23:39 EST, one cause and 14 symptoms.** After a rebuild, every Firefox test failed at sign-in. I read the cause before touching anything:
+  - A console JVM that I had started by hand for the session-restart probe (23:20) was still on port 18080. My PID file had recorded the subshell's PID instead, so `local-down` missed the JVM.
+  - The new console therefore failed to bind. The old one kept the previous Keycloak container's signing keys, which produced "JWK … not available" and then introspection refused for a public client.
+  - Confirmed the process was mine (start time and working directory) and stopped it by PID. `local-up.sh` now refuses to start if the port is busy.
+- **The stub server crashed on aborted slow requests**: it read the body after the delay. Fixed. This was also why the "Already placed" check failed in that run.
+
 - 22:49 EST: host and Podman VM clocks agreed.
 - The `legacy-erp` VMI restarted at about 22:45 EST. Another run appears active in `legacy-erp-dev`, and this run did not touch it.
 
@@ -105,4 +128,6 @@ Test harness and test defects:
 - Opened box1-org/box1-gitops#73 (branch `run18-operations-console-keycloak`, worktree `run18-gitops`) and box1-org/box1-workloads-dev#90 (branch `run18-operations-console-runtime`, worktree `run18-workloads`). Neither is merged.
 - Ran one server-side dry run (`oc apply --dry-run=server`) of the KeycloakClient. Nothing was persisted.
 - Local: container `run18-keycloak` (port 18280), a Node stub process (18081) and a console JVM (18080), all started and stopped by `src/test/e2e/local-*.sh`. Playwright Firefox was installed into `~/Library/Caches/ms-playwright` (shared cache).
-- Two issue comments on box1-docs#18.
+- Three issue comments on box1-docs#18.
+- Five reviewer subagents. Two scratch clones (`rev-security`, `rev-ops`), and a prod jar the ops reviewer ran on port 18555, all in the scratchpad.
+- One process stopped by PID (12735, my own console from the restart probe, confirmed by start time and working directory).

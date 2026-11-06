@@ -20,3 +20,9 @@ A `KeycloakClient` `operations-console` in `box1-gitops/platform/identity/keyclo
   - The console needs no roles from those clients: their reads are role-free, and the console makes no writes to them. So there are no scope mappings for their roles.
 - **Not included:** token exchange (a preview feature in RH-SSO 7.6 and a server-level change), a service-account client, and the `asset-service` audience (refused anyway because of `azp`; see gap G-2).
 - **After sync:** check that the three roles exist on the cluster (pilot lesson; #59 turned out to be timing). Users receive roles in the admin console.
+
+## Amendment (Phase 5 security review, SEC-1/SEC-2), 2026-11-05 ~23:50 EST
+
+- **Audience mappers for `inventory-service` and `fulfillment-adapter` removed.** The client is public, so any realm user can run a PKCE flow against it and hold its tokens. With those mappers, any realm user, including one with no console role, could have minted tokens for those services. The client now carries only its own audience.
+- **The console forwards no user token** (`CONSOLE_FORWARD_USER_TOKEN=false`). The upstreams' reads are open in dev today. When they require tokens, the console needs a client whose tokens are meant for them: user decision O-9. A confidential client would also give a stable session key (O-3).
+- **Redirect URI** is exactly `/callback`.

@@ -1,6 +1,6 @@
 # Open decisions and gaps for the user
 
-Each item says what is blocked and what proceeds without it. Updated 2026-11-05 ~23:05 EST.
+Each item says what is blocked and what proceeds without it. Updated 2026-11-05 ~23:55 EST.
 
 | # | Decision | Blocks | Proceeding meanwhile | Recommendation |
 |---|---|---|---|---|
@@ -12,4 +12,5 @@ Each item says what is blocked and what proceeds without it. Updated 2026-11-05 
 | O-6 | **Seed fixtures on the cluster:** customers `cust_demo_ada/lin/kai`, keys `demo-<scenario>-<date>-<n>`. Additive only; nothing is deleted. | Phase 7 E2E and screenshots | Local stubs | Approve the named set when Phase 7 starts |
 | O-7 | **Keycloak client `operations-console`** (box1-gitops PR, D-002): merge, then **assign roles to your user(s)**. | Real sign-in (Phase 7) | Local Keycloak | Approve when the PR is open |
 | O-8 | **No ERP can hold a request on the cluster (G-3).** The deployed adapter has `FULFILLMENT_SFTP_ENABLED=false`, and the ERP VM has no Service. Enabling it is a fulfillment-adapter/#25 change. | AC1 live E2E with a held request | Held state proven locally against stubs | Leave the AC1 box unticked until #25 wires the adapter to the VM |
+| O-9 | **How the console calls upstreams once their reads require tokens.** The public client carries only its own audience (security review SEC-1). Options: (a) a confidential `operations-console` client (new client secret, needs approval; it also gives a stable session key for O-3) with audience mappers; (b) a separate service-account client per upstream (new secret); (c) keep calling without tokens while reads stay open. | Nothing today (the upstreams' reads are open in dev) | (c), with forwarding off | (a) when the first upstream closes its reads, decided together with O-3 |
 | — | Every merge (operations-console, box1-workloads-dev promotion, box1-gitops) | Delivery | — | One approval per merge |

@@ -143,13 +143,13 @@
 - id: CON-IDEMP-001
   description: 'Order submitted twice with the same idempotency key creates one order'
   source: 'scenario'
-  status: locally_tested
+  status: ci_verified
   implementation: ["webui/src/pages/PlaceOrder.tsx", "api/ConsoleResource.placeOrder"]
   tests: ["UpstreamBehaviourTest.placingTwiceWithTheSameKeyReturnsTheSameOrderAndForwardsTheKey", "e2e flow.spec same key"]
   commands: ["./mvnw -B -ntp verify -DskipITs=false", "cd src/test/e2e && npx playwright test (local stack, Firefox)"]
   evidence: ["evidence/03-local-tests.md"]
   deployment: {}
-  limitations: ["Deduplication itself is order-service's; locally a stub. Live check in Phase 7 needs fixture approval (O-6)."]
+  limitations: ["Deduplication itself is order-service's; the console forwards the key and locks the key and values after an unconfirmed create (UI test, local). Live check needs fixture approval (O-6)."]
 - id: CON-STATES-001
   description: 'Stable loading, empty and error states with typed Problem JSON errors'
   source: 'AC4'
@@ -319,7 +319,7 @@
   commands: ["cd src/test/e2e && npx playwright test (local stack, Firefox)"]
   evidence: ["evidence/03-local-tests.md"]
   deployment: {}
-  limitations: ["asset-service refuses console tokens (G-2); acceptance of real tokens by inventory and adapter to verify live"]
+  limitations: ["No user token forwarded (security review SEC-1): upstream reads are open in dev today. When they close, a confidential client or service account is needed (O-9). asset-service refuses the console (G-2)."]
 - id: CON-KC-001
   description: 'Keycloak client and roles for the console declared through GitOps'
   source: 'Keycloak'
@@ -359,4 +359,4 @@
   commands: []
   evidence: []
   deployment: {}
-  limitations: []
+  limitations: ["Release pipeline now gated (security-gates: gate) with console-smoke; merges need approval (operations-console#2, box1-workloads-dev#90, box1-gitops#73)"]

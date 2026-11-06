@@ -9,3 +9,8 @@
 - **Telemetry alerts would join incidents**, but asset-service refuses console tokens (G-2). Its source reads `NOT_AUTHORIZED` with that reason.
 - **Sites:** stock by site from inventory (`GET /api/v1/inventory`). The asset alerts panel shows `NOT_AUTHORIZED` (G-2).
 - **Delivery panel (P1)** is in scope because it is cheap: each upstream's `/api/info` gitRef and the console's own, needing `console-developer`.
+
+## Amendment (Phase 5, ARCH-2/ARCH-6)
+
+- Incidents are derived from **order status only**. Adapter-derived incidents are not implemented.
+- For an order with no incident condition, the evidence endpoint returns `kind: NONE` and "No active incident". It claims no past incident and no resolution.

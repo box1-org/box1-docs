@@ -28,3 +28,10 @@
   - CSP `default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self' https://keycloak.apps.ocp.box1.org; object-src 'none'`
   - XFO DENY, nosniff, `Referrer-Policy: no-referrer`, HSTS.
   - `signed-out.html` uses no inline style. asset-service's version is blocked by its own CSP, so that is not copied.
+
+## Amendment (Phase 5)
+
+- **CSP as implemented:** `form-action 'self'`, without Keycloak. Login is a redirect and logout is a link, so no form posts to Keycloak (SEC-6).
+- `style-src` additionally allows exactly one hash, for react-aria-components 1.22.1's `react-aria-pressable-style`. A CSP-violation check in the Firefox e2e found it.
+- **Logout is a GET.** Sibling `*.box1.org` pages can trigger sign-out. This is accepted as a nuisance (SEC-4).
+- **Public paths are narrowed** to `/q/health*`, `/q/openapi` and `/q/metrics`, plus the template API and the signed-out page (SEC-5).

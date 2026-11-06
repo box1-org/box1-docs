@@ -4,15 +4,15 @@
   "profile": "frontier",
   "prompt": "box1_operations_agent_prompts/01-services/08_operator_console.md@5ef99df",
   "started": "2026-11-05T22:43-05:00",
-  "current_phase": "5 Review",
+  "current_phase": "6 GitOps delivery (stopped: merges need user approval)",
   "repositories": [
     {
       "name": "box1-org/operations-console",
       "role": "target",
       "branch": "issue-18-console",
-      "commit": "d007f00ddd7be5e58e9be233c893f4f8adbd9561",
+      "commit": "1d65b2b",
       "pr": "https://github.com/box1-org/operations-console/pull/2",
-      "ci": "box1-ci/operations-console-validate-l6jv2 Succeeded"
+      "ci": "box1-ci/operations-console-validate-8pkct Succeeded"
     },
     {
       "name": "box1-org/box1-docs",
@@ -31,7 +31,8 @@
       "role": "Keycloak client",
       "base": "5e0588839697bdcd278185e522968659423ebca0",
       "pr": "https://github.com/box1-org/box1-gitops/pull/73",
-      "branch": "run18-operations-console-keycloak"
+      "branch": "run18-operations-console-keycloak",
+      "commit": "16d561e"
     }
   ],
   "upstreams_read_only": {
@@ -49,5 +50,6 @@
   "containers_prefix": "run18-",
   "image_digest": null,
   "gitops_commit": null,
-  "probe_pr": "https://github.com/box1-org/operations-console/pull/1 (closed)"
+  "probe_pr": "https://github.com/box1-org/operations-console/pull/1 (closed)",
+  "stopped": "2026-11-06T00:05-05:00"
 }
