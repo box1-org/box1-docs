@@ -48,3 +48,27 @@ All four promoted services were 1/1 ready with 0 restarts after rollout. In the 
 - Inventory and adapter spans: their export is not on.
 - Outbox and Kafka publish spans: none are emitted by the code.
 - Behaviour during a collector outage: not exercised.
+
+## Inventory-service export (box1-workloads-dev#127)
+
+User approval in chat: "Yes, inventory next".
+
+- #127 changed only `workloads/inventory-service`. It was squash-merged as `be0d527ae281aa9ea6a635261003bb20f9fb84e7` after `box1-gitops-validate` and `box1-phase1-smoke` passed.
+- Pod `inventory-service-99c68ddf7-h8blm`: ready, 0 restarts, ConfigMap `inventory-service-config-9mm646ftfk` with ratio 1.0. Image source `646bd02`, `sha256:ccc4b910d1aa`.
+
+**Sample order:** `ord_348064921994474291ba11fd1a47785a`, trace ID `4d2f417360e14a3d26cc08f98d15b462`. POST returned 201; the order reached `FULFILLMENT_REQUESTED` / `INVENTORY_RESERVED`.
+
+**Tempo returned one connected trace.** Each span's parent is the previous span:
+
+| # | Service | Kind | Span | Duration |
+|---|---|---|---|---|
+| 1 | order-service | SERVER | `POST /api/v1/orders` | 8 ms |
+| 2 | inventory-service | INTERNAL | `inventory.consume order.placed.v1` | 18 ms |
+| 3 | order-service | INTERNAL | `order.consume inventory.reserved.v1` | 5 ms |
+| 4 | inventory-service | INTERNAL | `inventory.consume order.state-changed.v1` | 2 ms |
+
+**Logs:** the JSON lines in both services carry, under `mdc`, `traceId=4d2f417360e14a3d26cc08f98d15b462`, `sampled=true`, `orderId` and `correlationId`; inventory also carries `eventId` and `eventType`. (This corrects the earlier note: the fields live under `mdc`, not at the top level.)
+
+**Health and collector:** in the 10 minutes after rollout, the inventory log had 0 ERROR lines, 0 exporter errors and 0 VertxTracer warnings. Collector totals: `otelcol_receiver_accepted_spans` = 16, `otelcol_exporter_sent_spans` = 16, no `send_failed` series.
+
+**Still missing:** the fulfillment-adapter boundary. Its promotion (#122) failed, its Kafka consumer creates no span (decision 005), and it has no Camel tracing.

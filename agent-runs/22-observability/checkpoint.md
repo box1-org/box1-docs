@@ -3,7 +3,7 @@
 Updated 2026-11-06T14:55:54-05:00.
 
 ## Phase
-Updated 2026-11-06T15:28:49-05:00. Phase 7 is partial. order-service exports traces, verified end to end: `evidence/phase7-order-service-trace.md`. The other six services are not exporting. Three of them have stuck promotions.
+Updated 2026-11-06T15:32:07-05:00. Phase 7 is partial. order-service and inventory-service export traces, verified as one connected four-span trace: `evidence/phase7-order-service-trace.md`.
 
 ## Done
 - Phase 0 discovery: `evidence/phase0-discovery.md` (read-only).
@@ -29,7 +29,7 @@ Updated 2026-11-06T15:28:49-05:00. Phase 7 is partial. order-service exports tra
 7. Pending: box1-gitops#83 (tidy-up; syncing it restarts the collector).
 
 ## Exact next action
-Wait for the user's choice. One option is to re-run promotion **one service at a time**: inventory (already promoted, needs only its export ConfigMap), then fulfillment-adapter (#122 needs a re-run or a new release), then notification and asset. After each, POST an order and confirm the new service's spans join the trace. Separately, consider a backlog issue for the concurrent-promotion failure (cancelled PaC checks fail the promote task).
+inventory is done (box1-workloads-dev#127, `be0d527`). The next service is **fulfillment-adapter**, which is needed for the acceptance criterion. Its promotion PR #122 is open with cancelled checks, so re-run its checks or the release, one service at a time. Its Kafka consumer also creates no span (decision 005), so getting the adapter into the trace needs a code change in the fulfillment-adapter repo. A useful partial step: enable export so the HTTP request span appears. Then do notification and asset (#123, #126), then scenario-controller and operations-console (export ConfigMap only).
 
 ## Open risks
 - Vendor support on OpenShift 5.0.0-rc.7 is not established.

@@ -2,8 +2,8 @@
   "issue": "box1-org/box1-docs#22",
   "profile": "frontier",
   "current_phase": 7,
-  "phase_state": "order_service_exporting_others_pending",
-  "updated_at": "2026-11-06T15:28:49-05:00",
+  "phase_state": "order_and_inventory_exporting",
+  "updated_at": "2026-11-06T15:32:07-05:00",
   "open_decisions": [
     "next service to enable (one at a time)",
     "stuck promotions box1-workloads-dev#122 #123 #126",
@@ -31,7 +31,11 @@
       "pr": null,
       "draft": false,
       "merged_pr": 119,
-      "merge_commit": "b8513c13e3a36399b893a26370707a3177be6d20"
+      "merge_commit": "be0d527ae281aa9ea6a635261003bb20f9fb84e7",
+      "merged_prs": [
+        119,
+        127
+      ]
     },
     "box1-ops-contracts": {
       "role": "trace context contract (envelope traceparent)",
