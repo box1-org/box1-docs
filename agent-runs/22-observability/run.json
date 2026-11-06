@@ -2,14 +2,14 @@
   "issue": "box1-org/box1-docs#22",
   "profile": "frontier",
   "current_phase": 7,
-  "phase_state": "adapter_exporting_awaiting_consumer_span_merge",
-  "updated_at": "2026-11-06T15:39:51-05:00",
+  "phase_state": "criterion1_live_verified",
+  "updated_at": "2026-11-06T15:53:13-05:00",
   "open_decisions": [
-    "merge box1-org/fulfillment-adapter#5",
-    "notification #123 and asset #126 promotions",
+    "prune orphaned ConfigMaps (order, inventory, adapter) \u2014 box1-docs#42",
+    "notification #123 and asset #126",
     "scenario-controller and operations-console export",
     "merge+sync box1-gitops#83",
-    "backlog issue for concurrent promotion failures"
+    "next slice: metrics/alerts"
   ],
   "repositories": {
     "box1-docs": {
@@ -32,12 +32,13 @@
       "pr": null,
       "draft": false,
       "merged_pr": 119,
-      "merge_commit": "03f77b8ff7762c664c29e6e59ceaac652f920916",
+      "merge_commit": "36d0b30f468765066128ce652e05c21b644e50f5",
       "merged_prs": [
         119,
         127,
         122,
-        128
+        128,
+        129
       ]
     },
     "box1-ops-contracts": {
@@ -56,9 +57,10 @@
     },
     "fulfillment-adapter": {
       "role": "trace export build config",
-      "run_branch": "consumer-span",
+      "run_branch": null,
       "pr": 5,
-      "previous_pr_merged": 4
+      "previous_pr_merged": 4,
+      "merge_commit": "efa4f1e8223a6beed194554e9d17b485196f98d8"
     },
     "notification-service": {
       "role": "trace export build config",

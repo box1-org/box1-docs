@@ -85,3 +85,43 @@ User approval in chat: "Yes, adapter next", meaning re-run its promotion, then t
   - The adapter logged 0 ERROR lines and 0 exporter errors.
 - **Code fix:** [box1-org/fulfillment-adapter#5](https://github.com/box1-org/fulfillment-adapter/pull/5) adds a CONSUMER span parented on the envelope `traceparent`. Local `./mvnw -B verify`: 103 tests passed, 0 Checkstyle violations, 0 SpotBugs bugs. Not merged; needs approval.
 - **Observation:** Tempo's `/api/v2/traces/{id}` returned the `POST /api/v1/orders` span twice, with the same span ID `EbH6WqiLocY=`. This is a read-side duplicate, likely the same span in both the live ingester data and a flushed block. It is not a second request.
+
+## Adapter consumer span (fulfillment-adapter#5): end-to-end trace through three services
+
+User approval in chat: "Yes, merge #5".
+
+- **Merge:** fulfillment-adapter#5 was squash-merged as `efa4f1e8223a6beed194554e9d17b485196f98d8` after `fulfillment-adapter-validate` passed on head `ee491e1`.
+- **Release** `fulfillment-adapter-release-l769j`: build and security Succeeded. Promotion #129 auto-merged at `36d0b30f`.
+- **Rollout:** the pod `fulfillment-adapter-74bdd7598f-gvh59` runs source `efa4f1e`, `sha256:15aa4ef32b02`; ready, 0 restarts.
+- **Promote step failed** after deployment with `TimeoutError: ... expected GitOps revision=36d0b30f, observed revision=36d0b30f, sync=OutOfSync, health=Healthy`. The only OutOfSync resource is the orphaned `ConfigMap/fulfillment-adapter-config-89db8g96gh` (requiresPruning), left by the export ConfigMap change in #128. This is the known [#42](https://github.com/box1-org/box1-docs/issues/42) item 2. The deployment is correct; the release run is red.
+- **Orphans on the other exporting services** at this time: order-service OutOfSync ConfigMap/order-service-config-8btd4c24mh;inventory-service OutOfSync ConfigMap/inventory-service-config-cb8h282db5;
+
+**Sample order** `ord_ebae01715c30481ca38883cd38ade947`, trace `113f8a68c7791743bc3a83f46c58f3c3`. The order reached `SHIPPED` / `SHIPMENT_CONFIRMED` (ERP in AUTO mode).
+
+Tempo trace, unique spans in start order:
+
+| Service | Kind | Span | Parent |
+|---|---|---|---|
+| order-service | SERVER | `POST /api/v1/orders` | client |
+| inventory-service | INTERNAL | `inventory.consume order.placed.v1` | POST |
+| order-service | INTERNAL | `order.consume inventory.reserved.v1` | inventory |
+| inventory-service | INTERNAL | `inventory.consume order.state-changed.v1` | order consume |
+| inventory-service | INTERNAL | `inventory.consume fulfillment.requested.v1` | order consume |
+| **fulfillment-adapter** | **CONSUMER** | **`fulfillment.consume fulfillment.requested.v1`** | order consume |
+| inventory-service | INTERNAL | `inventory.consume order.state-changed.v1` | order consume |
+| order-service | INTERNAL | `order.consume shipment.confirmed.v1` | order consume |
+| inventory-service | INTERNAL | `inventory.consume shipment.confirmed.v1` | order consume |
+| inventory-service | INTERNAL | `inventory.consume order.state-changed.v1` | order shipment consume |
+
+The adapter span attributes are `box1.order_id=ord_ebae01715c30481ca38883cd38ade947`, `box1.fulfillment_request_id=ful_ebae0171…` and `box1.acceptance_result=CREATED`.
+
+The ERP hop is not traced. The ERP result events carry the stored order `traceparent`, so `shipment.confirmed` consumers stay in the same trace. Inside the ERP, correlation is by `fulfillmentRequestId` (prompt rule).
+
+**orderId → trace through logs:** `oc logs` lines for the order carry `mdc.traceId=113f8a68c7791743bc3a83f46c58f3c3`, `orderId` and `correlationId` in:
+- order-service: "Order created", "Event applied: … FULFILLMENT_REQUESTED", "Event applied: … SHIPPED";
+- inventory-service: "Event reserved", "Event committed";
+- fulfillment-adapter: "Fulfillment request created".
+
+The adapter's async "Uploaded request file" line has `orderId` but no `traceId`, because it runs in the dispatch worker outside a span.
+
+**Health:** no ERROR lines and no exporter errors in the three services in the last 10 minutes. Collector: accepted 145, sent 145, no `send_failed`. Tempo `/var/tempo` is 1.1M of 10Gi.

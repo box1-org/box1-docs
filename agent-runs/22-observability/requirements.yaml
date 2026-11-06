@@ -26,7 +26,7 @@
   evidence: [evidence/phase7-order-service-trace.md]
 - id: OBS-TRACE-E2E
   description: Sample orderId resolves to one trace across order, inventory and adapter boundary
-  status: implemented
+  status: live_verified
   implementation: []
   tests: []
   commands: []

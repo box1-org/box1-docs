@@ -3,7 +3,7 @@
 Updated 2026-11-06T14:55:54-05:00.
 
 ## Phase
-Updated 2026-11-06T15:39:51-05:00. Phase 7 is partial. order and inventory export a connected trace. The adapter is exporting but is not yet in order traces (needs fulfillment-adapter#5).
+Updated 2026-11-06T15:53:13-05:00. Phase 7 is partial. **The first acceptance criterion is live_verified**: a sample orderId leads, through logs and Tempo, to one trace across order, inventory and fulfillment-adapter (`evidence/phase7-order-service-trace.md`). The other criteria are open.
 
 ## Done
 - Phase 0 discovery: `evidence/phase0-discovery.md` (read-only).
@@ -29,11 +29,12 @@ Updated 2026-11-06T15:39:51-05:00. Phase 7 is partial. order and inventory expor
 7. Pending: box1-gitops#83 (tidy-up; syncing it restarts the collector).
 
 ## Exact next action
-- The adapter is promoted (#122, `60c8bae`) and exporting (#128, `03f77b8`), but it adds no span to order traces yet.
-- **Waiting for approval to merge box1-org/fulfillment-adapter#5** (CONSUMER span). Its merge triggers the release and promotion. Promote that service alone.
-- After it rolls out: POST an order and confirm `fulfillment.consume fulfillment.requested.v1` joins the trace with parent `inventory`/`order`. Confirm the adapter log lines carry `traceId`.
-- If that passes, tick the first acceptance criterion on #22, with proof level live_verified.
-- Then: notification (#123) and asset (#126) one at a time; scenario-controller and operations-console (export ConfigMap only).
+- **Blocker for further promotions:** the order-service, inventory-service and fulfillment-adapter Argo apps are OutOfSync only because of orphaned generated ConfigMaps (box1-docs#42 item 2). The next release of any of them will fail promote until those orphans are pruned. Pruning them is a cluster change through Argo and needs approval. The permanent fix belongs to #42.
+- **Remaining export:**
+  - notification (#123) and asset (#126): re-run the checks, merge, then export.
+  - scenario-controller and operations-console: export ConfigMap only.
+  Each export change creates another orphan, so prune in the same step.
+- **Next slices:** metrics and alerts (ERP backlog/slowdown, order age), a dashboard, the deployment overlay, then fault scenarios.
 
 ## Open risks
 - Vendor support on OpenShift 5.0.0-rc.7 is not established.
