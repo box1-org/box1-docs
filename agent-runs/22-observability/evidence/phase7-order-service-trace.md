@@ -72,3 +72,16 @@ User approval in chat: "Yes, inventory next".
 **Health and collector:** in the 10 minutes after rollout, the inventory log had 0 ERROR lines, 0 exporter errors and 0 VertxTracer warnings. Collector totals: `otelcol_receiver_accepted_spans` = 16, `otelcol_exporter_sent_spans` = 16, no `send_failed` series.
 
 **Still missing:** the fulfillment-adapter boundary. Its promotion (#122) failed, its Kafka consumer creates no span (decision 005), and it has no Camel tracing.
+
+## Fulfillment-adapter promotion and export (2026-11-06)
+
+User approval in chat: "Yes, adapter next", meaning re-run its promotion, then turn on export.
+
+- **Promotion #122:** `/retest` re-ran the cancelled checks; `box1-gitops-validate` and `box1-phase1-smoke` passed on head `a24499c`. Squash-merged as `60c8bae64128641737b2625a0f921311865db8ff`. Pod rolled to `sha256:db35db9e8625` (source `5f1d5fd`), ready, 0 restarts.
+- **Export #128:** squash-merged as `03f77b8ff7762c664c29e6e59ceaac652f920916` after checks passed. Pod `fulfillment-adapter-f98b9d897-5v9p4` is ready, 0 restarts, with sampler ratio 1.0.
+- **Sample order** `ord_b587860f32824335a44e01d8c575d391` (trace `36dc7ff9274aa0a4abae9f54d1445768`) reached `FULFILLMENT_REQUESTED`. The adapter created `ful_b587860f…` and uploaded the request file.
+  - Tempo shows the order and inventory spans, including `inventory.consume fulfillment.requested.v1`.
+  - **There is no adapter span.** The adapter's log lines for the order have no `traceId`, because its Kafka consumer creates no span (decision 005).
+  - The adapter logged 0 ERROR lines and 0 exporter errors.
+- **Code fix:** [box1-org/fulfillment-adapter#5](https://github.com/box1-org/fulfillment-adapter/pull/5) adds a CONSUMER span parented on the envelope `traceparent`. Local `./mvnw -B verify`: 103 tests passed, 0 Checkstyle violations, 0 SpotBugs bugs. Not merged; needs approval.
+- **Observation:** Tempo's `/api/v2/traces/{id}` returned the `POST /api/v1/orders` span twice, with the same span ID `EbH6WqiLocY=`. This is a read-side duplicate, likely the same span in both the live ingester data and a flushed block. It is not a second request.

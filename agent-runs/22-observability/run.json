@@ -2,11 +2,12 @@
   "issue": "box1-org/box1-docs#22",
   "profile": "frontier",
   "current_phase": 7,
-  "phase_state": "order_and_inventory_exporting",
-  "updated_at": "2026-11-06T15:32:07-05:00",
+  "phase_state": "adapter_exporting_awaiting_consumer_span_merge",
+  "updated_at": "2026-11-06T15:39:51-05:00",
   "open_decisions": [
-    "next service to enable (one at a time)",
-    "stuck promotions box1-workloads-dev#122 #123 #126",
+    "merge box1-org/fulfillment-adapter#5",
+    "notification #123 and asset #126 promotions",
+    "scenario-controller and operations-console export",
     "merge+sync box1-gitops#83",
     "backlog issue for concurrent promotion failures"
   ],
@@ -31,10 +32,12 @@
       "pr": null,
       "draft": false,
       "merged_pr": 119,
-      "merge_commit": "be0d527ae281aa9ea6a635261003bb20f9fb84e7",
+      "merge_commit": "03f77b8ff7762c664c29e6e59ceaac652f920916",
       "merged_prs": [
         119,
-        127
+        127,
+        122,
+        128
       ]
     },
     "box1-ops-contracts": {
@@ -53,8 +56,9 @@
     },
     "fulfillment-adapter": {
       "role": "trace export build config",
-      "run_branch": "trace-export-build",
-      "pr": 4
+      "run_branch": "consumer-span",
+      "pr": 5,
+      "previous_pr_merged": 4
     },
     "notification-service": {
       "role": "trace export build config",

@@ -3,7 +3,7 @@
 Updated 2026-11-06T14:55:54-05:00.
 
 ## Phase
-Updated 2026-11-06T15:32:07-05:00. Phase 7 is partial. order-service and inventory-service export traces, verified as one connected four-span trace: `evidence/phase7-order-service-trace.md`.
+Updated 2026-11-06T15:39:51-05:00. Phase 7 is partial. order and inventory export a connected trace. The adapter is exporting but is not yet in order traces (needs fulfillment-adapter#5).
 
 ## Done
 - Phase 0 discovery: `evidence/phase0-discovery.md` (read-only).
@@ -29,7 +29,11 @@ Updated 2026-11-06T15:32:07-05:00. Phase 7 is partial. order-service and invento
 7. Pending: box1-gitops#83 (tidy-up; syncing it restarts the collector).
 
 ## Exact next action
-inventory is done (box1-workloads-dev#127, `be0d527`). The next service is **fulfillment-adapter**, which is needed for the acceptance criterion. Its promotion PR #122 is open with cancelled checks, so re-run its checks or the release, one service at a time. Its Kafka consumer also creates no span (decision 005), so getting the adapter into the trace needs a code change in the fulfillment-adapter repo. A useful partial step: enable export so the HTTP request span appears. Then do notification and asset (#123, #126), then scenario-controller and operations-console (export ConfigMap only).
+- The adapter is promoted (#122, `60c8bae`) and exporting (#128, `03f77b8`), but it adds no span to order traces yet.
+- **Waiting for approval to merge box1-org/fulfillment-adapter#5** (CONSUMER span). Its merge triggers the release and promotion. Promote that service alone.
+- After it rolls out: POST an order and confirm `fulfillment.consume fulfillment.requested.v1` joins the trace with parent `inventory`/`order`. Confirm the adapter log lines carry `traceId`.
+- If that passes, tick the first acceptance criterion on #22, with proof level live_verified.
+- Then: notification (#123) and asset (#126) one at a time; scenario-controller and operations-console (export ConfigMap only).
 
 ## Open risks
 - Vendor support on OpenShift 5.0.0-rc.7 is not established.
