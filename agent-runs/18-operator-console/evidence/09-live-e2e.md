@@ -24,3 +24,24 @@
 - **Not exercised:** an ERP **hold**. The adapter's revisions go PENDING (1) → SHIPPED (2), with no HELD revision. "Held by an ERP operator" is therefore still proven only locally.
 - **Not reached:** **COMPLETED**. order-service did not advance SHIPPED → COMPLETED ("if the completion policy allows", ORDER-STATE.md).
 - **Not observed live:** queued and uploaded-awaiting-ack. They passed within 5 s, between console refreshes.
+
+# Second run: ERP hold, release and ship (2026-11-06 14:40–14:41 EST)
+
+Order `ord_7ea1520e007d4023a76283efab259a34`: `cust_demo_lin`, `site_nyc` SKU-42 × 1, placed from the dropdowns. The SKU list now showed **99 available**, reflecting the first order's consumed unit. The user operated the ERP console; the run polled the adapter and order-service APIs read-only every 4–5 s.
+
+| Time (EST) | Adapter (fulfillment request) | Order service | Console |
+|---|---|---|---|
+| 14:40:05 | — | SUBMITTED, then reserved, then FULFILLMENT_REQUESTED (14:40:09) | Awaiting ERP acknowledgement |
+| 14:40:12 | PENDING rev 1 | FULFILLMENT_REQUESTED | Accepted by the ERP |
+| 14:40:40 | **HELD rev 2** (operator hold) | FULFILLMENT_REQUESTED | **"Held by an ERP operator — Waiting, not a failure. The request continues when the ERP operator releases it."** Neutral waiting style, no failure tone; banner "Awaiting ERP acknowledgement. ERP progress: Held by an ERP operator. Outstanding attempts: 1 upload(s), 0 resend(s)." (`live/e2e-3-held-by-erp-operator.jpg`) |
+| ~14:41:15 | PENDING rev 3 (released) | FULFILLMENT_REQUESTED | (polled via API) |
+| ~14:41:19 | SHIPPED rev 4, `shp_7a850ee5…` | still FULFILLMENT_REQUESTED for about 4 s | (polled via API) |
+| ~14:41:23 | SHIPPED rev 4 | **SHIPPED** | (session ended; see below) |
+
+**Interruption at 14:41:05.** Another run (box1-docs#19, branch `run19-console-scenario-control`) merged box1-workloads-dev#116. It adds the console's `SCENARIO_CONTROLLER_URL` and `CONSOLE_SCENARIO_FORWARD_TOKEN`, and that rolled the console pod (`…dbfdfb6d7-mb7xf`). Because the session key is per pod, the signed-in session ended. The page showed "Your console session has ended — Sign in again" (`live/e2e-4-…jpg`), exactly as designed for a 401. That is live evidence for #79.
+
+The final SHIPPED stage of this order is recorded from the source APIs, not a console screenshot. The first run's console screenshot (`live/e2e-2-shipped.jpg`) already shows the shipped rendering live.
+
+**Observed live across both runs:** Awaiting ERP acknowledgement, Accepted by the ERP, **Held by an ERP operator (not a failure)**, Shipped. Not observed live: queued and uploaded (too fast between refreshes), rejected, needs attention, and "ERP detail unavailable". Those remain proven in CI and locally.
+
+**Note (pointer only):** run 19 added a `scenario-controller` audience and scope mappings to the public `operations-console` client (box1-gitops `32ca46b`, user decision for #19). The controller still requires its own `scenario-viewer`/`scenario-operator` roles (403 otherwise), so a self-obtained console token carries only the scenario rights the person already holds. It remains covered by #79.

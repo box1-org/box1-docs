@@ -103,13 +103,13 @@
 - id: CON-ERP-001
   description: 'Order detail distinguishes queued, awaiting ERP acknowledgement, accepted by ERP, held, shipped, rejected and needs attention from the adapter status'
   source: 'AC7'
-  status: ci_verified
+  status: live_verified
   implementation: ["domain/ErpProgressMapper.java", "webui/src/components/OrderSummaryView.tsx"]
   tests: ["ErpProgressMapperTest", "UpstreamBehaviourTest", "e2e flow.spec"]
   commands: ["PR pipeline operations-console-validate-l6jv2 (d007f00)", "./mvnw -B -ntp verify -DskipITs=false", "cd src/test/e2e && npx playwright test (local stack, Firefox)"]
-  evidence: ["evidence/04-ci-implementation.md", "evidence/03-local-tests.md"]
+  evidence: ["evidence/09-live-e2e.md"]
   deployment: {"image_digest": "sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f", "gitops_commit": "b3a1a52001a9a83a3dd65c4e66c8a16277ed3167", "source": "267152e"}
-  limitations: ["Live needs the order-to-fulfillment link decision (G-1/O-1); deployed default is none"]
+  limitations: ["Live: awaiting, accepted, held, shipped. Queued, uploaded, rejected and needs-attention are proven in CI and locally only"]
 - id: CON-ERP-002
   description: "Adapter unreachable shows the order-service state with 'ERP detail unavailable', never a guessed adapter state"
   source: 'AC7; scenario'
@@ -123,13 +123,13 @@
 - id: CON-ERP-003
   description: 'A held ERP request shows as held, not failed'
   source: 'scenario'
-  status: ci_verified
+  status: live_verified
   implementation: []
   tests: ["UpstreamBehaviourTest.heldRequestShowsAsHeldNotFailedAlongsideTheOrderState", "e2e flow.spec"]
   commands: ["PR pipeline operations-console-validate-l6jv2 (d007f00)", "./mvnw -B -ntp verify -DskipITs=false", "cd src/test/e2e && npx playwright test (local stack, Firefox)"]
-  evidence: ["evidence/04-ci-implementation.md", "evidence/03-local-tests.md"]
+  evidence: ["evidence/09-live-e2e.md"]
   deployment: {"image_digest": "sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f", "gitops_commit": "b3a1a52001a9a83a3dd65c4e66c8a16277ed3167", "source": "267152e"}
-  limitations: ["HELD produced by stubbed adapter; no ERP can hold on the cluster (G-3)"]
+  limitations: []
 - id: CON-PARTIAL-001
   description: 'Each upstream slow or down in turn gives a partial page with the failed source named, not infinite loading'
   source: 'scenario; mission'
@@ -213,13 +213,13 @@
 - id: CON-E2E-001
   description: 'E2E: seed order, submit, watch timeline; hold in ERP or delay ERP; see waiting state with diagnosis links; recover; visibly complete'
   source: 'AC1; phase 7'
-  status: locally_tested
+  status: live_verified
   implementation: []
   tests: ["e2e flow.spec seed→hold→complete"]
-  commands: ["cd src/test/e2e && npx playwright test (local stack, Firefox)"]
-  evidence: ["evidence/03-local-tests.md"]
+  commands: ["console on the Route, built-in browser; ERP operated by the user"]
+  evidence: ["evidence/09-live-e2e.md"]
   deployment: {"image_digest": "sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f", "gitops_commit": "b3a1a52001a9a83a3dd65c4e66c8a16277ed3167", "source": "267152e"}
-  limitations: ["Hold is a stubbed adapter state, not an ERP console action; live hold blocked by G-3 (adapter SFTP disabled)"]
+  limitations: ["COMPLETED not reached: order-service stops at SHIPPED"]
 - id: CON-PAGE-HOME
   description: 'Operator home: business indicators and exception queue'
   source: 'pages'
@@ -247,9 +247,9 @@
   implementation: ["webui/src/pages/OrderDetail.tsx"]
   tests: ["e2e flow.spec"]
   commands: ["LIVE=1 npx playwright test (src/test/e2e/live, Firefox, real Route)"]
-  evidence: ["evidence/06-live-acceptance.md"]
+  evidence: ["evidence/09-live-e2e.md"]
   deployment: {"image_digest": "sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f", "gitops_commit": "b3a1a52001a9a83a3dd65c4e66c8a16277ed3167", "source": "267152e"}
-  limitations: ["Live order at SUBMITTED only"]
+  limitations: []
 - id: CON-PAGE-INCIDENT
   description: 'Incident/evidence view'
   source: 'pages'
@@ -293,13 +293,13 @@
 - id: CON-EVID-001
   description: 'Each business state connects to trace ID / correlation ID / evidence links without OpenShift admin access'
   source: 'UX evidence'
-  status: locally_tested
+  status: live_verified
   implementation: ["api/ConsoleResource.summarize (evidence)", "components/OrderSummaryView.tsx"]
   tests: ["e2e flow.spec evidence"]
   commands: ["cd src/test/e2e && npx playwright test (local stack, Firefox)"]
-  evidence: ["evidence/03-local-tests.md"]
+  evidence: ["evidence/09-live-e2e.md"]
   deployment: {"image_digest": "sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f", "gitops_commit": "b3a1a52001a9a83a3dd65c4e66c8a16277ed3167", "source": "267152e"}
-  limitations: ["Trace, log and dashboard deep links unavailable until #22; IDs and Git SHA links shown"]
+  limitations: ["Trace, log and dashboard deep links unavailable until #22; IDs and revision link shown"]
 - id: CON-API-001
   description: 'Console backend versioned OpenAPI; one typed client generated from it; Problem JSON and sourceStatus semantics compatible with #17'
   source: 'API'
