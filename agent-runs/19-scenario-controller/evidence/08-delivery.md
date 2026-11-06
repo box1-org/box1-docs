@@ -10,12 +10,14 @@ Clocks: host 12:50:38 EST at the start; there were no sleep gaps during delivery
 |---|---|---|
 | A-1 inventory-service#3 | Merged by the user as `ad472e1`, 12:48 EST. Release `inventory-service-release-fblwj` Succeeded; promotion box1-workloads-dev#106 merged automatically. The deployment in `inventory-service-dev` runs `sha256:c8b33f7a…7601b`, which matches the release's `image-digest` result. Logs: "Successfully applied 1 migration" (V3) | `oc get pipelinerun`, `oc get deploy`, pod logs |
 | A-2 contract | box1-ops-contracts#10 opened (branch `run19-inventory-fixture-routes`), adding the two routes. `npm run validate` passes (10 event fixtures, 11 schemas, 20 OpenAPI examples); `npm test` passes 76/76. **Not merged**; merging needs approval | PR #10 |
-| A-3 scenario-controller#1 | Merged as `f64dee6`, 12:51 EST. Release `scenario-controller-release-v9qm4`: build, security (gate mode; scan critical 0, high 10, medium 158, low 83), promote and smoke all Succeeded. Image `sha256:a811c457…b269`. Promotion box1-workloads-dev#107 merged automatically (`bd24fe1`) | PipelineRun results |
+| A-3 scenario-controller#1 | Merged as `f64dee6`, 12:51 EST. Release `scenario-controller-release-v9qm4`: build, security (`gate` mode, which enforces RHACS build policies via `roxctl image check`, not vulnerability counts: policy pass; scan critical 0, high 10, medium 158, low 83, the same counts as inventory-service, so likely the shared base image), promote and smoke all Succeeded. Image `sha256:a811c457…b269`. Promotion box1-workloads-dev#107 merged automatically (`bd24fe1`) | PipelineRun results |
 | A-4 box1-gitops#78 | Merged as `7d7e0b1`. Argo `keycloak` (automated, selfHeal, prune off) refreshed: Synced, Healthy, operation Succeeded at `7d7e0b1`. KeycloakClients `inventory-service`, `scenario-controller` and `scenario-controller-cli` created. Operator log: roles `inventory-admin`, `scenario-viewer` and `scenario-operator` created (SUCCESS). **Failure:** both scope mappings fail with `(404) 404 Not Found`, so `scenario-controller` and `scenario-controller-cli` report `ready=false`, and the service-account role step is not reached. Repair 14 below | operator log, `oc get keycloakclient` |
 | A-5 Secret | `scenario-controller-inventory-token` created in `scenario-controller-dev`, key `client-secret`, copied by a pipe from `keycloak-client-secret-scenario-controller` (key `CLIENT_SECRET`). The value was never printed or stored; only the key names and the encoded length were checked. Labelled `box1.org/source=keycloak-client-secret-scenario-controller`. It is not in Git, so Argo does not manage it | `oc get secret` (metadata) |
 | A-6 box1-workloads-dev#103 | Trial merge against main showed no conflict. Merged as `e28c020`. Argo `scenario-controller` Synced and Healthy at `e28c020`; rollout complete; strategy `Recreate`; image `sha256:a811c457…b269` | `oc rollout status`, Argo status |
 
 ## Deployed controller: read-only checks
+
+These ran against the final pod, after #103's rollout (revision 4); the release smoke had run against #107's image-only rollout.
 
 Route: `scenario-controller-dev.apps.ocp.box1.org`.
 
