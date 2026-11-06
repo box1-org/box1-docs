@@ -1,16 +1,13 @@
 {
   "issue": "box1-org/box1-docs#22",
   "profile": "frontier",
-  "current_phase": 5,
-  "phase_state": "stopped_at_approval_boundary",
-  "updated_at": "2026-11-06T14:55:54-05:00",
+  "current_phase": 6,
+  "phase_state": "platform_delivered_awaiting_service_merges",
+  "updated_at": "2026-11-06T15:09:07-05:00",
   "open_decisions": [
-    "merge box1-gitops#82",
-    "sync observability-operators + approve InstallPlans",
-    "sync user-workload-monitoring",
-    "sync observability-tracing",
     "merge 7 service trace-export-build PRs",
-    "merge box1-workloads-dev#119"
+    "merge box1-workloads-dev#119",
+    "merge+sync box1-gitops#83"
   ],
   "repositories": {
     "box1-docs": {
@@ -19,10 +16,11 @@
     },
     "box1-gitops": {
       "role": "shared infrastructure",
-      "main": "f257bb6",
-      "run_branch": "observability-tracing-platform",
+      "main": "acc6ce530cab045f42afde85d7f1ace8bf994dc4",
+      "run_branch": "observability-tracing-tidy",
       "commit": "ec0cccc",
-      "pr": 82
+      "pr": 83,
+      "merged_pr": 82
     },
     "box1-workloads-dev": {
       "role": "service workloads",

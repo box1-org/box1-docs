@@ -3,7 +3,7 @@
 Updated 2026-11-06T14:55:54-05:00.
 
 ## Phase
-Phase 5 (review) is complete for the first vertical slice: tracing platform and trace export. The run is **stopped at the approval boundary**. Nothing has been applied to the cluster.
+Updated 2026-11-06T15:09:07-05:00. The platform part of Phase 6 (GitOps delivery) is done and checked live: `evidence/phase6-platform-delivery.md`. The run is **stopped at the next approval boundary**: the service PRs and the export switch-on.
 
 ## Done
 - Phase 0 discovery: `evidence/phase0-discovery.md` (read-only).
@@ -22,16 +22,17 @@ Phase 5 (review) is complete for the first vertical slice: tracing platform and 
 - The other six services: not built locally; they rely on PR checks.
 - Manifests: `oc kustomize` renders all paths. Server dry run passed for the Namespaces, Subscriptions and ConfigMap. The Tempo and OTel CRs cannot be dry-run before the operators exist.
 
-## Approvals needed (in order)
-1. Merge box1-gitops#82. This creates three manual-sync Applications only.
-2. Sync `observability-operators` and approve the two InstallPlans.
-3. Sync `user-workload-monitoring` (enables UWM).
-4. Sync `observability-tracing` (creates a 10 Gi PVC and the Tempo, collector and UI pods).
-5. Merge the seven service PRs. Each merge triggers a build and dev promotion; export stays off.
-6. Merge box1-workloads-dev#119 (turns export on).
+## Approvals
+1. ~~Merge box1-gitops#82~~: merged as `acc6ce5`.
+2. ~~Sync `observability-operators` and approve the InstallPlans~~: Tempo v0.22.0-5 and OTel v0.158.0 are `Succeeded`.
+3. ~~Sync `user-workload-monitoring`~~: running.
+4. ~~Sync `observability-tracing`~~: Tempo is `Ready`, the PVC is bound, the collector is running. Smoke span, OAuth and NetworkPolicy checks passed.
+5. **Pending:** merge the seven service PRs. All checks pass; each merge builds and promotes to dev, with export still off.
+6. **Pending:** merge box1-workloads-dev#119, which turns export on. Mark it ready first.
+7. **Pending:** merge and sync box1-gitops#83 (tidy-up). Syncing restarts the collector.
 
 ## Exact next action
-After approval 1–4: verify the CSVs are `Succeeded`, TempoMonolithic is `Ready`, the PVC is bound, and the collector is running. Then check the collector config and NetworkPolicy behaviour. After 5–6: POST a sample order and find its trace in the Jaeger UI across order, inventory and adapter. Record evidence. Then start Phase 4 fault scenarios (Tempo pod restart; collector scaled to 0). Fault injection needs its own approval.
+After 5 and 6: confirm each service runs the new digest and logs no exporter errors. Check that #61's VertxTracer warnings are gone. POST a sample order, find its trace by traceId (from the JSON log or the order record) in Tempo, and confirm spans from order, inventory and the adapter. Record evidence and measure span rate and PV growth. Then do Phase 4 fault scenarios: a Tempo pod restart keeps traces; the collector scaled to 0 leaves orders working. Fault injection needs separate approval.
 
 ## Open risks
 - Vendor support on OpenShift 5.0.0-rc.7 is not established.
