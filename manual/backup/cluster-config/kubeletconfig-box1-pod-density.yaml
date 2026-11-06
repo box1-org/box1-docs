@@ -1,0 +1,12 @@
+# Cleaned export from the Box1 cluster (status and live metadata removed).
+apiVersion: machineconfiguration.openshift.io/v1
+kind: KubeletConfig
+metadata:
+  name: box1-pod-density
+spec:
+  kubeletConfig:
+    maxPods: 400
+    podsPerCore: 0
+  machineConfigPoolSelector:
+    matchLabels:
+      box1-pod-density: enabled

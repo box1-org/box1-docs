@@ -1,0 +1,34 @@
+# Cleaned export from the Box1 cluster (status and live metadata removed).
+apiVersion: machineconfiguration.openshift.io/v1
+kind: MachineConfig
+metadata:
+  labels:
+    machineconfiguration.openshift.io/role: master
+  name: 10-ipmi-modules
+spec:
+  config:
+    ignition:
+      version: 3.4.0
+    storage:
+      files:
+      - contents:
+          source: data:text/plain;charset=utf-8;base64,aXBtaV9tc2doYW5kbGVyCmlwbWlfZGV2aW50Zgo=
+        mode: 420
+        path: /etc/modules-load.d/ipmi.conf
+---
+apiVersion: machineconfiguration.openshift.io/v1
+kind: MachineConfig
+metadata:
+  labels:
+    machineconfiguration.openshift.io/role: master
+  name: 11-i2c-core-builtin-override
+spec:
+  config:
+    ignition:
+      version: 3.4.0
+    storage:
+      files:
+      - contents:
+          source: data:text/plain;charset=utf-8;base64,aW5zdGFsbCBpMmNfY29yZSAvYmluL3RydWUK
+        mode: 420
+        path: /etc/modprobe.d/i2c_core.conf

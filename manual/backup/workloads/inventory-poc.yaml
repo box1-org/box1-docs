@@ -1,0 +1,153 @@
+# Cleaned export from the Box1 cluster (status and live metadata removed).
+apiVersion: v1
+kind: Namespace
+metadata:
+  annotations:
+    openshift.io/description: ''
+    openshift.io/display-name: ''
+    openshift.io/requester: mike
+  name: inventory-poc
+---
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  labels:
+    build: inventory
+  name: inventory
+  namespace: inventory-poc
+spec:
+  lookupPolicy:
+    local: false
+---
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  labels:
+    build: inventory-image
+  name: inventory-image
+  namespace: inventory-poc
+spec:
+  lookupPolicy:
+    local: false
+  tags:
+  - annotations:
+      openshift.io/generated-by: OpenShiftNewBuild
+      openshift.io/imported-from: inventory-image:latest
+    from:
+      kind: DockerImage
+      name: inventory-image:latest
+    importPolicy:
+      importMode: Legacy
+    name: latest
+    referencePolicy:
+      type: Source
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  labels:
+    build: inventory
+  name: inventory
+  namespace: inventory-poc
+spec:
+  failedBuildsHistoryLimit: 5
+  nodeSelector: null
+  output:
+    to:
+      kind: ImageStreamTag
+      name: inventory:latest
+  postCommit: {}
+  resources: {}
+  runPolicy: Serial
+  source:
+    binary: {}
+    type: Binary
+  strategy:
+    dockerStrategy:
+      from:
+        kind: ImageStreamTag
+        name: python-39:latest
+    type: Docker
+  successfulBuildsHistoryLimit: 5
+  triggers:
+  - github:
+      secret: <REDACTED>
+    type: GitHub
+  - generic:
+      secret: <REDACTED>
+    type: Generic
+  - type: ConfigChange
+  - imageChange: {}
+    type: ImageChange
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-deployment
+  namespace: inventory-poc
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: inventory
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: inventory
+    spec:
+      containers:
+      - env:
+        - name: PYTHONPATH
+          value: /app
+        image: image-registry.openshift-image-registry.svc:5000/inventory-poc/inventory:latest
+        imagePullPolicy: Always
+        name: inventory
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory-service
+  namespace: inventory-poc
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: inventory
+  sessionAffinity: None
+  type: ClusterIP
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: inventory-route
+  namespace: inventory-poc
+spec:
+  port:
+    targetPort: 8080
+  tls:
+    termination: edge
+  to:
+    kind: Service
+    name: inventory-service
+    weight: 100
+  wildcardPolicy: None
