@@ -28,20 +28,21 @@ Updated 2026-11-06T15:53:13-05:00. Phase 7 is partial. **The first acceptance cr
 6. Done for order-service only: box1-workloads-dev#119 merged as `b8513c1`, per the user's "just the order-service for now".
 7. Pending: box1-gitops#83 (tidy-up; syncing it restarts the collector).
 
-## Exact next action (updated 2026-11-06T16:32:37-05:00)
-**Exporting:** order, inventory, fulfillment-adapter and notification. Notification is live as of #133 (\`fe77c02\`), with its orphan pruned.
+## Exact next action (updated 2026-11-06T16:38:41-05:00)
+**All seven services export traces.** Every Argo app is Synced/Healthy, with no orphaned ConfigMaps.
 
-**Remaining export (one at a time, 10 s between merges per box1-docs#64, prune each orphan):**
-- asset-service: already on the export-capable \`c75b6dc\`; export ConfigMap only.
-- scenario-controller: export ConfigMap only.
-- operations-console: export ConfigMap only.
-
-**Housekeeping:**
+**Housekeeping (needs the user's go-ahead):**
 - Close the stale asset promotion #126.
-- \`box1-gitops-validate-brw2n\` is stranded Pending.
-- box1-gitops#83 is merged but not synced to \`observability-tracing\`.
+- Two stranded Pending validate runs in `box1-ci`: `brw2n` and `5tkqk`.
+- box1-gitops#83 is merged but `observability-tracing` is not synced; syncing restarts the collector.
 
-**Then:** the metrics/alerts slice.
+**Measurement:** re-check `/var/tempo` growth after a few hours at about 18.7 spans/s, and confirm the 10Gi / 72 h sizing.
+
+**Next slice (criterion 2):**
+- ServiceMonitors for the services' `/q/metrics`.
+- PrometheusRules for ERP backlog/slowdown and order age.
+- A dashboard showing order age and adapter errors.
+- Measure alert latency with an ERP MANUAL backlog. That is fault injection, so it needs approval.
 
 ## Open risks
 - Vendor support on OpenShift 5.0.0-rc.7 is not established.

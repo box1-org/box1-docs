@@ -167,3 +167,38 @@ User approval in chat: "Yes, notification next" (re-run the promotion, export, p
 **Order not shipped:** the order stayed at `FULFILLMENT_REQUESTED` for more than 60 s, unlike earlier orders that shipped within seconds. The ERP mode or hold was not checked or changed.
 
 **Collector:** 301 accepted, 301 sent, no failures. notification: 0 ERROR lines, 0 exporter errors.
+
+## Remaining three services (2026-11-06): all seven now export
+
+User approval in chat: "Yes, the remaining three". PRs were opened, and later merged, at least 10 s apart (box1-docs#64).
+
+| Service | PR | Merge | Pod (ready, restarts) | Pruned orphan |
+|---|---|---|---|---|
+| asset-service | #134 | `dea2828` 21:34:23Z | asset-service-5d5f57765b-lxl4d (true, 0) | asset-service-config-89db8g96gh |
+| operations-console | #136 | `c624c85` 21:36:06Z | operations-console-7cbb9cb85b-jl5qn (true, 0) | operations-console-config-gthc749m9t |
+| scenario-controller | #135 | `a7f590b` 21:36:21Z | scenario-controller-75cdbdccd-87f5k (true, 0) | scenario-controller-config-dd9mc9kmm6 |
+
+**#135 checks:** its first validate run, `box1-gitops-validate-5tkqk`, was stranded in `PipelineRunPending` and reported to GitHub as a failure (box1-docs#64). A `/retest` produced `7lsnd` (Succeeded). `5tkqk` and `brw2n` are still Pending in `box1-ci`.
+
+**Prune:** before each prune, the orphan was confirmed unused by running pods. Each was pruned with an Argo sync naming only that ConfigMap. All three apps are Synced/Healthy.
+
+**Tempo search** (TraceQL `{resource.service.name="…"}`) after read-only `GET /api/info` requests:
+
+| Service | Traces seen |
+|---|---|
+| asset-service | 50+ in 15 min (control API, `asset-service run emit`) |
+| operations-console | 7 |
+| scenario-controller | 4 (`GET /api/info`, `GET /api/greetings`); the first search came before its first batch was exported |
+| order-service | 22 |
+| inventory-service | 12 |
+| notification-service | 3 |
+| fulfillment-adapter | 3 |
+
+**Load and footprint with all seven exporting:**
+- Collector accepted rate: about 18.7 spans/s (5-minute rate), mostly from asset-service's telemetry emitter.
+- Totals: 5,428 accepted and 5,428 sent, with no send failures.
+- Pods: Tempo 99m CPU / 145Mi, collector 1m / 39Mi.
+- `/var/tempo` was 2.0M shortly after.
+- **Not established:** 72 h disk use at this rate. Re-measure after a few hours before relying on the 10Gi / 72 h sizing.
+
+**scenario-controller startup log:** a WARNING, "OpenTelemetry API usage issue detected", which needs FINEST logging to explain. Not investigated.
