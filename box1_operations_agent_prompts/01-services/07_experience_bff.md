@@ -1,5 +1,7 @@
 # Service 07 — Experience / BFF service
 
+> **Superseded on 2026-11-05.** The operator console's own backend in `08_operator_console.md` is Box1's BFF, and [#17](https://github.com/box1-org/box1-docs/issues/17) is closed. This prompt is kept as reference. Reopen #17 only if a second front end needs a shared backend.
+
 
 > **Agent task:** Implement this service in `box1-org` using existing platform patterns. This prompt is deliberately smaller than a 64K model context: **64K is the maximum total context envelope, not a prompt length target.** Before changing code, inspect actual repo/template state. Follow `../00-shared/00_AGENT_CONTRACT.md`, `01_DOMAIN_CONTRACTS.md`, `02_REPO_AND_GITOPS_CONVENTIONS.md`, and `03_QUALITY_GATES.md`. If shared docs are unavailable, the architectural invariants summarized below still apply.
 

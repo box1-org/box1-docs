@@ -8,7 +8,7 @@ All implementation prompts are standalone Markdown. See `manifest.json` for mach
 - `01-services/04_erp_vm_simulator.md`
 - `01-services/03_fulfillment_adapter.md`
 - `02-platform/05_virtualization_integration.md`
-- `01-services/07_experience_bff.md`
+- `01-services/07_experience_bff.md` (superseded by the console backend in `08_operator_console.md`; reference only)
 - `01-services/08_operator_console.md`
 - `02-platform/02_observability_stack.md`
 - `01-services/09_scenario_controller.md`

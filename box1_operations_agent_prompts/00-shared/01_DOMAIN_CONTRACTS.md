@@ -13,7 +13,7 @@ These contracts are the cross-service coordination baseline. They are **not exis
 | Telemetry | Sensor readings, threshold alerts, ingestion control | Order fulfillment decisions |
 | Notification | Delivery attempts and templates | Order source of truth |
 | AI Operations | Evidence retrieval, citations, read-only tools, approval proposal records | Direct, automatic cluster mutations |
-| Experience/BFF | UI aggregation, role-based view models, query composition | Authoritative business writes |
+| Console backend (Experience/BFF) | UI aggregation, role-based view models, query composition | Authoritative business writes |
 
 Order path: `SUBMITTED` → `RESERVED` → `FULFILLMENT_REQUESTED` → `SHIPPED` → `COMPLETED`. Alternate states: `REJECTED` (inventory unavailable), `EXCEPTION` (manual reconciliation required), `CANCELLED` (only when safe). Display `FULFILLMENT_REQUESTED` as **Awaiting ERP acknowledgement** in UI. State transitions must be guarded and recorded with reason and event linkage.
 
@@ -27,7 +27,7 @@ Order path: `SUBMITTED` → `RESERVED` → `FULFILLMENT_REQUESTED` → `SHIPPED`
 - **Telemetry** `POST /api/v1/telemetry/readings` (internal/authenticated), `GET /api/v1/assets/{assetId}/readings`, `GET /api/v1/alerts`.
 - **Notification** `GET /api/v1/notifications?orderId=`, optional internal test-only delivery provider.
 - **AI Operations** `POST /api/v1/ai/incidents/{incidentId}/analyze`, `GET /api/v1/ai/analyses/{analysisId}`, `GET /api/v1/ai/tools`, `POST /api/v1/ai/actions/{actionId}/propose` (not execute without separate human approval).
-- **BFF** `GET /api/v1/overview`, `GET /api/v1/orders/{id}/summary`, `GET /api/v1/incidents/{id}/evidence`.
+- **BFF**, served by the operator console backend (`08_operator_console.md`; "BFF" elsewhere in these prompts means that backend): `GET /api/v1/overview`, `GET /api/v1/orders/{id}/summary`, `GET /api/v1/incidents/{id}/evidence`.
 
 Use RFC 9457 `application/problem+json` errors (or document an explicitly consistent exception). Pagination, request validation and OpenAPI required. AuthN/AuthZ apply at the BFF **and** backend boundaries; never trust only frontend hiding.
 

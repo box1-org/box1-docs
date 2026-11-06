@@ -8,7 +8,7 @@
 
 **Priority / requirements:** P0 · FR-04; P1 · FR-08/09, NFR-09
 
-**Dependencies:** the order, inventory, fulfillment adapter and asset telemetry APIs; the Keycloak `box1` realm; the shared box1 brand mark. The full BFF ([#17](https://github.com/box1-org/box1-docs/issues/17)) and the scenario controller ([#19](https://github.com/box1-org/box1-docs/issues/19)) are optional: the console works without them and uses them when they exist.
+**Dependencies:** the order, inventory, fulfillment adapter and asset telemetry APIs; the Keycloak `box1` realm; the shared box1 brand mark. The scenario controller ([#19](https://github.com/box1-org/box1-docs/issues/19)) is optional: the console works without it and uses it when it exists.
 
 ## Mission and boundary
 
@@ -19,7 +19,14 @@ Implement the visible **product**, not another cluster console. Proposed repo `b
 - **Front end:** a TypeScript/React single-page application, built during the Maven build from a pinned lockfile and served as static resources by Quarkus. Nothing loads from a CDN or external font service at runtime.
 - **Console backend:** the Quarkus side holds the Keycloak login session and calls the services on the operator's behalf. Access and refresh tokens never reach browser JavaScript or browser storage. It exposes only the endpoints the console pages need, under its own versioned OpenAPI, and owns no business state.
 
-The console backend is not the full BFF. [#17](https://github.com/box1-org/box1-docs/issues/17) keeps the cross-console aggregation contract (overview, incident evidence, customer projections). Shape the console backend so #17 can replace or absorb it later without changing the pages: one typed client generated from the console backend's OpenAPI, with the same Problem JSON and `sourceStatus` semantics #17 specifies.
+**The console backend is Box1's BFF (backend for frontend).** The separate BFF in [#17](https://github.com/box1-org/box1-docs/issues/17) was closed as superseded on 2026-11-05; `07_experience_bff.md` is kept as reference. The console backend serves the overview, order summary and incident evidence endpoints named in `01_DOMAIN_CONTRACTS.md`, through one typed client generated from its OpenAPI, and takes on the BFF rules:
+
+- partial results name the failed source (`sourceStatus`) and never invent values;
+- strict timeouts, bounded concurrency, and cache TTL with explicit staleness for every upstream;
+- RFC 9457 Problem JSON and stable pagination;
+- no service-admin endpoints or tokens exposed to the browser;
+- W3C trace context continuous from the browser through the console backend to each service;
+- customers see only their own orders, once a verified customer identity exists.
 
 ## Interfaces, domain behavior and implementation constraints
 
@@ -28,7 +35,7 @@ The console backend is not the full BFF. [#17](https://github.com/box1-org/box1-
 - **ERP progress is shown precisely.** `ORDER-STATE.md` displays order state `FULFILLMENT_REQUESTED` as "Awaiting ERP acknowledgement". When the fulfillment adapter's status is available, refine it from the adapter's `dispatch`, `erpAcknowledgement` and `outcome` fields: queued for the ERP, uploaded and awaiting acknowledgement, accepted by the ERP (`PENDING`), held by an ERP operator (`HELD`, which is not a failure), shipped, rejected, or needs attention. When the adapter cannot be reached, show the order service's state with "ERP detail unavailable", never a guessed adapter state.
 - UX must connect each business state to trace ID / correlation ID / linked log/dashboard change evidence without forcing OpenShift admin access. Expose partial/unknown states honestly when backend observations are missing.
 - Auth role-specific navigation and forbidden states; never rely on hiding buttons for real authorization. OIDC integration by config; no authentication bypass as the main deployed path. The console backend enforces every role check; the pages only reflect them.
-- API client generated/validated from versioned OpenAPI (the console backend's now, the BFF's once it exists); typed error shapes and graceful loading/empty/error states. No direct browser calls to internal Kafka, PostgreSQL, VM admin interfaces, or other services' Routes.
+- API client generated/validated from versioned OpenAPI (the console backend's); typed error shapes and graceful loading/empty/error states. No direct browser calls to internal Kafka, PostgreSQL, VM admin interfaces, or other services' Routes.
 - Calls from the console backend to each service use a token that service accepts, with least privilege and short timeouts. A dependency that is slow or refuses the call yields a partial page with a named failed source, not infinite loading.
 - Branding: parent **box1**, product **Operations**. Do not overfocus on domain registration year. Responsive layout, meaningful keyboard focus, WCAG-conscious contrast, reduced motion, ARIA tables/alerts, automated accessibility checks.
 - Demo control (P1): start/stop only authorized named fault scenarios through secured backend with warning, namespace/environment display and confirmation. No browser-embedded kubeconfig or generic remote command console. Named scenarios come from the scenario controller (#19) when it exists; telemetry load and chaos stay in the asset telemetry service's own console (`05_telemetry_service.md`), which this console may link to but does not duplicate.
@@ -45,6 +52,7 @@ The console backend is not the full BFF. [#17](https://github.com/box1-org/box1-
 - The console backend holds the session: no access or refresh token is readable by page JavaScript or stored in browser storage; anonymous console API calls get 401 and calls without the needed role get 403, through the real Route.
 - Order detail distinguishes queued, awaiting ERP acknowledgement, accepted by ERP, held, shipped, rejected and needs attention from the adapter's status, and shows "ERP detail unavailable" when the adapter cannot be reached.
 - The React/TypeScript front end is built by the existing Golden Path pipeline from a pinned lockfile and served from the console pod, with no CDN or external font at runtime.
+- One order summary includes immutable IDs, statuses, timestamps and evidence links; an upstream timeout yields a bounded partial response that names the failed source.
 
 ## Recommended 64K-safe implementation slices
 
@@ -55,7 +63,7 @@ The console backend is not the full BFF. [#17](https://github.com/box1-org/box1-
 
 ## Frontier profile
 
-Use with `../00-shared/07_FRONTIER_EXECUTION_PROFILE.md`, in place of the slices above. **Scope:** this console (front end and console backend), its OpenAPI, Keycloak client declaration, manifests and documentation. The full BFF (#17), the scenario controller (#19) and changes to any other service are out of scope; a needed change to another service is a stop condition. **Background:** the earlier pilots' `pilot-log.md` files, and the asset telemetry console in `box1-org/asset-service`, which already solved Keycloak browser login on this platform.
+Use with `../00-shared/07_FRONTIER_EXECUTION_PROFILE.md`, in place of the slices above. **Scope:** this console (front end and console backend), its OpenAPI, Keycloak client declaration, manifests and documentation. The scenario controller (#19) and changes to any other service are out of scope; a needed change to another service is a stop condition. **Background:** the earlier pilots' `pilot-log.md` files, and the asset telemetry console in `box1-org/asset-service`, which already solved Keycloak browser login on this platform.
 
 **Discovery must cover (state observed 2026-11-05 America/New_York; verify before relying on it):**
 
@@ -80,7 +88,7 @@ Use with `../00-shared/07_FRONTIER_EXECUTION_PROFILE.md`, in place of the slices
 - the session: cookie settings, CSRF protection for state-changing calls, logout, and the session encryption key. A stable key is a new secret and needs approval; without it, keep one replica and record the limit, as #63 did;
 - the order service while #40 is open: whether the console backend calls it unauthenticated in-cluster, and how the Route exposure is recorded. The console must not make #40 worse;
 - whether the customer role is in scope for this run, given that orders carry no verified customer identity yet;
-- the console backend's endpoint list and OpenAPI, mapped to #17's endpoints so absorption later is a straight swap;
+- the console backend's endpoint list and OpenAPI, using the endpoint paths in `01_DOMAIN_CONTRACTS.md`;
 - timeouts, concurrency bounds and caching for each upstream, and the `sourceStatus` shape;
 - how ERP progress maps from adapter fields to the labels above, and how an order finds its fulfillment status;
 - trace propagation from browser to console backend to services, and which evidence links (trace, log, dashboard, Git SHA) exist today versus later with #22;
