@@ -28,25 +28,18 @@ Updated 2026-11-06T15:53:13-05:00. Phase 7 is partial. **The first acceptance cr
 6. Done for order-service only: box1-workloads-dev#119 merged as `b8513c1`, per the user's "just the order-service for now".
 7. Pending: box1-gitops#83 (tidy-up; syncing it restarts the collector).
 
-## Exact next action (updated 2026-11-06T16:53:49-05:00)
-**Console Traces view (decision 007):** box1-gitops#87 is open. It has passed review and the dry run (`observability-console-traces`).
+## Exact next action (updated 2026-11-06T17:10:33-05:00)
+**Console Traces view and Tempo gateway are live** (box1-gitops#87 \`ec16dc3\`, #88 \`f6c57b1\`). Evidence: \`evidence/phase6-console-traces-gateway.md\`.
 
-After the user approves, in this order:
-1. Merge #87.
-2. Sync `observability-operators`. Approve the COO InstallPlan after checking the CSV (v1.5.3 or v1.5.5).
-3. Review the Argo diff for `observability-tracing` (includes the `edge` → `reencrypt` drift), then sync.
-4. Verify:
-   - the `tempo-box1-gateway` endpoints;
-   - the collector's `otelcol_exporter_sent_spans` rising and `send_failed` absent;
-   - a new order trace readable through the gateway.
-5. Sync `observability-console`.
-6. Verify Observe → Traces lists `box1-observability/box1` (tenant `dev`) and shows the order trace. Check the Jaeger UI at `/api/traces/v1/dev/search`. Check that a user without `box1-traces-read-dev` is denied.
+**Waiting on the user:**
+- Check Observe → Traces in the console (select \`box1-observability/box1\`, tenant \`dev\`).
+- Decide on the COO-created UIPlugin \`monitoring\` (and perses): adopt it into Git, or delete it.
 
-**All seven services export traces** (unchanged).
+**Housekeeping:**
+- Close #126.
+- Two stranded Pending validate runs.
 
-**Housekeeping:** close #126; two stranded Pending validate runs.
-
-**Then:** the metrics/alerts slice.
+**Then:** the metrics/alerts slice. User-workload monitoring is enabled; the COO also brings Perses dashboards.
 
 ## Open risks
 - Vendor support on OpenShift 5.0.0-rc.7 is not established.
