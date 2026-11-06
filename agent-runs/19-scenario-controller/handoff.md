@@ -1,4 +1,4 @@
-# Handoff, run 19 (box1-docs#19, scenario controller), stop 3
+# Handoff, run 19 (box1-docs#19, scenario controller), closed
 
 ## Work completed
 - **Workstream:** Service 09, scenario control and the Starfleet Feline Supply fixture set, `frontier` profile.
@@ -42,7 +42,7 @@
 - **Rollback (untested):** revert box1-workloads-dev `e28c020` and `bd24fe1` (#107) to return to the scaffold image and env; the controller's V1/V2 tables stay (Flyway does not roll back). Revert box1-gitops `7d7e0b1`, but prune is off on `keycloak`, so the KeycloakClients must be deleted by hand. Delete Secret `scenario-controller-inventory-token`. The inventory V3 rollback is untested, but older images ignore the new rows.
 
 ## Next agent session
-- **Next slice:** A-4b (#79), then A-7, seeding and the live runs, each after approval.
+- **Next slice:** none in #19 (closed 2026-11-06). Remaining acceptance is in sub-issue #83; follow-ups are in #72.
 - **Read first:** `checkpoint.md`, `open-decisions.md`, `requirements.yaml`, `review-findings/outcomes.md`, `evidence/07`.
 - **Blockers:** approvals and decisions in `open-decisions.md`.
 

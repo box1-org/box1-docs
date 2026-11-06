@@ -4,7 +4,7 @@
   "profile": "frontier",
   "prompt": "box1_operations_agent_prompts/01-services/09_scenario_controller.md@8c90a0c (main; PR #70 merged 2026-11-06T05:38:36Z)",
   "started": "2026-11-06T00:47:48-05:00",
-  "current_phase": "6 Delivery (stop 3: A-1..A-6 done; awaiting A-4b box1-gitops#79, A-7, A-8, A-9..A-11)",
+  "current_phase": "Closed 2026-11-06 (user: close out #19); remaining acceptance deferred to box1-org/box1-docs#83",
   "repositories": [
     {
       "name": "box1-org/scenario-controller",
@@ -72,7 +72,8 @@
   "issues_filed": [
     "https://github.com/box1-org/box1-docs/issues/71",
     "box1-org/box1-docs#71",
-    "box1-org/box1-docs#72"
+    "box1-org/box1-docs#72",
+    "box1-org/box1-docs#83 (sub-issue: ERP Fault Tolerance)"
   ],
   "upstreams_read_only": {
     "order-service": "11360f2",
@@ -81,5 +82,22 @@
     "box1-ops-contracts": "d57a4ef"
   },
   "image_digest": null,
-  "gitops_commit": null
+  "gitops_commit": null,
+  "live_runs": [
+    "scn_2bbc06797d066122ba9e inventory-contention VERIFIED",
+    "baseline-order VERIFIED (evidence/12)",
+    "erp-manual-hold VERIFIED (evidence/12)",
+    "erp-delayed-processing STOPPED by the user, reset (evidence/12)"
+  ],
+  "console_integration": {
+    "prs": [
+      "box1-org/operations-console#7 ed2c1ac",
+      "box1-org/box1-gitops#81 f257bb6",
+      "box1-org/box1-workloads-dev#116 fe5c091",
+      "box1-org/scenario-controller#2 a44419e",
+      "box1-org/box1-gitops#84 8203a7d (roles scope fix)"
+    ],
+    "console_image": "sha256:5ad138dde42f40caf1b7da8c667f5d65b0145efb62a4d34cf8d98c76c920ba26",
+    "controller_image": "sha256:af7af89f9a96bc2d12bb57a6a65d0953cd90da332863a4c03d8fc0c9a9e32527"
+  }
 }

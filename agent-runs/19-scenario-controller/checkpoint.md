@@ -1,29 +1,24 @@
 # Checkpoint, run 19 (scenario controller)
 
-- **Updated:** 2026-11-06 13:10 EST
-- **Phase:** 6 Delivery. A-1 to A-6 were approved and are done. **Stopped (stop 3):** the Keycloak scope-mapping fix (box1-gitops#79), seeding, role assignment and live runs each need approval (`open-decisions.md`).
+- **Updated:** 2026-11-06 ~16:05 EST
+- **Status: closed** at the user's direction ("close out #19"). Four of the eight acceptance boxes were ticked on cluster proof. The other four are deferred to sub-issue **box1-org/box1-docs#83** (ERP Fault Tolerance), each with local proof.
 
-## Deployed
+## Final deployed state
 
-| Component | Revision | Live state |
+| Component | Revision / image | Managed by |
 |---|---|---|
-| scenario-controller | `f64dee6` (PR #1), image `sha256:a811c457…b269` | `scenario-controller-dev`, Argo Synced and Healthy at workloads `e28c020`, Recreate, 1 pod, ready UP, anonymous 401 |
-| inventory-service | `ad472e1` (PR #3), image `sha256:c8b33f7a…7601b` | `inventory-service-dev`, migration V3 applied |
-| Keycloak clients | box1-gitops `7d7e0b1` (PR #78) | `inventory-service` ready; `scenario-controller` and `scenario-controller-cli` failing on scope mappings (404). Roles exist. Fix: box1-gitops#79 (open) |
-| Secret `scenario-controller-inventory-token` | not in Git | created in `scenario-controller-dev`, key `client-secret`, value never displayed |
-| Contract | box1-ops-contracts#10 (open) | not merged |
+| scenario-controller | `a44419e` (docs on top of `f64dee6`), `sha256:af7af89f…` | Argo `scenario-controller` (box1-workloads-dev) |
+| operations-console (Demo control) | `ed2c1ac`, `sha256:5ad138dd…` | Argo `operations-console` |
+| inventory-service | `ad472e1`, `sha256:c8b33f7a…` | Argo `inventory-service` |
+| Keycloak clients | box1-gitops `7d7e0b1`, `3ddc6c3` (#79), `f257bb6` (#81), `8203a7d` (#84) | Argo `keycloak` |
+| Secret `scenario-controller-inventory-token` | not in Git; a temporary workaround | box1-docs#72 item 4 |
 
-Evidence: `evidence/08-delivery.md`. Follow-ups: box1-docs#72.
+**Live proof:** evidence/08, 09, 10, 11 and 12. **Ledger:** 13 `live_verified`; see `requirements.yaml`.
 
-**Ledger:** 1 `live_verified` (VS-ANON), 6 `deployed`, 21 `locally_tested`, 3 `proposed` (LIVE-*), 1 `blocked`.
-
-**Local stack:** the `run19-*` containers and four JVMs are still running. Tear down with `evidence/scripts/stack.sh down`.
-
-## Exact next action
-
-1. **A-4b** (when approved): merge box1-gitops#79 and refresh Argo `keycloak`. Expect both CRs `ready=true`, and operator log SUCCESS for the scope mappings and the service-account role.
-2. **A-7** (the user): assign `scenario-operator` and get a token from `scenario-controller-cli`. Check: the catalog read returns 200 with ten titles and gates allowed, and a token without the role gets 403.
-3. **A-8** (when approved): `POST /internal/v1/fixtures/seed`, twice; record both responses and the audit.
-4. **A-9 to A-11** (each when approved): the live runs. Record the run JSON, the audit and end-state reads in `evidence/09-live-*.md`.
-5. Merge box1-ops-contracts#10 when approved.
-6. When live proof exists, tick #19's boxes, stating the proof level for each.
+## Open elsewhere
+- **#83:** the deferred acceptance.
+- **#72:** follow-ups, including the token-Secret workaround.
+- **#71:** Kafka authentication.
+- **box1-ops-contracts#10:** the inventory routes; open, needs a merge.
+- **box1-docs#74:** the achievement log; updated, needs a merge.
+- **Left in place:** the never-started PipelineRun `operations-console-validate-kplrr` in `box1-ci`, from a Pipelines as Code GitHub 404.
