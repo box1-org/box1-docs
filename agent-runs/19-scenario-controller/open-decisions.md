@@ -43,8 +43,8 @@ Each item is a separate approval. They can merge in any order; nothing changes b
 
 | ID | Action | Status |
 |---|---|---|
-| C-1 | Merge **box1-org/box1-gitops#81** and sync Argo `keycloak`. Then check that the `operations-console` CR is `ready=true` | Ready |
-| C-2 | Merge **box1-org/box1-workloads-dev#116** (console URL and forward flag; the controller's allowed `azp`) | Ready |
-| C-3 | Merge **box1-org/operations-console#7**. The release, gate and promotion follow automatically | CI pending |
-| C-4 | Merge **box1-org/scenario-controller#2** (docs only) | CI pending |
-| C-5 | Live check after C-1 to C-3: read-only; signing in to the console's `/demo` shows ten titles with the controller source OK. Any start or seed from the console on the cluster still needs approval (A-8 to A-11) | After C-1 to C-3 |
+| C-1 | box1-gitops#81 merge and sync | **Done** (`f257bb6`, client ready) |
+| C-2 | box1-workloads-dev#116 | **Done** (`fe5c091`, synced) |
+| C-3 | operations-console#7 | **Done** (`ed2c1ac`, released `5ad138dd`, deployed) |
+| C-4 | scenario-controller#2 | **Done** (`a44419e`, released `af7af89f`) |
+| C-5 | Live check after C-1 to C-3: read-only; signing in to the console's `/demo` shows ten titles with the controller source OK. Any start or seed from the console on the cluster still needs approval (A-8 to A-11) | **Blocked:** the `claude` test password is refused; needs a working test login, or the user signs in |

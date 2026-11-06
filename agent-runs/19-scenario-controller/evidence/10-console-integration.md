@@ -45,3 +45,22 @@ The first attempt left a crash run open. It was stopped through the controller (
 - The cluster: it needs #81 merged and synced, #116 merged, and #7 merged, released and deployed.
 - The `erp-manual-hold` console step through the page.
 - Token refresh during a long session.
+
+## Delivery, 2026-11-06 ~14:50–15:15 EST (merges and syncs approved by the user: "merge all of them and sync")
+
+| Step | Result |
+|---|---|
+| box1-gitops#81 | Merged `f257bb6`; Argo `keycloak` Synced/Healthy/Succeeded at `f257bb6`; KeycloakClient `operations-console` `ready=true` |
+| box1-workloads-dev#116 | Merged `fe5c091`. Argo `scenario-controller` and `operations-console` both Synced/Healthy at `fe5c091`. Live env: the controller has `SCENARIO_ALLOWED_AZP=scenario-controller-cli,operations-console`; the console has `SCENARIO_CONTROLLER_URL` and `CONSOLE_SCENARIO_FORWARD_TOKEN=true` |
+| scenario-controller#2 (docs) | Merged `a44419e`. Release `scenario-controller-release-f8bfl` Succeeded with image `sha256:af7af89f…`; promotion box1-workloads-dev#117 |
+| operations-console#7 | The first CI run never started: Pipelines as Code got a GitHub 404 while patching the check run (`pipelinerun start failure`) and left `operations-console-validate-kplrr` pending. A `/retest` comment started `px64t`, which Succeeded. Merged `ed2c1ac`. Release `operations-console-release-jm4cm`: build, security (`gate`; critical 0, high 10), promote, smoke and console-smoke all Succeeded; image `sha256:5ad138dd…`; promotion box1-workloads-dev#118 at `19d9e74`. Argo Synced/Healthy; rollout complete |
+
+**Read-only live checks (anonymous):**
+- Console readiness: 200.
+- `/api/v1/scenarios` and `/api/v1/scenario-runs` without a session: 401.
+- The served OpenAPI includes the new operations.
+- The only console log warning is the known per-pod session key (#18 O-3).
+
+**Signed-in live check: not done.** The `claude` test user's password was refused by Keycloak ("Invalid username or password"); it had worked at about 13:20 EST. I did not retry. `scripts/console-e2e/live-readonly.spec.ts` is ready: it signs in, then only reads `/demo`, `/api/v1/me`, `/api/v1/scenarios` and `/api/v1/scenario-runs`.
+
+**Leftover:** the pending PipelineRun `operations-console-validate-kplrr` in `box1-ci`, left by the Pipelines as Code failure, was not deleted.
