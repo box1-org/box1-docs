@@ -43,23 +43,23 @@
 - id: CON-AUTHZ-002
   description: 'Signed-in user without the needed role gets 403 through the real Route; every role check is in the backend'
   source: 'AC6, AC2; scenario: user without role'
-  status: deployed
+  status: live_verified
   implementation: ["api/ConsoleResource.java @RolesAllowed", "api/ProblemMappers.java"]
   tests: ["ConsoleSecurityTest.signedInWithoutRolesGets403OnEveryRoleProtectedPath", "e2e roles.spec"]
-  commands: ["PR pipeline operations-console-validate-l6jv2 (d007f00)", "./mvnw -B -ntp verify -DskipITs=false", "cd src/test/e2e && npx playwright test (local stack, Firefox)"]
-  evidence: ["evidence/06-live-acceptance.md"]
+  commands: ["LIVE=1 playwright -g 'without console roles' (user loser)"]
+  evidence: ["evidence/08-live-round-2.md"]
   deployment: {"image_digest": "sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f", "gitops_commit": "b3a1a52001a9a83a3dd65c4e66c8a16277ed3167", "source": "267152e"}
-  limitations: ["403 through the Route needs a user without console roles; not available to the run"]
+  limitations: []
 - id: CON-ROLE-001
   description: 'Role-specific navigation and forbidden states in the browser reflect backend checks'
   source: 'AC2'
-  status: deployed
+  status: live_verified
   implementation: ["webui/src/Layout.tsx", "webui/src/components/States.tsx"]
   tests: ["e2e roles.spec"]
   commands: ["cd src/test/e2e && npx playwright test (local stack, Firefox)"]
-  evidence: ["evidence/06-live-acceptance.md"]
+  evidence: ["evidence/08-live-round-2.md"]
   deployment: {"image_digest": "sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f", "gitops_commit": "b3a1a52001a9a83a3dd65c4e66c8a16277ed3167", "source": "267152e"}
-  limitations: ["Live user holds all roles; restricted navigation and forbidden states proven locally"]
+  limitations: []
 - id: CON-CUST-001
   description: 'Customer role checks (customer sees only own orders)'
   source: 'AC2'
@@ -69,7 +69,7 @@
   commands: []
   evidence: []
   deployment: {}
-  limitations: ["D-005: no verified customer identity exists (order-service has no auth, #40); a customer filter would trust a caller-chosen value. Needs user confirmation O-5."]
+  limitations: ["Out of scope by user decision 2026-11-06; revisit after #40"]
 - id: CON-CSRF-001
   description: 'State-changing console API calls reject cross-site requests'
   source: 'scenario: CSRF'
@@ -93,13 +93,13 @@
 - id: CON-RESTART-001
   description: 'Pod restart behavior of the session observed and recorded'
   source: 'scenario: pod restart'
-  status: locally_tested
+  status: live_verified
   implementation: []
   tests: []
   commands: ["restart probe script (evidence/03)"]
-  evidence: ["evidence/03-local-tests.md"]
+  evidence: ["evidence/08-live-round-2.md"]
   deployment: {"image_digest": "sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f", "gitops_commit": "b3a1a52001a9a83a3dd65c4e66c8a16277ed3167", "source": "267152e"}
-  limitations: ["Observed: restart ends sessions (per-process key). Pod restart on cluster to observe in Phase 7. Stable key needs approval (O-3)."]
+  limitations: ["Restart signs users out (per-pod key) until #79. The 401 after restart has an empty body (fix pending)."]
 - id: CON-ERP-001
   description: 'Order detail distinguishes queued, awaiting ERP acknowledgement, accepted by ERP, held, shipped, rejected and needs attention from the adapter status'
   source: 'AC7'
@@ -203,13 +203,13 @@
 - id: CON-BRAND-001
   description: 'Logo and favicon follow the provided box1 brand asset and are project-owned'
   source: 'AC5'
-  status: live_verified
+  status: implemented
   implementation: ["webui/public/brand/box1-mark.png"]
   tests: ["FrontendServingTest.brandMarkIsTheUnmodifiedProjectAsset"]
   commands: ["PR pipeline operations-console-validate-l6jv2 (d007f00)", "./mvnw -B -ntp verify -DskipITs=false"]
   evidence: ["evidence/05-delivery.md"]
   deployment: {"image_digest": "sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f", "gitops_commit": "b3a1a52001a9a83a3dd65c4e66c8a16277ed3167", "source": "267152e"}
-  limitations: ["Favicon is the unmodified mark; resized favicon awaits permission (O-4)"]
+  limitations: ["Favicons resized (operations-console#6, open); mark live-verified"]
 - id: CON-E2E-001
   description: 'E2E: seed order, submit, watch timeline; hold in ERP or delay ERP; see waiting state with diagnosis links; recover; visibly complete'
   source: 'AC1; phase 7'
