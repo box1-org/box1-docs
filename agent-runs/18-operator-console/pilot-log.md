@@ -46,6 +46,10 @@ Found on the cluster (Phase 6), fixed and retested:
 
 16. **The first gated release failed RHACS on Guava 33.6.0-jre (CVE-2026-102554).** I had turned the gate on (REL-1) without the Guava override that asset-service and inventory-service carry, although discovery recorded that pairing as a run 11 lesson. The user reported it. Fixed in operations-console#3; the second release passed the gate with high findings down from 11 to 10, and nothing was promoted from the failed run.
 
+Found in live acceptance (Phase 7):
+
+17. **Logout left the Keycloak SSO session alive on RH-SSO 7.6.** RH-SSO 7.6 rejects `post_logout_redirect_uri` unless it is a valid redirect URI. My SEC-2 repair had narrowed those to `/callback`, and Keycloak 26 in local e2e honours the separate `post.logout.redirect.uris` attribute, so only the real Route showed it. This is the run 15 lesson "local Keycloak 26.4 is not RH-SSO 7.6", met again in a new place. The fix (box1-gitops#77) awaits approval. Both logout tests now require the SSO session to end.
+
 Test harness and test defects:
 - The logout URL carried `?state=`, which my regex did not allow.
 - The keyboard test tabbed forward from `main` instead of back into the navigation.
@@ -62,6 +66,8 @@ Test harness and test defects:
 3. **"Customer-safe metadata" with no customer data.** No upstream holds names, addresses or contacts; `customerId` is an opaque synthetic ID. The criterion is trivially met today and needs revisiting when real customer data arrives.
 
 ## Places I was unsure of my authority
+
+3. **Using the Keycloak user the user issued in chat.** It was explicitly issued to this run, so I used it, for read-only checks only. The password stays out of every file under version control, and I recommended rotating it after the run, since it passed through chat.
 
 1. **`oc apply --dry-run=server` against the KeycloakClient CRD.** The profile prohibits `oc apply` as the deployment mechanism. A server dry run persists nothing, and I used it only to validate the CR schema. Recorded so the user can object.
 2. **Closing my own probe PR (operations-console#1).** It was opened as a do-not-merge probe. I closed it after recording the result. It is not a merge and not covered by the approval list.
@@ -87,6 +93,8 @@ Test harness and test defects:
 | Re-read upstream state before relying on it | Re-compared order, inventory and asset main at 23:28 EST: only `.tekton` changed | Applied |
 
 ## Environment findings
+
+- **00:3x EST, git slip (mine).** A stray `git checkout run18-guava-cve --` inside a compound command switched branches, so my commit landed on the already-merged local branch and an empty branch was pushed. PR creation failed with "no commits", which exposed it. I moved the commit with cherry-pick and reset the local branch. Nothing wrong was pushed to a PR.
 
 - 23:52–23:59 EST: the workstation's `oc` session returned Unauthorized, then worked again without action from me. That window covered only background polling, and the `gh` PR checks confirmed CI independently. Auth was not touched.
 
