@@ -28,18 +28,18 @@ Updated 2026-11-06T15:53:13-05:00. Phase 7 is partial. **The first acceptance cr
 6. Done for order-service only: box1-workloads-dev#119 merged as `b8513c1`, per the user's "just the order-service for now".
 7. Pending: box1-gitops#83 (tidy-up; syncing it restarts the collector).
 
-## Exact next action (updated 2026-11-06T17:10:33-05:00)
-**Console Traces view and Tempo gateway are live** (box1-gitops#87 \`ec16dc3\`, #88 \`f6c57b1\`). Evidence: \`evidence/phase6-console-traces-gateway.md\`.
+## Exact next action (updated 2026-11-06T17:16:03-05:00)
+**Console Traces view and Tempo gateway are live:** box1-gitops#87 (`ec16dc3`) and #88 (`f6c57b1`). Evidence: `evidence/phase6-console-traces-gateway.md`.
 
-**Waiting on the user:**
-- Check Observe → Traces in the console (select \`box1-observability/box1\`, tenant \`dev\`).
-- Decide on the COO-created UIPlugin \`monitoring\` (and perses): adopt it into Git, or delete it.
+**UIPlugin `monitoring` (Perses):** owned by OpenShift Virtualization's `virt-platform-autopilot`, not the COO. Kept, and documented in the box1-gitops observability README, without Argo management: box1-gitops#89, merged as `8d215b2` with user approval.
+
+**Waiting on the user:** check Observe → Traces in the console (select `box1-observability/box1`, tenant `dev`).
 
 **Housekeeping:**
 - Close #126.
-- Two stranded Pending validate runs.
+- Two stranded Pending validate runs (`brw2n`, `5tkqk`).
 
-**Then:** the metrics/alerts slice. User-workload monitoring is enabled; the COO also brings Perses dashboards.
+**Then:** the metrics/alerts slice. User-workload monitoring is enabled; Perses is available for dashboards.
 
 ## Open risks
 - Vendor support on OpenShift 5.0.0-rc.7 is not established.
