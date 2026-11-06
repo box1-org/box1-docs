@@ -6,7 +6,7 @@
   status: ci_verified
   implementation: [pom.xml, src/main/webui/package-lock.json, src/main/webui/.npmrc]
   tests: [src/test/java/org/box1/FrontendServedTest.java]
-  commands: ["PR pipeline operations-console-validate-l6jv2 (d007f00)", "probe: operations-validate-zqk5s"]
+  commands: ["PR pipeline operations-console-validate-l6jv2 (d007f00)", "probe: operations-console-validate-zqk5s"]
   evidence: ["evidence/01-frontend-build-probe.md", "evidence/04-ci-implementation.md"]
   deployment: {}
   limitations: ["Served from the deployed pod: Phase 6/7"]
