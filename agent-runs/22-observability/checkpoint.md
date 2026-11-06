@@ -29,11 +29,11 @@ Updated 2026-11-06T15:53:13-05:00. Phase 7 is partial. **The first acceptance cr
 7. Pending: box1-gitops#83 (tidy-up; syncing it restarts the collector).
 
 ## Exact next action
-- **Blocker for further promotions:** the order-service, inventory-service and fulfillment-adapter Argo apps are OutOfSync only because of orphaned generated ConfigMaps (box1-docs#42 item 2). The next release of any of them will fail promote until those orphans are pruned. Pruning them is a cluster change through Argo and needs approval. The permanent fix belongs to #42.
+- **Orphans pruned** for order, inventory and the adapter (approved). All three apps are Synced/Healthy, so their next releases can pass promote.
 - **Remaining export:**
-  - notification (#123) and asset (#126): re-run the checks, merge, then export.
+  - notification (#123) and asset (#126): re-run the checks, merge, export.
   - scenario-controller and operations-console: export ConfigMap only.
-  Each export change creates another orphan, so prune in the same step.
+  Each export change creates one orphan; prune it right after rollout (needs approval) until #42 is fixed.
 - **Next slices:** metrics and alerts (ERP backlog/slowdown, order age), a dashboard, the deployment overlay, then fault scenarios.
 
 ## Open risks

@@ -3,9 +3,8 @@
   "profile": "frontier",
   "current_phase": 7,
   "phase_state": "criterion1_live_verified",
-  "updated_at": "2026-11-06T15:53:13-05:00",
+  "updated_at": "2026-11-06T15:54:44-05:00",
   "open_decisions": [
-    "prune orphaned ConfigMaps (order, inventory, adapter) \u2014 box1-docs#42",
     "notification #123 and asset #126",
     "scenario-controller and operations-console export",
     "merge+sync box1-gitops#83",

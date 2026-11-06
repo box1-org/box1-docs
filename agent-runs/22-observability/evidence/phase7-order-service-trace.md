@@ -125,3 +125,23 @@ The ERP hop is not traced. The ERP result events carry the stored order `tracepa
 The adapter's async "Uploaded request file" line has `orderId` but no `traceId`, because it runs in the dispatch worker outside a span.
 
 **Health:** no ERROR lines and no exporter errors in the three services in the last 10 minutes. Collector: accepted 145, sent 145, no `send_failed`. Tempo `/var/tempo` is 1.1M of 10Gi.
+
+## Orphaned ConfigMap prune (2026-11-06)
+
+User approval in chat: "Yes, prune them".
+
+**Before:** each Application had exactly one non-Synced resource, its previous generated ConfigMap, with `requiresPruning=true`. In each namespace, no Running pod referenced it and the Deployment referenced the new ConfigMap.
+
+**Action:** for each app, an Argo sync at its current revision `36d0b30f` with `prune: true`, limited to that one ConfigMap. Nothing else was synced or changed.
+
+| Application | Pruned ConfigMap | Operation | After |
+|---|---|---|---|
+| order-service | order-service-config-8btd4c24mh | Succeeded | Synced/Healthy |
+| inventory-service | inventory-service-config-cb8h282db5 | Succeeded | Synced/Healthy |
+| fulfillment-adapter | fulfillment-adapter-config-89db8g96gh | Succeeded | Synced/Healthy |
+
+**Afterwards:**
+- The same pods kept running with 0 restarts: `order-service-7fd58974dc-g7sf9`, `inventory-service-99c68ddf7-h8blm`, `fulfillment-adapter-74bdd7598f-gvh59`.
+- `GET /api/v1/orders` returned 200.
+
+**Not fixed:** this does not fix #42. Each future `configMapGenerator` change, including export for the remaining services, will leave a new orphan until #42 is resolved.
