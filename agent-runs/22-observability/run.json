@@ -1,13 +1,14 @@
 {
   "issue": "box1-org/box1-docs#22",
   "profile": "frontier",
-  "current_phase": 6,
-  "phase_state": "platform_delivered_awaiting_service_merges",
-  "updated_at": "2026-11-06T15:09:07-05:00",
+  "current_phase": 7,
+  "phase_state": "order_service_exporting_others_pending",
+  "updated_at": "2026-11-06T15:28:49-05:00",
   "open_decisions": [
-    "merge 7 service trace-export-build PRs",
-    "merge box1-workloads-dev#119",
-    "merge+sync box1-gitops#83"
+    "next service to enable (one at a time)",
+    "stuck promotions box1-workloads-dev#122 #123 #126",
+    "merge+sync box1-gitops#83",
+    "backlog issue for concurrent promotion failures"
   ],
   "repositories": {
     "box1-docs": {
@@ -27,8 +28,10 @@
       "main": "c197e38",
       "run_branch": "observability-trace-export",
       "commit": "815709d",
-      "pr": 119,
-      "draft": true
+      "pr": null,
+      "draft": false,
+      "merged_pr": 119,
+      "merge_commit": "b8513c13e3a36399b893a26370707a3177be6d20"
     },
     "box1-ops-contracts": {
       "role": "trace context contract (envelope traceparent)",

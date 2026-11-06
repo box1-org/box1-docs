@@ -10,30 +10,27 @@
   limitations: [Single replica; restart persistence not yet exercised]
 - id: OBS-TRACE-PIPELINE
   description: OTLP collector; backend outage drops spans without affecting business flow
-  status: deployed
+  status: live_verified
   implementation: [box1-gitops PR #82 platform/observability/tracing/collector.yaml]
   tests: []
   commands: []
-  evidence: [evidence/phase6-platform-delivery.md]
-  limitations: [Synthetic span delivered; outage behaviour not yet exercised]
+  evidence: [evidence/phase6-platform-delivery.md, evidence/phase7-order-service-trace.md]
 - id: OBS-TRACE-EXPORT
   description: Services export traces (order, inventory, adapter, notification, asset, scenario, console)
-  status: implemented
+  status: live_verified
   implementation:
     - "box1-workloads-dev PR #119 (draft): sampler arg 1.0 + endpoint"
     - "service PRs: order-service#6 inventory-service#4 fulfillment-adapter#4 notification-service#2 asset-service#4 scenario-controller#3 operations-console#8"
   tests: [order-service ./mvnw test (28 passed)]
   commands: ["./mvnw -B package -DskipTests (order-service; SpanExporter synthetic bean present)", "./mvnw -B test (order-service)", "kubectl kustomize workloads/<service>"]
-  evidence: [review-findings/01-operations-security.md, decisions/006-build-time-export-switch.md]
-  limitations: [Other six services rely on PR checks; images must be rebuilt and promoted before #119 has effect]
+  evidence: [evidence/phase7-order-service-trace.md]
 - id: OBS-TRACE-E2E
   description: Sample orderId resolves to one trace across order, inventory and adapter boundary
-  status: proposed
+  status: implemented
   implementation: []
   tests: []
   commands: []
-  evidence: []
-  limitations: [Adapter Kafka consumer creates no span (decision 005)]
+  evidence: [evidence/phase7-order-service-trace.md]
 - id: OBS-TRACE-ACCESS
   description: Anonymous trace query rejected; Tempo ingest only from collector
   status: live_verified
