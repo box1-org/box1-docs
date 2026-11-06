@@ -1,0 +1,26 @@
+{
+  "issue": "box1-org/box1-docs#18",
+  "title": "Service 08 — Web application / operator console",
+  "profile": "frontier",
+  "prompt": "box1_operations_agent_prompts/01-services/08_operator_console.md@5ef99df",
+  "started": "2026-11-05T22:43-05:00",
+  "current_phase": "1 Design",
+  "repositories": [
+    {"name": "box1-org/operations-console", "role": "target", "branch": "run18-frontend-build-probe", "commit": "ae245e774fecf904c0fda93cdf67b708eb22b1ac", "pr": "https://github.com/box1-org/operations-console/pull/1", "note": "draft probe, do not merge"},
+    {"name": "box1-org/box1-docs", "role": "run state", "branch": "agent-run/18-operator-console"},
+    {"name": "box1-org/box1-workloads-dev", "role": "deployment manifests", "base": "723e96e6ff6b4d784cd39851d35a68e5d272f04e"},
+    {"name": "box1-org/box1-gitops", "role": "Keycloak client", "base": "5e0588839697bdcd278185e522968659423ebca0"}
+  ],
+  "upstreams_read_only": {
+    "order-service": "8fda08763e2a593d67cabea73fb84e762cb41a21",
+    "inventory-service": "6b722a378ee20be0154780198047c66236671e4d",
+    "fulfillment-adapter": "97033aff2b775ad53a924d5e11ca95c9cd114a77",
+    "asset-service": "828065e16c67ddbe980f591dc8c3beac8df1e300",
+    "box1-ops-contracts": "d57a4efb190a35fea627052c81e626c3d1d8db48",
+    "box1-ops-erp-simulator": "c84c910d033e05d0e811ffdb5ab389bedb08ead3"
+  },
+  "worktrees": ["/Users/mike/Documents/ChatGPT/box1/run18-docs", "/Users/mike/Documents/ChatGPT/box1/run18-operations-console (clone)"],
+  "containers_prefix": "run18-",
+  "image_digest": null,
+  "gitops_commit": null
+}

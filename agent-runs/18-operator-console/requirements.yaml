@@ -1,0 +1,362 @@
+# Requirement ledger for box1-docs#18 (frontier). Status = highest level actually observed.
+# Source: 01-services/08_operator_console.md at box1-docs 5ef99df (AC = acceptance criterion number).
+- id: CON-BUILD-001
+  description: 'React/TypeScript front end built by the existing Golden Path pipeline from a pinned lockfile and served from the console pod'
+  source: 'AC8'
+  status: ci_verified
+  implementation: [pom.xml, src/main/webui/package-lock.json, src/main/webui/.npmrc]
+  tests: [src/test/java/org/box1/FrontendServedTest.java]
+  commands: ["PR pipeline box1-ci/operations-console-validate-zqk5s (mvn verify -DskipITs=false)"]
+  evidence: [evidence/01-frontend-build-probe.md]
+  deployment: {}
+  limitations: ["Probe build (operations-console#1, not merged). Served from the pod only after delivery; re-verify on the real PR and release."]
+- id: CON-BUILD-002
+  description: 'No CDN or external font at runtime; the browser requests only the console Route and Keycloak'
+  source: 'AC8; scenario: no other hosts'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: CON-SESSION-001
+  description: 'Console backend holds the session; no access or refresh token readable by page JavaScript or stored in browser storage'
+  source: 'AC6; scenario: tokens absent'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: CON-AUTHZ-001
+  description: 'Anonymous console API calls get 401 through the real Route, on every console API path'
+  source: 'AC6; scenario: anonymous request to every path'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: CON-AUTHZ-002
+  description: 'Signed-in user without the needed role gets 403 through the real Route; every role check is in the backend'
+  source: 'AC6, AC2; scenario: user without role'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: CON-ROLE-001
+  description: 'Role-specific navigation and forbidden states in the browser reflect backend checks'
+  source: 'AC2'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: CON-CUST-001
+  description: 'Customer role checks (customer sees only own orders)'
+  source: 'AC2'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: CON-CSRF-001
+  description: 'State-changing console API calls reject cross-site requests'
+  source: 'scenario: CSRF'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: CON-LOGOUT-001
+  description: 'Logout ends the session'
+  source: 'scenario: logout'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: CON-RESTART-001
+  description: 'Pod restart behavior of the session observed and recorded'
+  source: 'scenario: pod restart'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: CON-ERP-001
+  description: 'Order detail distinguishes queued, awaiting ERP acknowledgement, accepted by ERP, held, shipped, rejected and needs attention from the adapter status'
+  source: 'AC7'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: CON-ERP-002
+  description: "Adapter unreachable shows the order-service state with 'ERP detail unavailable', never a guessed adapter state"
+  source: 'AC7; scenario'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: CON-ERP-003
+  description: 'A held ERP request shows as held, not failed'
+  source: 'scenario'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: CON-PARTIAL-001
+  description: 'Each upstream slow or down in turn gives a partial page with the failed source named, not infinite loading'
+  source: 'scenario; mission'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: CON-IDEMP-001
+  description: 'Order submitted twice with the same idempotency key creates one order'
+  source: 'scenario'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: CON-STATES-001
+  description: 'Stable loading, empty and error states with typed Problem JSON errors'
+  source: 'AC4'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: CON-NOCLAIM-001
+  description: 'No UI claim of resolution before the backend confirms it'
+  source: 'AC4'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: CON-A11Y-001
+  description: 'Keyboard-only order and incident traversal'
+  source: 'AC3'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: CON-A11Y-002
+  description: 'Automated accessibility scan'
+  source: 'AC3'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: CON-MOBILE-001
+  description: 'Mobile-width smoke test'
+  source: 'AC3'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: CON-BRAND-001
+  description: 'Logo and favicon follow the provided box1 brand asset and are project-owned'
+  source: 'AC5'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: CON-E2E-001
+  description: 'E2E: seed order, submit, watch timeline; hold in ERP or delay ERP; see waiting state with diagnosis links; recover; visibly complete'
+  source: 'AC1; phase 7'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: CON-PAGE-HOME
+  description: 'Operator home: business indicators and exception queue'
+  source: 'pages'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: CON-PAGE-ORDERS
+  description: 'Order list with filters, sort and pagination'
+  source: 'pages'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: CON-PAGE-DETAIL
+  description: 'Order detail: state, customer-safe metadata, reservation and fulfillment status, timeline'
+  source: 'pages'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: CON-PAGE-INCIDENT
+  description: 'Incident/evidence view'
+  source: 'pages'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: CON-PAGE-SITES
+  description: 'Sites/assets view'
+  source: 'pages'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: CON-PAGE-DELIVERY
+  description: 'Developer delivery panel (P1, optional)'
+  source: 'pages'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: CON-DEMO-001
+  description: 'Demo control (P1): named scenarios via #19 when it exists; link to telemetry console'
+  source: 'demo control'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: CON-EVID-001
+  description: 'Each business state connects to trace ID / correlation ID / evidence links without OpenShift admin access'
+  source: 'UX evidence'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: CON-API-001
+  description: 'Console backend versioned OpenAPI; one typed client generated from it; Problem JSON and sourceStatus semantics compatible with #17'
+  source: 'API'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: CON-UPSTREAM-001
+  description: 'Calls to each service use a token that service accepts, least privilege, short timeouts'
+  source: 'upstream auth'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: CON-KC-001
+  description: 'Keycloak client and roles for the console declared through GitOps'
+  source: 'Keycloak'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: CON-OBS-001
+  description: 'Health, Micrometer metrics, structured logs, trace propagation'
+  source: 'operating constraints'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: CON-DOC-001
+  description: 'docs/demo-walkthrough.md with synthetic fixtures and screenshots; README, architecture, runbook'
+  source: 'docs'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: CON-DELIV-001
+  description: 'Delivered through PaC build, gates, GitOps promotion and Argo; release smoke passes'
+  source: 'phase 6'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
