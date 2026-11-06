@@ -145,3 +145,25 @@ User approval in chat: "Yes, prune them".
 - `GET /api/v1/orders` returned 200.
 
 **Not fixed:** this does not fix #42. Each future `configMapGenerator` change, including export for the remaining services, will leave a new orphan until #42 is resolved.
+
+## Notification-service export (box1-workloads-dev#133)
+
+User approval in chat: "Yes, notification next" (re-run the promotion, export, prune), then "Yes, notification export".
+
+- **Promotion #123:** the first `/retest` left `box1-gitops-validate-brw2n` stranded in `PipelineRunPending`. The PaC watcher never queued it (box1-docs#64 pattern). A second `/retest` produced `box1-gitops-validate-fvfqs` (Succeeded). Squash-merged as `d778b9e8`. The pod runs `24dda0f`, `sha256:67cb2a07a47f`. **`brw2n` is still Pending in `box1-ci`; it was not deleted.**
+- **Export #133:** rebased onto main, checks passed, squash-merged as `fe77c02b6853c4cd4d556f6f38d52886f3176a33`. Pod `notification-service-95799fb7f-sv9q4` is ready, 0 restarts, ratio 1.0.
+- **Prune:** the orphan `notification-service-config-89db8g96gh` (no running pod used it) was pruned with a selective Argo sync. The app is Synced/Healthy and the pod was not restarted.
+
+**Sample order** `ord_79c7a107d0fc4ee1a82a9fef03d2e655`, trace `9ce326996568a7f81948334f9d449faf`: 11 unique spans across four services.
+- **order:** POST and the inventory.reserved consumer.
+- **inventory:** 4 consumers.
+- **adapter:** the CONSUMER span.
+- **notification:** 4 consumer spans, each parented on the span that published the event:
+  - `notification.consume order.placed.v1` (parent: order POST);
+  - `notification.consume order.state-changed.v1` ×2 and `notification.consume fulfillment.requested.v1` (parent: the order consumer).
+
+**Notification logs:** "Event ignored" ×4, all with `traceId=9ce326996568a7f81948334f9d449faf` and `orderId`. No intent was created, so the delivery worker's spans were not exercised.
+
+**Order not shipped:** the order stayed at `FULFILLMENT_REQUESTED` for more than 60 s, unlike earlier orders that shipped within seconds. The ERP mode or hold was not checked or changed.
+
+**Collector:** 301 accepted, 301 sent, no failures. notification: 0 ERROR lines, 0 exporter errors.
