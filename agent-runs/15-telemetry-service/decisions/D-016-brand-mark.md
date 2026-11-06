@@ -1,16 +1,15 @@
 # D-016 Box1 cube "1" mark for the console
 
-**Status:** OPEN, the user's instruction was to stop and ask if the brand kit mark cannot be found, rather than draw a new logo.
+**Status:** RESOLVED by the user, 2026-11-05 ~20:10 EST: the mark is the `box1-org` GitHub organization avatar,
+`https://avatars.githubusercontent.com/u/347466109?s=400`.
 
-## Search (read-only, see evidence/02-brand-search.txt)
+## Search before the answer (read-only, see evidence/02-brand-search.txt)
 
-- No standalone SVG or PNG of the mark in any box1-org repository on any branch, in Developer Hub branding config, or under the user's Documents, Downloads or Desktop.
-- The mark appears only inside the raster hero banner (2163x1074 JPEG) embedded in `Box1_Operations_White_Paper_v4-2.pdf` on box1-docs main (commit ab5391a), over a grid background.
+No standalone SVG or PNG was found in any box1-org repository, in Developer Hub branding config, or under the user's
+Documents, Downloads or Desktop. The mark appeared only inside the white paper's raster hero banner. The agent stopped
+and asked rather than drawing one, as instructed.
 
-## Options
+## Applied
 
-1. The user supplies the brand-kit file (SVG preferred). The agent adds it unmodified under `src/main/resources/META-INF/resources/console/brand/`.
-2. The user approves a crop of the white paper banner as an interim raster mark (background included, not a transparent logo).
-3. Ship the console with a text wordmark only, "box1 / Operations", and an empty mark slot until an asset exists.
-
-Until answered, the console uses option 3's text wordmark, which draws nothing new.
+- Downloaded into an isolated directory and inspected: 400 x 400 RGBA PNG, SHA-256 `11ccbb2dc79258163cc516ed398132ad320ebf9870c75da64cb8b6f2919762ea`, the isometric charcoal/steel cube with the inset "1" bar. Confirmed via the GitHub API that user id 347466109 is `box1-org`.
+- Added unmodified as `src/main/resources/META-INF/resources/console/brand/box1-mark.png` (header mark at 32 px and favicon), with provenance in `docs/architecture.md`. asset-service commit 490a7e2.

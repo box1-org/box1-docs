@@ -110,3 +110,9 @@ Builds now stop the local app first.
 00:45:51Z PASS run stopped emitting after heartbeats failed past 20 s admitted 400 -> 400
 00:46:14Z PASS the run is closed in the database after the outage owner stopped heartbeating (pod restart or crash); not resumed
 00:46:14Z failures: 0
+
+CORRECTION, 2026-11-06 01:16 UTC (20:16 EST): the browser line above ("Browser checks rerun ... 14/14 PASS") is wrong.
+That run aborted after its first check: the CSP added in the review repairs blocked the harness's injected axe-core
+script, the script threw, and its summary still printed "failures: 0" because the exception was not counted. The
+header values above were checked separately with curl and are correct. The browser checks were not actually
+re-established after the CSP until evidence/09. The harness now counts an uncaught error as a failure.

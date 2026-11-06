@@ -1,0 +1,13 @@
+import fs from 'node:fs';
+import { firefox } from 'playwright';
+const creds = JSON.parse(fs.readFileSync('../keycloak/local-test-users.json', 'utf8'));
+const browser = await firefox.launch({ headless: true });
+const page = await (await browser.newContext({ viewport: { width: 1440, height: 1000 }, colorScheme: 'dark' })).newPage();
+await page.goto('http://localhost:18080/console/');
+await page.fill('#username', 'operator'); await page.fill('#password', creds.operator); await page.click('#kc-login');
+await page.waitForURL('http://localhost:18080/console/**');
+await page.waitForFunction(() => document.getElementById('confirmed').textContent.startsWith('confirmed'));
+await page.waitForTimeout(4500);
+console.log('chaos radio disabled:', await page.isDisabled('input[name="kind"][value="CHAOS"]'));
+await page.screenshot({ path: 'shots/08-dev-chaos-off.png' });
+await browser.close();

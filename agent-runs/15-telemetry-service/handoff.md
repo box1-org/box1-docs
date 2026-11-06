@@ -16,7 +16,7 @@
 | [box1-gitops#63](https://github.com/box1-org/box1-gitops/pull/63) | b313754 | Client `asset-service` and the roles `chaos-operator`, `telemetry-writer`, `telemetry-reader`, in the live realm (automated sync) |
 | [box1-workloads-dev#64](https://github.com/box1-org/box1-workloads-dev/pull/64) | bb0bcae | PostgreSQL, PVC, NetworkPolicy and Deployment `env`. The Secret must exist first |
 | [box1-ops-contracts#7](https://github.com/box1-org/box1-ops-contracts/pull/7) | 2fe191d | Nothing. The service pins this commit |
-| [asset-service#1](https://github.com/box1-org/asset-service/pull/1) | 11fa5a1 | The release: build, `gate`, promotion, smoke into `asset-service-dev` |
+| [asset-service#1](https://github.com/box1-org/asset-service/pull/1) | 490a7e2 | The release: build, `gate`, promotion, smoke into `asset-service-dev` |
 
 ## Tests and deployment proof
 - Exact commands and observed results:
@@ -71,7 +71,7 @@ current_phase: 6 (stopped at entry)
 repositories:
   - name: asset-service
     branch: telemetry-service
-    commit: 11fa5a1055439eb4ce01018c836d5f5d4c28b848
+    commit: 490a7e226ca5b91a44b1ab04132e0e138f356365
   - name: box1-ops-contracts
     branch: asset-service-v1
     commit: 2fe191dc7587be4c17e0c672af6e324e995aab57
@@ -97,7 +97,7 @@ requirements:
 image_digest: null
 gitops_commit: null
 review_passes_completed: [architecture, persistence, messaging, security, operations]
-open_decisions: [D-012 DLQ merge and sync, D-013 Keycloak client merge, role assignment and live driver, D-014 database credential, D-015 chaos namespace, D-016 brand mark]
+open_decisions: [D-012 DLQ merge and sync, D-013 Keycloak client merge and role assignment (user drives the console), D-014 database Secret creation, D-015 deferred (chaos off)]
 rollback_state: nothing merged; cluster unchanged (scaffold digest sha256:0dc4185e…)
 next_action: user approves D-012 (merge box1-gitops#62), then each step in checkpoint.md in order
 ```

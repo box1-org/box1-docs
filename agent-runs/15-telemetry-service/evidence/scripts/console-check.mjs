@@ -38,8 +38,10 @@ async function tabTo(page, id, key = 'Tab', max = 80) {
 }
 
 const browser = await firefox.launch({ headless: true });
+let crashed = null;
 try {
-  const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, reducedMotion: 'reduce', colorScheme: 'dark' });
+  // bypassCSP only lets the harness inject axe-core; the page's own CSP is checked separately below.
+  const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, reducedMotion: 'reduce', colorScheme: 'dark', bypassCSP: true });
   const page = await context.newPage();
   await page.goto(`${BASE}/console/`);
   await page.fill('#username', 'operator');
@@ -107,7 +109,7 @@ try {
   await page.unroute('**/api/v1/control/state');
 
   // Mobile width.
-  const mobile = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce', storageState: await context.storageState() });
+  const mobile = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce', bypassCSP: true, storageState: await context.storageState() });
   const small = await mobile.newPage();
   await small.goto(`${BASE}/console/`);
   await small.waitForFunction(() => document.getElementById('confirmed').textContent.startsWith('confirmed'));
@@ -120,8 +122,23 @@ try {
   const external = await page.evaluate(() => [...document.querySelectorAll('script[src],link[href],img[src]')]
     .map((e) => e.src || e.href).filter((u) => !u.startsWith(location.origin)));
   record('page loads nothing from outside this service', external.length === 0, JSON.stringify(external));
+
+  // The real CSP, as a browser without bypass sees it: the page must still work under it.
+  const strict = await browser.newContext({ viewport: { width: 1440, height: 1000 }, storageState: await context.storageState() });
+  const strictPage = await strict.newPage();
+  const violations = [];
+  strictPage.on('console', (m) => { if (/Content-Security-Policy|Content Security Policy/i.test(m.text())) { violations.push(m.text()); } });
+  await strictPage.goto(`${BASE}/console/`);
+  await strictPage.waitForFunction(() => document.getElementById('confirmed').textContent.startsWith('confirmed'));
+  const markLoaded = await strictPage.evaluate(() => document.querySelector('.brand-mark').naturalWidth);
+  record('page works under its own CSP (state confirmed, no CSP violations)', violations.length === 0, JSON.stringify(violations).slice(0, 200));
+  record('brand mark loads', markLoaded === 400, `naturalWidth ${markLoaded}`);
+} catch (error) {
+  crashed = error;
+  record('check script completed', false, String(error).slice(0, 300));
 } finally {
   await browser.close();
   fs.writeFileSync(path.join(out, 'results.json'), JSON.stringify(results, null, 2));
   console.log('failures:', results.filter((r) => !r.ok).length);
+  if (crashed) { process.exitCode = 1; }
 }
