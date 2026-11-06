@@ -1,15 +1,38 @@
 {
   "issue": "box1-org/box1-docs#18",
-  "title": "Service 08 — Web application / operator console",
+  "title": "Service 08 \u2014 Web application / operator console",
   "profile": "frontier",
   "prompt": "box1_operations_agent_prompts/01-services/08_operator_console.md@5ef99df",
   "started": "2026-11-05T22:43-05:00",
-  "current_phase": "1 Design",
+  "current_phase": "5 Review",
   "repositories": [
-    {"name": "box1-org/operations-console", "role": "target", "branch": "run18-frontend-build-probe", "commit": "ae245e774fecf904c0fda93cdf67b708eb22b1ac", "pr": "https://github.com/box1-org/operations-console/pull/1", "note": "draft probe, do not merge"},
-    {"name": "box1-org/box1-docs", "role": "run state", "branch": "agent-run/18-operator-console"},
-    {"name": "box1-org/box1-workloads-dev", "role": "deployment manifests", "base": "723e96e6ff6b4d784cd39851d35a68e5d272f04e"},
-    {"name": "box1-org/box1-gitops", "role": "Keycloak client", "base": "5e0588839697bdcd278185e522968659423ebca0"}
+    {
+      "name": "box1-org/operations-console",
+      "role": "target",
+      "branch": "issue-18-console",
+      "commit": "d007f00ddd7be5e58e9be233c893f4f8adbd9561",
+      "pr": "https://github.com/box1-org/operations-console/pull/2",
+      "ci": "box1-ci/operations-console-validate-l6jv2 Succeeded"
+    },
+    {
+      "name": "box1-org/box1-docs",
+      "role": "run state",
+      "branch": "agent-run/18-operator-console"
+    },
+    {
+      "name": "box1-org/box1-workloads-dev",
+      "role": "deployment manifests",
+      "base": "723e96e6ff6b4d784cd39851d35a68e5d272f04e",
+      "pr": "https://github.com/box1-org/box1-workloads-dev/pull/90",
+      "branch": "run18-operations-console-runtime"
+    },
+    {
+      "name": "box1-org/box1-gitops",
+      "role": "Keycloak client",
+      "base": "5e0588839697bdcd278185e522968659423ebca0",
+      "pr": "https://github.com/box1-org/box1-gitops/pull/73",
+      "branch": "run18-operations-console-keycloak"
+    }
   ],
   "upstreams_read_only": {
     "order-service": "8fda08763e2a593d67cabea73fb84e762cb41a21",
@@ -19,8 +42,12 @@
     "box1-ops-contracts": "d57a4efb190a35fea627052c81e626c3d1d8db48",
     "box1-ops-erp-simulator": "c84c910d033e05d0e811ffdb5ab389bedb08ead3"
   },
-  "worktrees": ["/Users/mike/Documents/ChatGPT/box1/run18-docs", "/Users/mike/Documents/ChatGPT/box1/run18-operations-console (clone)"],
+  "worktrees": [
+    "/Users/mike/Documents/ChatGPT/box1/run18-docs",
+    "/Users/mike/Documents/ChatGPT/box1/run18-operations-console (clone)"
+  ],
   "containers_prefix": "run18-",
   "image_digest": null,
-  "gitops_commit": null
+  "gitops_commit": null,
+  "probe_pr": "https://github.com/box1-org/operations-console/pull/1 (closed)"
 }

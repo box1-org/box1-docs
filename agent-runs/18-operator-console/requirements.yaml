@@ -6,350 +6,350 @@
   status: ci_verified
   implementation: [pom.xml, src/main/webui/package-lock.json, src/main/webui/.npmrc]
   tests: [src/test/java/org/box1/FrontendServedTest.java]
-  commands: ["PR pipeline box1-ci/operations-console-validate-zqk5s (mvn verify -DskipITs=false)"]
-  evidence: [evidence/01-frontend-build-probe.md]
+  commands: ["PR pipeline operations-console-validate-l6jv2 (d007f00)", "probe: operations-validate-zqk5s"]
+  evidence: ["evidence/01-frontend-build-probe.md", "evidence/04-ci-implementation.md"]
   deployment: {}
-  limitations: ["Probe build (operations-console#1, not merged). Served from the pod only after delivery; re-verify on the real PR and release."]
+  limitations: ["Served from the deployed pod: Phase 6/7"]
 - id: CON-BUILD-002
   description: 'No CDN or external font at runtime; the browser requests only the console Route and Keycloak'
   source: 'AC8; scenario: no other hosts'
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
+  status: locally_tested
+  implementation: ["src/main/webui/vite.config.ts", "src/main/webui/index.html"]
+  tests: ["FrontendServingTest.indexReferencesNoThirdPartyHost", "e2e session.spec (hosts)"]
+  commands: ["./mvnw -B -ntp verify -DskipITs=false", "cd src/test/e2e && npx playwright test (local stack, Firefox)"]
+  evidence: ["evidence/03-local-tests.md"]
   deployment: {}
-  limitations: []
+  limitations: ["Not yet observed through the real Route"]
 - id: CON-SESSION-001
   description: 'Console backend holds the session; no access or refresh token readable by page JavaScript or stored in browser storage'
   source: 'AC6; scenario: tokens absent'
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
+  status: locally_tested
+  implementation: ["application.properties quarkus.oidc.*", "security/SessionTokens.java"]
+  tests: ["e2e session.spec"]
+  commands: ["cd src/test/e2e && npx playwright test (local stack, Firefox)"]
+  evidence: ["evidence/03-local-tests.md"]
   deployment: {}
-  limitations: []
+  limitations: ["Local Keycloak 26.4, not RH-SSO 7.6; Route proof in Phase 7"]
 - id: CON-AUTHZ-001
   description: 'Anonymous console API calls get 401 through the real Route, on every console API path'
   source: 'AC6; scenario: anonymous request to every path'
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
+  status: ci_verified
+  implementation: ["security/ApiAwareAuthenticationMechanism.java"]
+  tests: ["ConsoleSecurityTest.anonymousCallsToEveryConsoleApiPathGet401ProblemJson", "e2e session.spec anonymous"]
+  commands: ["PR pipeline operations-console-validate-l6jv2 (d007f00)", "./mvnw -B -ntp verify -DskipITs=false", "cd src/test/e2e && npx playwright test (local stack, Firefox)"]
+  evidence: ["evidence/04-ci-implementation.md", "evidence/03-local-tests.md"]
   deployment: {}
-  limitations: []
+  limitations: ["Through the real Route: Phase 7"]
 - id: CON-AUTHZ-002
   description: 'Signed-in user without the needed role gets 403 through the real Route; every role check is in the backend'
   source: 'AC6, AC2; scenario: user without role'
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
+  status: ci_verified
+  implementation: ["api/ConsoleResource.java @RolesAllowed", "api/ProblemMappers.java"]
+  tests: ["ConsoleSecurityTest.signedInWithoutRolesGets403OnEveryRoleProtectedPath", "e2e roles.spec"]
+  commands: ["PR pipeline operations-console-validate-l6jv2 (d007f00)", "./mvnw -B -ntp verify -DskipITs=false", "cd src/test/e2e && npx playwright test (local stack, Firefox)"]
+  evidence: ["evidence/04-ci-implementation.md", "evidence/03-local-tests.md"]
   deployment: {}
-  limitations: []
+  limitations: ["Through the real Route: Phase 7"]
 - id: CON-ROLE-001
   description: 'Role-specific navigation and forbidden states in the browser reflect backend checks'
   source: 'AC2'
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
+  status: locally_tested
+  implementation: ["webui/src/Layout.tsx", "webui/src/components/States.tsx"]
+  tests: ["e2e roles.spec"]
+  commands: ["cd src/test/e2e && npx playwright test (local stack, Firefox)"]
+  evidence: ["evidence/03-local-tests.md"]
   deployment: {}
   limitations: []
 - id: CON-CUST-001
   description: 'Customer role checks (customer sees only own orders)'
   source: 'AC2'
-  status: proposed
+  status: blocked
   implementation: []
   tests: []
   commands: []
   evidence: []
   deployment: {}
-  limitations: []
+  limitations: ["D-005: no verified customer identity exists (order-service has no auth, #40); a customer filter would trust a caller-chosen value. Needs user confirmation O-5."]
 - id: CON-CSRF-001
   description: 'State-changing console API calls reject cross-site requests'
   source: 'scenario: CSRF'
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
+  status: ci_verified
+  implementation: ["security/ConsoleRequestGuard.java", "application.properties CORS"]
+  tests: ["ConsoleSecurityTest.stateChangingCallsNeedTheConsoleHeaderJsonAndOwnOrigin", "ConsoleSecurityTest.consoleHeaderIsNeverAllowedCrossOrigin", "e2e roles.spec CSRF"]
+  commands: ["PR pipeline operations-console-validate-l6jv2 (d007f00)", "./mvnw -B -ntp verify -DskipITs=false", "cd src/test/e2e && npx playwright test (local stack, Firefox)"]
+  evidence: ["evidence/04-ci-implementation.md", "evidence/03-local-tests.md"]
   deployment: {}
   limitations: []
 - id: CON-LOGOUT-001
   description: 'Logout ends the session'
   source: 'scenario: logout'
-  status: proposed
+  status: locally_tested
   implementation: []
-  tests: []
-  commands: []
-  evidence: []
+  tests: ["e2e session.spec logout"]
+  commands: ["cd src/test/e2e && npx playwright test (local stack, Firefox)"]
+  evidence: ["evidence/03-local-tests.md"]
   deployment: {}
-  limitations: []
+  limitations: ["RH-SSO 7.6 logout through the Route: Phase 7"]
 - id: CON-RESTART-001
   description: 'Pod restart behavior of the session observed and recorded'
   source: 'scenario: pod restart'
-  status: proposed
+  status: locally_tested
   implementation: []
   tests: []
-  commands: []
-  evidence: []
+  commands: ["restart probe script (evidence/03)"]
+  evidence: ["evidence/03-local-tests.md"]
   deployment: {}
-  limitations: []
+  limitations: ["Observed: restart ends sessions (per-process key). Pod restart on cluster to observe in Phase 7. Stable key needs approval (O-3)."]
 - id: CON-ERP-001
   description: 'Order detail distinguishes queued, awaiting ERP acknowledgement, accepted by ERP, held, shipped, rejected and needs attention from the adapter status'
   source: 'AC7'
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
+  status: ci_verified
+  implementation: ["domain/ErpProgressMapper.java", "webui/src/components/OrderSummaryView.tsx"]
+  tests: ["ErpProgressMapperTest", "UpstreamBehaviourTest", "e2e flow.spec"]
+  commands: ["PR pipeline operations-console-validate-l6jv2 (d007f00)", "./mvnw -B -ntp verify -DskipITs=false", "cd src/test/e2e && npx playwright test (local stack, Firefox)"]
+  evidence: ["evidence/04-ci-implementation.md", "evidence/03-local-tests.md"]
   deployment: {}
-  limitations: []
+  limitations: ["Live needs the order-to-fulfillment link decision (G-1/O-1); deployed default is none"]
 - id: CON-ERP-002
   description: "Adapter unreachable shows the order-service state with 'ERP detail unavailable', never a guessed adapter state"
   source: 'AC7; scenario'
-  status: proposed
+  status: ci_verified
   implementation: []
-  tests: []
-  commands: []
-  evidence: []
+  tests: ["UpstreamBehaviourTest.adapterDownShowsErpDetailUnavailableNeverAGuess", "e2e flow.spec adapter unreachable"]
+  commands: ["PR pipeline operations-console-validate-l6jv2 (d007f00)", "./mvnw -B -ntp verify -DskipITs=false", "cd src/test/e2e && npx playwright test (local stack, Firefox)"]
+  evidence: ["evidence/04-ci-implementation.md", "evidence/03-local-tests.md"]
   deployment: {}
   limitations: []
 - id: CON-ERP-003
   description: 'A held ERP request shows as held, not failed'
   source: 'scenario'
-  status: proposed
+  status: ci_verified
   implementation: []
-  tests: []
-  commands: []
-  evidence: []
+  tests: ["UpstreamBehaviourTest.heldRequestShowsAsHeldNotFailedAlongsideTheOrderState", "e2e flow.spec"]
+  commands: ["PR pipeline operations-console-validate-l6jv2 (d007f00)", "./mvnw -B -ntp verify -DskipITs=false", "cd src/test/e2e && npx playwright test (local stack, Firefox)"]
+  evidence: ["evidence/04-ci-implementation.md", "evidence/03-local-tests.md"]
   deployment: {}
-  limitations: []
+  limitations: ["HELD produced by stubbed adapter; no ERP can hold on the cluster (G-3)"]
 - id: CON-PARTIAL-001
   description: 'Each upstream slow or down in turn gives a partial page with the failed source named, not infinite loading'
   source: 'scenario; mission'
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
+  status: ci_verified
+  implementation: ["upstream/Upstreams.java", "upstream/Fanout.java"]
+  tests: ["UpstreamBehaviourTest", "e2e flow.spec each upstream"]
+  commands: ["PR pipeline operations-console-validate-l6jv2 (d007f00)", "./mvnw -B -ntp verify -DskipITs=false", "cd src/test/e2e && npx playwright test (local stack, Firefox)"]
+  evidence: ["evidence/04-ci-implementation.md", "evidence/03-local-tests.md"]
   deployment: {}
   limitations: []
 - id: CON-IDEMP-001
   description: 'Order submitted twice with the same idempotency key creates one order'
   source: 'scenario'
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
+  status: locally_tested
+  implementation: ["webui/src/pages/PlaceOrder.tsx", "api/ConsoleResource.placeOrder"]
+  tests: ["UpstreamBehaviourTest.placingTwiceWithTheSameKeyReturnsTheSameOrderAndForwardsTheKey", "e2e flow.spec same key"]
+  commands: ["./mvnw -B -ntp verify -DskipITs=false", "cd src/test/e2e && npx playwright test (local stack, Firefox)"]
+  evidence: ["evidence/03-local-tests.md"]
   deployment: {}
-  limitations: []
+  limitations: ["Deduplication itself is order-service's; locally a stub. Live check in Phase 7 needs fixture approval (O-6)."]
 - id: CON-STATES-001
   description: 'Stable loading, empty and error states with typed Problem JSON errors'
   source: 'AC4'
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
+  status: locally_tested
+  implementation: ["webui/src/components/States.tsx", "webui/src/api/useResource.ts"]
+  tests: ["e2e flow.spec", "e2e roles.spec"]
+  commands: ["cd src/test/e2e && npx playwright test (local stack, Firefox)"]
+  evidence: ["evidence/03-local-tests.md"]
   deployment: {}
   limitations: []
 - id: CON-NOCLAIM-001
   description: 'No UI claim of resolution before the backend confirms it'
   source: 'AC4'
-  status: proposed
+  status: locally_tested
   implementation: []
-  tests: []
-  commands: []
-  evidence: []
+  tests: ["e2e flow.spec (adapter SHIPPED while order FULFILLMENT_REQUESTED shows no completion)"]
+  commands: ["cd src/test/e2e && npx playwright test (local stack, Firefox)"]
+  evidence: ["evidence/03-local-tests.md"]
   deployment: {}
   limitations: []
 - id: CON-A11Y-001
   description: 'Keyboard-only order and incident traversal'
   source: 'AC3'
-  status: proposed
+  status: locally_tested
   implementation: []
-  tests: []
-  commands: []
-  evidence: []
+  tests: ["e2e a11y.spec keyboard"]
+  commands: ["cd src/test/e2e && npx playwright test (local stack, Firefox)"]
+  evidence: ["evidence/03-local-tests.md"]
   deployment: {}
-  limitations: []
+  limitations: ["Firefox pref accessibility.tabfocus=7 (full keyboard access)"]
 - id: CON-A11Y-002
   description: 'Automated accessibility scan'
   source: 'AC3'
-  status: proposed
+  status: locally_tested
   implementation: []
-  tests: []
-  commands: []
-  evidence: []
+  tests: ["e2e a11y.spec axe"]
+  commands: ["cd src/test/e2e && npx playwright test (local stack, Firefox)"]
+  evidence: ["evidence/03-local-tests.md"]
   deployment: {}
   limitations: []
 - id: CON-MOBILE-001
   description: 'Mobile-width smoke test'
   source: 'AC3'
-  status: proposed
+  status: locally_tested
   implementation: []
-  tests: []
-  commands: []
-  evidence: []
+  tests: ["e2e a11y.spec 390px"]
+  commands: ["cd src/test/e2e && npx playwright test (local stack, Firefox)"]
+  evidence: ["evidence/03-local-tests.md"]
   deployment: {}
   limitations: []
 - id: CON-BRAND-001
   description: 'Logo and favicon follow the provided box1 brand asset and are project-owned'
   source: 'AC5'
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
+  status: ci_verified
+  implementation: ["webui/public/brand/box1-mark.png"]
+  tests: ["FrontendServingTest.brandMarkIsTheUnmodifiedProjectAsset"]
+  commands: ["PR pipeline operations-console-validate-l6jv2 (d007f00)", "./mvnw -B -ntp verify -DskipITs=false"]
+  evidence: ["evidence/04-ci-implementation.md", "decisions/D-014-brand-and-favicon.md"]
   deployment: {}
-  limitations: []
+  limitations: ["Favicon is the unmodified mark; a resized favicon awaits permission (O-4). Brand-kit identity of the mark to be confirmed by the user."]
 - id: CON-E2E-001
   description: 'E2E: seed order, submit, watch timeline; hold in ERP or delay ERP; see waiting state with diagnosis links; recover; visibly complete'
   source: 'AC1; phase 7'
-  status: proposed
+  status: locally_tested
   implementation: []
-  tests: []
-  commands: []
-  evidence: []
+  tests: ["e2e flow.spec seed→hold→complete"]
+  commands: ["cd src/test/e2e && npx playwright test (local stack, Firefox)"]
+  evidence: ["evidence/03-local-tests.md"]
   deployment: {}
-  limitations: []
+  limitations: ["Hold is a stubbed adapter state, not an ERP console action; live hold blocked by G-3 (adapter SFTP disabled)"]
 - id: CON-PAGE-HOME
   description: 'Operator home: business indicators and exception queue'
   source: 'pages'
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
+  status: locally_tested
+  implementation: ["webui/src/pages/Home.tsx"]
+  tests: ["e2e"]
+  commands: ["cd src/test/e2e && npx playwright test (local stack, Firefox)"]
+  evidence: ["evidence/03-local-tests.md"]
   deployment: {}
   limitations: []
 - id: CON-PAGE-ORDERS
   description: 'Order list with filters, sort and pagination'
   source: 'pages'
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
+  status: locally_tested
+  implementation: ["webui/src/pages/Orders.tsx"]
+  tests: ["UpstreamBehaviourTest.listFilters…", "e2e"]
+  commands: ["./mvnw -B -ntp verify -DskipITs=false", "cd src/test/e2e && npx playwright test (local stack, Firefox)"]
+  evidence: ["evidence/03-local-tests.md"]
   deployment: {}
-  limitations: []
+  limitations: ["Filter and sort within the 200 most recent orders (D-013)"]
 - id: CON-PAGE-DETAIL
   description: 'Order detail: state, customer-safe metadata, reservation and fulfillment status, timeline'
   source: 'pages'
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
+  status: locally_tested
+  implementation: ["webui/src/pages/OrderDetail.tsx"]
+  tests: ["e2e flow.spec"]
+  commands: ["cd src/test/e2e && npx playwright test (local stack, Firefox)"]
+  evidence: ["evidence/03-local-tests.md"]
   deployment: {}
   limitations: []
 - id: CON-PAGE-INCIDENT
   description: 'Incident/evidence view'
   source: 'pages'
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
+  status: locally_tested
+  implementation: ["webui/src/pages/Incidents.tsx", "domain/Incidents.java"]
+  tests: ["e2e a11y.spec keyboard"]
+  commands: ["cd src/test/e2e && npx playwright test (local stack, Firefox)"]
+  evidence: ["evidence/03-local-tests.md"]
   deployment: {}
-  limitations: []
+  limitations: ["Derived incidents until an incident contract exists (#17)"]
 - id: CON-PAGE-SITES
   description: 'Sites/assets view'
   source: 'pages'
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
+  status: locally_tested
+  implementation: ["webui/src/pages/Sites.tsx"]
+  tests: ["UpstreamBehaviourTest.assetServiceRefusal…", "e2e flow.spec"]
+  commands: ["./mvnw -B -ntp verify -DskipITs=false", "cd src/test/e2e && npx playwright test (local stack, Firefox)"]
+  evidence: ["evidence/03-local-tests.md"]
   deployment: {}
-  limitations: []
+  limitations: ["Telemetry refused by asset-service (G-2)"]
 - id: CON-PAGE-DELIVERY
   description: 'Developer delivery panel (P1, optional)'
   source: 'pages'
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
+  status: locally_tested
+  implementation: ["webui/src/pages/Delivery.tsx"]
+  tests: ["e2e roles.spec developer"]
+  commands: ["cd src/test/e2e && npx playwright test (local stack, Firefox)"]
+  evidence: ["evidence/03-local-tests.md"]
   deployment: {}
   limitations: []
 - id: CON-DEMO-001
   description: 'Demo control (P1): named scenarios via #19 when it exists; link to telemetry console'
   source: 'demo control'
-  status: proposed
-  implementation: []
-  tests: []
+  status: implemented
+  implementation: ["webui/src/pages/Demo.tsx"]
+  tests: ["UpstreamBehaviourTest.scenariosReportTheControllerAsNotConfigured"]
   commands: []
   evidence: []
   deployment: {}
-  limitations: []
+  limitations: ["Deferred until #19 exists (D-010); read-only page with telemetry console link"]
 - id: CON-EVID-001
   description: 'Each business state connects to trace ID / correlation ID / evidence links without OpenShift admin access'
   source: 'UX evidence'
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
+  status: locally_tested
+  implementation: ["api/ConsoleResource.summarize (evidence)", "components/OrderSummaryView.tsx"]
+  tests: ["e2e flow.spec evidence"]
+  commands: ["cd src/test/e2e && npx playwright test (local stack, Firefox)"]
+  evidence: ["evidence/03-local-tests.md"]
   deployment: {}
-  limitations: []
+  limitations: ["Trace, log and dashboard deep links unavailable until #22; IDs and Git SHA links shown"]
 - id: CON-API-001
   description: 'Console backend versioned OpenAPI; one typed client generated from it; Problem JSON and sourceStatus semantics compatible with #17'
   source: 'API'
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
+  status: ci_verified
+  implementation: ["META-INF/openapi.yaml", "webui/src/api/client.ts"]
+  tests: ["ContractDriftTest", "ConsoleSecurityTest"]
+  commands: ["PR pipeline operations-console-validate-l6jv2 (d007f00)", "./mvnw -B -ntp verify -DskipITs=false"]
+  evidence: ["evidence/04-ci-implementation.md", "evidence/02-contract.md"]
   deployment: {}
   limitations: []
 - id: CON-UPSTREAM-001
   description: 'Calls to each service use a token that service accepts, least privilege, short timeouts'
   source: 'upstream auth'
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
+  status: locally_tested
+  implementation: ["upstream/Upstreams.java", "box1-gitops#73 audience mappers"]
+  tests: ["UpstreamBehaviourTest", "e2e (stub request log)"]
+  commands: ["cd src/test/e2e && npx playwright test (local stack, Firefox)"]
+  evidence: ["evidence/03-local-tests.md"]
   deployment: {}
-  limitations: []
+  limitations: ["asset-service refuses console tokens (G-2); acceptance of real tokens by inventory and adapter to verify live"]
 - id: CON-KC-001
   description: 'Keycloak client and roles for the console declared through GitOps'
   source: 'Keycloak'
-  status: proposed
-  implementation: []
+  status: implemented
+  implementation: ["box1-gitops#73 platform/identity/keycloak/realm/operations-console-client.yaml"]
   tests: []
-  commands: []
-  evidence: []
+  commands: ["oc kustomize; oc apply --dry-run=server"]
+  evidence: ["https://github.com/box1-org/box1-gitops/pull/73"]
   deployment: {}
-  limitations: []
+  limitations: ["Merge needs approval; roles assigned to people by the user"]
 - id: CON-OBS-001
   description: 'Health, Micrometer metrics, structured logs, trace propagation'
   source: 'operating constraints'
-  status: proposed
-  implementation: []
-  tests: []
-  commands: []
-  evidence: []
+  status: ci_verified
+  implementation: ["application.properties logging/otel", "Upstreams metrics"]
+  tests: ["GreetingResourceTest health/metrics", "UpstreamBehaviourTest traceparent"]
+  commands: ["PR pipeline operations-console-validate-l6jv2 (d007f00)", "./mvnw -B -ntp verify -DskipITs=false"]
+  evidence: ["evidence/04-ci-implementation.md", "evidence/03-local-tests.md"]
   deployment: {}
-  limitations: []
+  limitations: ["Trace export off until #22"]
 - id: CON-DOC-001
   description: 'docs/demo-walkthrough.md with synthetic fixtures and screenshots; README, architecture, runbook'
   source: 'docs'
-  status: proposed
-  implementation: []
+  status: implemented
+  implementation: ["README.md", "docs/architecture.md", "docs/runbook.md", "docs/demo-walkthrough.md"]
   tests: []
   commands: []
   evidence: []
   deployment: {}
-  limitations: []
+  limitations: ["Screenshots are from the local stack; cluster screenshots after Phase 7"]
 - id: CON-DELIV-001
   description: 'Delivered through PaC build, gates, GitOps promotion and Argo; release smoke passes'
   source: 'phase 6'
