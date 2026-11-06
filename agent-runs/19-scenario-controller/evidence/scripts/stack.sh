@@ -1,9 +1,10 @@
 #!/bin/sh
 # Local end-to-end stack for run 19, run19-* names only. Test-only; never pointed at the cluster.
-# Usage: stack.sh up|down|controller|controller-stop|controller-kill9|token-operator|token-viewer|token-norole|erp CMD...
+# Usage: stack.sh up|down|controller|controller-stop|controller-kill9|console|console-stop|token-operator|token-viewer|token-norole|erp CMD...
 # WORK (scratch: throwaway SSH key, known_hosts, client secret, user password, logs) is outside every repository and
 # never committed. Nothing in this script deletes files: PID files are truncated, the SSH key is created once.
-# Ports: pg 39432, kafka 39092, keycloak 39180, erp sftp 39222; order 39081, inventory 39082, adapter 39083, controller 39084.
+# Ports: pg 39432, kafka 39092, keycloak 39180, erp sftp 39222; order 39081, inventory 39082, adapter 39083, controller 39084,
+# operations console 39085.
 set -eu
 WORK=/private/tmp/claude-501/-Users-mike-Documents-ChatGPT-box1/ef05c591-4bf3-4f8d-9761-3715c9f2aabb/scratchpad/run19-work
 BOX=/Users/mike/Documents/ChatGPT/box1
@@ -28,11 +29,18 @@ controller() {
     QUARKUS_DATASOURCE_JDBC_URL=jdbc:postgresql://localhost:39432/scenario_controller QUARKUS_DATASOURCE_USERNAME=postgres \
     QUARKUS_DATASOURCE_PASSWORD=postgres SCENARIO_CONTROL_ENABLED=true POD_NAMESPACE=scenario-controller-dev \
     SCENARIO_NAMESPACE_ALLOWLIST=scenario-controller-dev SCENARIO_ENVIRONMENT=local-e2e SCENARIO_UPSTREAM_HOST_ALLOWLIST=localhost \
-    SCENARIO_ALLOWED_AZP=scenario-controller \
+    SCENARIO_ALLOWED_AZP=scenario-controller,operations-console \
     ORDER_SERVICE_URL=http://localhost:39081 INVENTORY_SERVICE_URL=http://localhost:39082 FULFILLMENT_ADAPTER_URL=http://localhost:39083 \
     INVENTORY_TOKEN_URL="$ISS/protocol/openid-connect/token" INVENTORY_TOKEN_CLIENT_ID=scenario-controller \
     INVENTORY_TOKEN_CLIENT_SECRET="$(cat "$WORK/client-secret")" SCENARIO_JWT_ISSUER="$ISS" \
     SCENARIO_JWKS_URL="$ISS/protocol/openid-connect/certs" SCENARIO_POLL_INTERVAL=PT1S
+}
+console() {  # the operations console (box1-docs#18) against the real controller and services; needs console-client.sh
+  jvm console 39085 "$BOX/run19-operations-console/target/quarkus-app/quarkus-run.jar" \
+    CONSOLE_OIDC_URL="$ISS" QUARKUS_OIDC_AUTHENTICATION_FORCE_REDIRECT_HTTPS_SCHEME=false \
+    QUARKUS_OIDC_AUTHENTICATION_COOKIE_FORCE_SECURE=false CONSOLE_PUBLIC_ORIGIN=http://localhost:39085 CONSOLE_ENVIRONMENT=local-e2e \
+    ORDER_SERVICE_URL=http://localhost:39081 INVENTORY_SERVICE_URL=http://localhost:39082 FULFILLMENT_ADAPTER_URL=http://localhost:39083 \
+    SCENARIO_CONTROLLER_URL=http://localhost:39084 CONSOLE_SCENARIO_FORWARD_TOKEN=true
 }
 case "$1" in
 up)
@@ -78,10 +86,12 @@ up)
     FULFILLMENT_RESULTS_POLL_MS=1000
   controller;;
 controller) controller;;
+console) console;;
+console-stop) stopjvm console;;
 controller-stop) stopjvm controller;;
 controller-kill9) kill -9 "$(cat "$WORK/controller.pid")"; : > "$WORK/controller.pid";;
 down)
-  for j in controller adapter inventory order; do stopjvm $j; done
+  for j in console controller adapter inventory order; do stopjvm $j; done
   podman rm -f run19-pg run19-kafka run19-keycloak run19-erp >/dev/null 2>&1 || true
   podman volume rm -f run19-erp-data >/dev/null 2>&1 || true;;
 token-operator|token-viewer|token-norole)

@@ -55,6 +55,8 @@ Test harness and test defects:
 
 14. **Keycloak client scope mappings failed with 404 after the #78 merge** (Phase 6, a cluster failure after a merge). The RH-SSO operator's scope-mapping call takes the target client's internal UUID, and #78 gave only the clientId. I reproduced it on the local Keycloak (clientId gives 404, UUID gives 204), then opened box1-gitops#79, which pins the two target clients' existing UUIDs and sets `id` on each mapping. **Missed in local proof:** the local stack's realm was built by `realm.sh` through the admin API, not by the operator's CRs, so the CRs' mapping semantics were checked only with `--dry-run=client`, which validates the schema, not the behavior. Lesson: a CR feature nobody else in the repository uses needs a behavioral check of the operator's call, not just schema validation.
 
+15. **The console kept showing a confirmed step as the operator's task** (console integration, found by the local end-to-end run). The controller keeps a step's text on the run after confirmation. The page now shows "Your step" only while the run is `AWAITING_OPERATOR`. Also, a new console test triggered a 60 s probe cache that broke an existing test; it now stubs asset-service as on the cluster.
+
 ## Profile ambiguity and friction
 
 3. **Reviewer passes were the most productive phase.** Five same-model passes found 57 findings: 13 medium and none high. They included two verification checks that could never fail (MSG-1, MSG-2) and that the local end-to-end run had passed. A green end-to-end run proved the happy path; only adversarial reading found the checks that could not detect a failure.
@@ -64,6 +66,8 @@ Test harness and test defects:
 2. **The prompt's requirement IDs (FR-09, OBS-06, DEMO-A/B/C) are defined only in the white paper PDF.** The ledger derives IDs from the prompt's acceptance evidence and verification scenarios, as the profile allows.
 
 ## Places I was unsure of my authority
+
+9. **Changing operations-console, which is #18's repository and was on the no-push list.** The user asked for the integration directly ("Integrate this with the operations-console"), which I read as authorizing it, as with inventory-service at stop 1. I worked in my own clone and branch, did not touch run #18's clone (it has uncommitted work) or branches, and opened PRs only.
 
 7. **Merging a fix for a merge the user had approved.** The user approved merging #78 and syncing it. The fix, #79, is a new merge; under "every merge, one action at a time" I opened it and did not merge it, even though the approved outcome (the clients working) stays incomplete until it merges.
 8. **Creating the Secret without reading it.** A-5 authorized creating the Secret. I copied the operator-generated value through a pipe from `oc get` to `oc create`, so it was never printed or written to a file. Only the key names and the encoded length were checked.
@@ -121,4 +125,5 @@ Test harness and test defects:
 - Pushed branches `run19-scenario-controller-keycloak` (box1-gitops#78) and `run19-scenario-controller-runtime` (box1-workloads-dev#103); worktrees `run19-gitops`, `run19-workloads`.
 - Five read-only reviewer subagents.
 - Phase 6: merged scenario-controller#1, box1-gitops#78 and box1-workloads-dev#103 (approved); opened box1-ops-contracts#10 (authorized, branch `run19-inventory-fixture-routes` in worktree `run19-contracts`) and box1-gitops#79 (branch `run19-keycloak-scope-mapping-ids`); created Secret `scenario-controller-inventory-token` in `scenario-controller-dev` (approved); Argo refresh annotations on `keycloak` and `scenario-controller`; filed box1-docs#72 (approved). One unneeded read-only `psql select 1` exec in `scenario-controller-postgres`, recorded in `evidence/08`. One read-only Release reviewer subagent.
+- Console integration: clone `run19-operations-console` (branch `run19-scenario-control`, PR operations-console#7; untracked `src/test/e2e/run19-local/` excluded locally); branches `run19-console-scenario-audience` (box1-gitops#81), `run19-console-scenario-control` (box1-workloads-dev#116) and `run19-console-client-docs` (scenario-controller#2). Local only: Keycloak client `operations-console` in the run19 realm, the console JVM on 39085, the local controller restarted with a wider `azp` list. Playwright 1.65.0 fetched by npm into the clone's e2e folder and the npx cache. No cluster writes.
 - No cluster writes before Phase 6. The local stack (`run19-*`) is still running for reruns; tear down with `evidence/scripts/stack.sh down`.

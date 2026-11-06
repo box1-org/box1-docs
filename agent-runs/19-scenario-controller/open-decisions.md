@@ -36,3 +36,15 @@ Each item is a separate approval. A-1 to A-6 were approved at stop 2.
 | O-11 | The controller's database credential while #41 is open: the template Secret is inline in Git in a public repository (details sent to you directly) | Treat the audit store as disposable lab data, as order-service does, until #41; or create a Secret out of band |
 | O-13 | **Done:** filed as box1-docs#72 (one ticket, three items). Was: file backlog issues for the follow-ups: (a) an ERP-side expiry for demo faults and holds (ARCH-4, the ERP repo's change); (b) a fixture-only inventory role narrower than `inventory-admin` (SEC-4); (c) rate-limiting audited refusals (SEC-8) | File (a) and (b); (c) can wait |
 | O-14 | #18 console adoption: the catalog read now needs a token (prompt: catalog behind operator authorization), so the deployed console's tokenless catalog read gets 401 and shows the controller as unavailable | #18's change (forward a token with audience `scenario-controller`); an audience change needs your approval |
+
+## Console integration (D-012), opened 2026-11-06 ~14:45 EST
+
+Each item is a separate approval. They can merge in any order; nothing changes behaviour until all three are live.
+
+| ID | Action | Status |
+|---|---|---|
+| C-1 | Merge **box1-org/box1-gitops#81** and sync Argo `keycloak`. Then check that the `operations-console` CR is `ready=true` | Ready |
+| C-2 | Merge **box1-org/box1-workloads-dev#116** (console URL and forward flag; the controller's allowed `azp`) | Ready |
+| C-3 | Merge **box1-org/operations-console#7**. The release, gate and promotion follow automatically | CI pending |
+| C-4 | Merge **box1-org/scenario-controller#2** (docs only) | CI pending |
+| C-5 | Live check after C-1 to C-3: read-only; signing in to the console's `/demo` shows ten titles with the controller source OK. Any start or seed from the console on the cluster still needs approval (A-8 to A-11) | After C-1 to C-3 |
