@@ -1,6 +1,6 @@
 {
   "project": "box1 Operations",
-  "version": "1.4",
+  "version": "1.5",
   "created_on": "2026-10-25",
   "nominal_model_context_tokens": 65536,
   "gpu": {
@@ -76,7 +76,6 @@
     "01-services/04_erp_vm_simulator.md",
     "01-services/03_fulfillment_adapter.md",
     "02-platform/05_virtualization_integration.md",
-    "01-services/07_experience_bff.md",
     "01-services/08_operator_console.md",
     "02-platform/02_observability_stack.md",
     "01-services/09_scenario_controller.md",
@@ -87,5 +86,8 @@
     "02-platform/07_developer_portal_onboarding.md",
     "02-platform/06_ai_inference_hosting.md",
     "01-services/10_ai_operations.md"
-  ]
+  ],
+  "superseded": {
+    "01-services/07_experience_bff.md": "01-services/08_operator_console.md"
+  }
 }
