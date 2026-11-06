@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>box1 · Operations — MOCKUP</title>
+  <link rel="icon" type="image/png" href="brand/box1-mark.png">
+  <link rel="stylesheet" href="mock.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to main content</a>
+
+  <div class="mock-ribbon" role="region" aria-label="Mockup controls (not part of the product)">
+    <strong>Mockup</strong>
+    <span>Static discussion artifact for box1-docs#18. Synthetic data, no backend.</span>
+    <label>View as role
+      <select id="role">
+        <option value="operator">Operator</option>
+        <option value="customer">Customer (cust_demo_1)</option>
+        <option value="developer">Developer</option>
+        <option value="admin">Admin</option>
+      </select>
+    </label>
+    <label>Simulate data state
+      <select id="datastate">
+        <option value="normal">Normal</option>
+        <option value="loading">Loading</option>
+        <option value="empty">Empty</option>
+        <option value="error">BFF error (Problem JSON)</option>
+      </select>
+    </label>
+    <a href="CAPABILITIES.md">Capability list</a>
+  </div>
+
+  <header class="masthead">
+    <a class="brand" href="#/home" aria-label="box1 Operations home">
+      <img class="brand-mark" src="brand/box1-mark.png" alt="" width="32" height="32">
+      <span class="wordmark">BOX1 <span class="sep">/</span></span>
+      <span class="product">Operations</span>
+    </a>
+    <div class="session">
+      <span class="env-badge" title="Cluster / namespace" id="env"></span>
+      <span class="fresh" id="fresh"></span>
+      <span id="who"></span>
+      <button type="button" disabled title="OIDC sign-out (not wired in mockup)">Sign out</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <nav class="side" aria-label="Primary">
+      <ul id="nav"></ul>
+      <p class="nav-note">Navigation is role-aware for convenience only. The BFF enforces authorization; try a hidden URL to see the forbidden state.</p>
+    </nav>
+    <main id="main" tabindex="-1"></main>
+  </div>
+
+  <div id="live" class="visually-hidden" aria-live="polite"></div>
+  <dialog id="confirm" aria-labelledby="confirm-title"></dialog>
+
+  <script src="mock-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
