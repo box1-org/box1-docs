@@ -3,313 +3,313 @@
 
 - id: TEL-INGEST-001
   description: "POST /api/v1/telemetry/readings is authenticated and validates bounds, allowed metric names, timestamp skew, payload size and rate limit (FR-06)"
-  status: ci_verified
+  status: deployed
   implementation: ["src/main/java/org/box1/asset/ingest/IngestionPipeline.java", "src/main/java/org/box1/asset/domain/ReadingValidator.java", "src/main/java/org/box1/asset/ingest/TokenBucket.java"]
   tests: ["src/test/java/org/box1/asset/ReadingValidatorTest.java", "src/test/java/org/box1/asset/SecurityTest.java", "src/test/java/org/box1/asset/TokenBucketTest.java"]
   commands: ["./mvnw -B clean verify -DskipITs=false", "CI asset-service-validate-zr7tn at 11fa5a1"]
-  evidence: ["evidence/03-tests-local.txt", "evidence/07-review-repairs-local.txt", "evidence/08-ci.txt"]
-  deployment: {}
+  evidence: ["evidence/03-tests-local.txt", "evidence/07-review-repairs-local.txt", "evidence/08-ci.txt", "evidence/10-delivery.txt"]
+  deployment: {"image_digest": "sha256:6d8e8c172b2885f35a551eb34c53429e1ac85a1771263ba841795c683fbde944", "gitops_commit": "7a90162e4ed31aba2fa9e98e07bc765d321c30d9", "source": "1706dd0b0123cbddd510d1fb6bf9d44cc020fee5"}
   limitations: ["ci_verified covers only the container-free tests in CI; the rest of the proof is local"]
 
 - id: TEL-INGEST-002
   description: "Accepted readings publish equipment.reading.v1 with documented partition key and minimal identifiers"
-  status: ci_verified
+  status: deployed
   implementation: ["src/main/java/org/box1/asset/ingest/IngestionPipeline.java", "src/main/java/org/box1/asset/ingest/Envelopes.java"]
   tests: ["src/test/java/org/box1/asset/ContractTest.java", "src/test/java/org/box1/asset/it/TelemetryFlowTest.java"]
   commands: ["./mvnw -B clean verify -DskipITs=false", "./mvnw clean verify -Pcontainers", "CI asset-service-validate-zr7tn at 11fa5a1"]
-  evidence: ["evidence/03-tests-local.txt", "evidence/07-review-repairs-local.txt", "evidence/08-ci.txt"]
-  deployment: {}
+  evidence: ["evidence/03-tests-local.txt", "evidence/07-review-repairs-local.txt", "evidence/08-ci.txt", "evidence/10-delivery.txt"]
+  deployment: {"image_digest": "sha256:6d8e8c172b2885f35a551eb34c53429e1ac85a1771263ba841795c683fbde944", "gitops_commit": "7a90162e4ed31aba2fa9e98e07bc765d321c30d9", "source": "1706dd0b0123cbddd510d1fb6bf9d44cc020fee5"}
   limitations: ["ci_verified covers only the container-free tests in CI; the rest of the proof is local"]
 
 - id: TEL-INGEST-003
   description: "A sample burst is ingested without duplicate records or unbounded growth; invalid units and payloads are rejected (AC1)"
-  status: locally_tested
+  status: deployed
   implementation: ["src/main/java/org/box1/asset/store/TelemetryStore.java", "src/main/resources/db/migration/V1__telemetry_schema.sql"]
   tests: ["src/test/java/org/box1/asset/it/TelemetryFlowTest.java#burstWithDuplicatesStoresEachReadingOnceAndPagesStably"]
   commands: ["./mvnw clean verify -Pcontainers"]
-  evidence: ["evidence/03-tests-local.txt", "evidence/04-scenarios-local.txt", "evidence/07-review-repairs-local.txt"]
-  deployment: {}
+  evidence: ["evidence/03-tests-local.txt", "evidence/04-scenarios-local.txt", "evidence/07-review-repairs-local.txt", "evidence/10-delivery.txt"]
+  deployment: {"image_digest": "sha256:6d8e8c172b2885f35a551eb34c53429e1ac85a1771263ba841795c683fbde944", "gitops_commit": "7a90162e4ed31aba2fa9e98e07bc765d321c30d9", "source": "1706dd0b0123cbddd510d1fb6bf9d44cc020fee5"}
   limitations: []
 
 - id: TEL-STORE-001
   description: "Recent readings are kept in owned persistence with bounded retention and a documented partition/cleanup strategy"
-  status: locally_tested
+  status: live_verified
   implementation: ["src/main/java/org/box1/asset/ops/RetentionJob.java", "src/main/resources/db/migration/V1__telemetry_schema.sql"]
   tests: ["src/test/java/org/box1/asset/it/RetentionTest.java"]
-  commands: ["./mvnw clean verify -Pcontainers"]
-  evidence: ["evidence/03-tests-local.txt", "evidence/07-review-repairs-local.txt"]
-  deployment: {}
-  limitations: ["Row-cap branch not exercised; age retention and audit guard are"]
+  commands: ["./mvnw clean verify -Pcontainers", "read-only live checks, evidence/10"]
+  evidence: ["evidence/03-tests-local.txt", "evidence/07-review-repairs-local.txt", "evidence/10-delivery.txt"]
+  deployment: {"image_digest": "sha256:6d8e8c172b2885f35a551eb34c53429e1ac85a1771263ba841795c683fbde944", "gitops_commit": "7a90162e4ed31aba2fa9e98e07bc765d321c30d9", "source": "1706dd0b0123cbddd510d1fb6bf9d44cc020fee5"}
+  limitations: ["Row-cap branch not exercised; age retention and audit guard are", "live: Flyway V1 applied on the cluster database (retention job not observed live)"]
 
 - id: TEL-READ-001
   description: "GET /api/v1/assets/{assetId}/readings supports time range and pagination with stable ordering (AC3)"
-  status: locally_tested
+  status: deployed
   implementation: ["src/main/java/org/box1/asset/api/ReadingsResource.java", "src/main/java/org/box1/asset/api/Cursors.java"]
   tests: ["src/test/java/org/box1/asset/it/TelemetryFlowTest.java#burstWithDuplicatesStoresEachReadingOnceAndPagesStably"]
   commands: ["./mvnw clean verify -Pcontainers"]
-  evidence: ["evidence/03-tests-local.txt", "evidence/07-review-repairs-local.txt"]
-  deployment: {}
+  evidence: ["evidence/03-tests-local.txt", "evidence/07-review-repairs-local.txt", "evidence/10-delivery.txt"]
+  deployment: {"image_digest": "sha256:6d8e8c172b2885f35a551eb34c53429e1ac85a1771263ba841795c683fbde944", "gitops_commit": "7a90162e4ed31aba2fa9e98e07bc765d321c30d9", "source": "1706dd0b0123cbddd510d1fb6bf9d44cc020fee5"}
   limitations: ["Reads need telemetry-reader, telemetry-writer or chaos-operator (SEC-2)"]
 
 - id: TEL-ALERT-001
   description: "GET /api/v1/alerts lists alerts"
-  status: locally_tested
+  status: deployed
   implementation: ["src/main/java/org/box1/asset/api/ReadingsResource.java"]
   tests: ["src/test/java/org/box1/asset/it/TelemetryFlowTest.java"]
   commands: ["./mvnw clean verify -Pcontainers"]
-  evidence: ["evidence/03-tests-local.txt", "evidence/07-review-repairs-local.txt"]
-  deployment: {}
+  evidence: ["evidence/03-tests-local.txt", "evidence/07-review-repairs-local.txt", "evidence/10-delivery.txt"]
+  deployment: {"image_digest": "sha256:6d8e8c172b2885f35a551eb34c53429e1ac85a1771263ba841795c683fbde944", "gitops_commit": "7a90162e4ed31aba2fa9e98e07bc765d321c30d9", "source": "1706dd0b0123cbddd510d1fb6bf9d44cc020fee5"}
   limitations: []
 
 - id: TEL-ALERT-002
   description: "Per-asset/site threshold policies with severity, deduplication and hysteresis; breach then recovery gives one active alert then one clear; repeats do not spam (AC2)"
-  status: ci_verified
+  status: deployed
   implementation: ["src/main/java/org/box1/asset/domain/ThresholdEngine.java", "src/main/java/org/box1/asset/consume/ReadingProjector.java"]
   tests: ["src/test/java/org/box1/asset/ThresholdEngineTest.java", "src/test/java/org/box1/asset/it/TelemetryFlowTest.java#flappingGivesOneAlertOneEventThenOneClearWithLinkedIds"]
   commands: ["./mvnw -B clean verify -DskipITs=false", "./mvnw clean verify -Pcontainers", "CI asset-service-validate-zr7tn at 11fa5a1"]
-  evidence: ["evidence/03-tests-local.txt", "evidence/04-scenarios-local.txt", "evidence/07-review-repairs-local.txt", "evidence/08-ci.txt"]
-  deployment: {}
+  evidence: ["evidence/03-tests-local.txt", "evidence/04-scenarios-local.txt", "evidence/07-review-repairs-local.txt", "evidence/08-ci.txt", "evidence/10-delivery.txt"]
+  deployment: {"image_digest": "sha256:6d8e8c172b2885f35a551eb34c53429e1ac85a1771263ba841795c683fbde944", "gitops_commit": "7a90162e4ed31aba2fa9e98e07bc765d321c30d9", "source": "1706dd0b0123cbddd510d1fb6bf9d44cc020fee5"}
   limitations: ["ci_verified covers only the container-free tests in CI; the rest of the proof is local"]
 
 - id: TEL-ALERT-003
   description: "equipment.threshold-exceeded.v1 is emitted when an alert becomes active"
-  status: locally_tested
+  status: deployed
   implementation: ["src/main/java/org/box1/asset/consume/ReadingProjector.java", "src/main/java/org/box1/asset/ops/OutboxRelay.java"]
   tests: ["src/test/java/org/box1/asset/it/TelemetryFlowTest.java#flappingGivesOneAlertOneEventThenOneClearWithLinkedIds"]
   commands: ["./mvnw clean verify -Pcontainers"]
-  evidence: ["evidence/03-tests-local.txt", "evidence/07-review-repairs-local.txt"]
-  deployment: {}
+  evidence: ["evidence/03-tests-local.txt", "evidence/07-review-repairs-local.txt", "evidence/10-delivery.txt"]
+  deployment: {"image_digest": "sha256:6d8e8c172b2885f35a551eb34c53429e1ac85a1771263ba841795c683fbde944", "gitops_commit": "7a90162e4ed31aba2fa9e98e07bc765d321c30d9", "source": "1706dd0b0123cbddd510d1fb6bf9d44cc020fee5"}
   limitations: []
 
 - id: TEL-BP-001
   description: "Bounded producer queue and retry; a broker outage gives bounded queuing and documented discard/retry, not silent loss (AC4)"
-  status: ci_verified
+  status: deployed
   implementation: ["src/main/java/org/box1/asset/ingest/ReadingPublisher.java"]
   tests: ["src/test/java/org/box1/asset/ReadingPublisherTest.java"]
   commands: ["./mvnw -B clean verify -DskipITs=false", "CI asset-service-validate-zr7tn at 11fa5a1"]
-  evidence: ["evidence/03-tests-local.txt", "evidence/04-scenarios-local.txt", "evidence/07-review-repairs-local.txt", "evidence/08-ci.txt"]
-  deployment: {}
+  evidence: ["evidence/03-tests-local.txt", "evidence/04-scenarios-local.txt", "evidence/07-review-repairs-local.txt", "evidence/08-ci.txt", "evidence/10-delivery.txt"]
+  deployment: {"image_digest": "sha256:6d8e8c172b2885f35a551eb34c53429e1ac85a1771263ba841795c683fbde944", "gitops_commit": "7a90162e4ed31aba2fa9e98e07bc765d321c30d9", "source": "1706dd0b0123cbddd510d1fb6bf9d44cc020fee5"}
   limitations: ["Catch-up memory not measured (OPS-11)", "ci_verified covers only the container-free tests in CI; the rest of the proof is local"]
 
 - id: TEL-DLQ-001
   description: "Invalid events go to a telemetry dead-letter path"
-  status: locally_tested
+  status: deployed
   implementation: ["src/main/java/org/box1/asset/consume/ReadingConsumer.java", "src/main/java/org/box1/asset/consume/EventParser.java", "src/main/java/org/box1/asset/consume/Failures.java"]
   tests: ["src/test/java/org/box1/asset/it/TelemetryFlowTest.java#poisonRecordsGoToTheDeadLetterTopicAndConsumptionContinues", "src/test/java/org/box1/asset/FailuresTest.java"]
   commands: ["./mvnw clean verify -Pcontainers"]
-  evidence: ["evidence/03-tests-local.txt", "evidence/07-review-repairs-local.txt"]
-  deployment: {}
+  evidence: ["evidence/03-tests-local.txt", "evidence/07-review-repairs-local.txt", "evidence/10-delivery.txt"]
+  deployment: {"image_digest": "sha256:6d8e8c172b2885f35a551eb34c53429e1ac85a1771263ba841795c683fbde944", "gitops_commit": "7a90162e4ed31aba2fa9e98e07bc765d321c30d9", "source": "1706dd0b0123cbddd510d1fb6bf9d44cc020fee5"}
   limitations: ["Needs topic box1.telemetry.dlq.v1 on the cluster (D-012)"]
 
 - id: TEL-OBS-001
   description: "Structured logs, traces and metrics for ingestion rate, drops, lag, alert counts and stale assets (OBS-04/05/06)"
-  status: locally_tested
+  status: deployed
   implementation: ["src/main/java/org/box1/asset/ops/OperationalGauges.java", "src/main/java/org/box1/asset/ops/Readouts.java"]
   tests: ["scripts/scenarios.py (outage, pause, rejections read /q/metrics and readouts)"]
   commands: ["python3 -I scenarios.py outage pause rejections"]
-  evidence: ["evidence/04-scenarios-local.txt", "evidence/07-review-repairs-local.txt"]
-  deployment: {}
+  evidence: ["evidence/04-scenarios-local.txt", "evidence/07-review-repairs-local.txt", "evidence/10-delivery.txt"]
+  deployment: {"image_digest": "sha256:6d8e8c172b2885f35a551eb34c53429e1ac85a1771263ba841795c683fbde944", "gitops_commit": "7a90162e4ed31aba2fa9e98e07bc765d321c30d9", "source": "1706dd0b0123cbddd510d1fb6bf9d44cc020fee5"}
   limitations: ["Trace export off until box1-docs#22; stale-asset gauge observed but not asserted"]
 
 - id: TEL-OBS-002
   description: "Source event IDs and trace IDs appear in telemetry and incident evidence (AC5)"
-  status: locally_tested
+  status: deployed
   implementation: ["src/main/java/org/box1/asset/consume/ReadingConsumer.java", "src/main/java/org/box1/asset/consume/ReadingProjector.java"]
   tests: ["src/test/java/org/box1/asset/it/TelemetryFlowTest.java#flappingGivesOneAlertOneEventThenOneClearWithLinkedIds"]
   commands: ["./mvnw clean verify -Pcontainers"]
-  evidence: ["evidence/03-tests-local.txt", "evidence/07-review-repairs-local.txt"]
-  deployment: {}
+  evidence: ["evidence/03-tests-local.txt", "evidence/07-review-repairs-local.txt", "evidence/10-delivery.txt"]
+  deployment: {"image_digest": "sha256:6d8e8c172b2885f35a551eb34c53429e1ac85a1771263ba841795c683fbde944", "gitops_commit": "7a90162e4ed31aba2fa9e98e07bc765d321c30d9", "source": "1706dd0b0123cbddd510d1fb6bf9d44cc020fee5"}
   limitations: []
 
 - id: TEL-SEC-001
   description: "No hard-coded operator credentials; ingestion is never reachable anonymously through the Route"
-  status: ci_verified
+  status: live_verified
   implementation: ["src/main/resources/application.properties"]
   tests: ["src/test/java/org/box1/asset/SecurityTest.java"]
-  commands: ["./mvnw -B clean verify -DskipITs=false", "CI asset-service-validate-zr7tn at 11fa5a1"]
-  evidence: ["evidence/03-tests-local.txt", "evidence/04-scenarios-local.txt", "evidence/07-review-repairs-local.txt", "evidence/08-ci.txt"]
-  deployment: {}
-  limitations: ["ci_verified covers only the container-free tests in CI; the rest of the proof is local"]
+  commands: ["./mvnw -B clean verify -DskipITs=false", "CI asset-service-validate-zr7tn at 11fa5a1", "read-only live checks, evidence/10"]
+  evidence: ["evidence/03-tests-local.txt", "evidence/04-scenarios-local.txt", "evidence/07-review-repairs-local.txt", "evidence/08-ci.txt", "evidence/10-delivery.txt"]
+  deployment: {"image_digest": "sha256:6d8e8c172b2885f35a551eb34c53429e1ac85a1771263ba841795c683fbde944", "gitops_commit": "7a90162e4ed31aba2fa9e98e07bc765d321c30d9", "source": "1706dd0b0123cbddd510d1fb6bf9d44cc020fee5"}
+  limitations: ["ci_verified covers only the container-free tests in CI; the rest of the proof is local", "live: anonymous POST /api/v1/telemetry/readings through the Route: 401"]
 
 - id: TEL-CON-001
   description: "Console is plain HTML/CSS/JS served by the same Quarkus pod, no build toolchain or CDN, calls only this service's control API"
-  status: locally_tested
+  status: deployed
   implementation: ["src/main/resources/META-INF/resources/console/"]
   tests: ["scripts/console-check.mjs"]
   commands: ["node console-check.mjs"]
-  evidence: ["evidence/05-browser-local.txt", "evidence/07-review-repairs-local.txt"]
-  deployment: {}
+  evidence: ["evidence/05-browser-local.txt", "evidence/07-review-repairs-local.txt", "evidence/10-delivery.txt"]
+  deployment: {"image_digest": "sha256:6d8e8c172b2885f35a551eb34c53429e1ac85a1771263ba841795c683fbde944", "gitops_commit": "7a90162e4ed31aba2fa9e98e07bc765d321c30d9", "source": "1706dd0b0123cbddd510d1fb6bf9d44cc020fee5"}
   limitations: []
 
 - id: TEL-CON-002
   description: "Console page and control API require Keycloak box1 login with the chaos-operator role, enforced by the backend; anonymous and role-less requests rejected (AC6)"
-  status: locally_tested
+  status: deployed
   implementation: ["src/main/resources/application.properties", "src/main/java/org/box1/asset/api/ControlResource.java"]
   tests: ["src/test/java/org/box1/asset/SecurityTest.java#consoleAndControlNeedABrowserLoginAndNeverAcceptAnonymousOrBearerAlone"]
   commands: ["./mvnw -B clean verify -DskipITs=false"]
-  evidence: ["evidence/03-tests-local.txt", "evidence/04-scenarios-local.txt", "evidence/07-review-repairs-local.txt"]
-  deployment: {}
-  limitations: ["Local Keycloak 26.4, not RH-SSO 7.6; live needs D-013", "Cluster login (https redirect, RH-SSO 7.6) not exercised"]
+  evidence: ["evidence/03-tests-local.txt", "evidence/04-scenarios-local.txt", "evidence/07-review-repairs-local.txt", "evidence/10-delivery.txt"]
+  deployment: {"image_digest": "sha256:6d8e8c172b2885f35a551eb34c53429e1ac85a1771263ba841795c683fbde944", "gitops_commit": "7a90162e4ed31aba2fa9e98e07bc765d321c30d9", "source": "1706dd0b0123cbddd510d1fb6bf9d44cc020fee5"}
+  limitations: ["Local Keycloak 26.4, not RH-SSO 7.6; live needs D-013", "Cluster login (https redirect, RH-SSO 7.6) not exercised", "live: anonymous 302/499 verified; operator login with the role not yet exercised on the cluster"]
 
 - id: TEL-LOAD-001
   description: "Load generator takes sites, assets, metrics, rate per asset and duration; uses the same validation and publication path as ingestion"
-  status: locally_tested
+  status: deployed
   implementation: ["src/main/java/org/box1/asset/control/RunManager.java", "src/main/java/org/box1/asset/control/RunScript.java"]
   tests: ["src/test/java/org/box1/asset/it/ControlTest.java"]
   commands: ["./mvnw clean verify -Pcontainers"]
-  evidence: ["evidence/03-tests-local.txt", "evidence/07-review-repairs-local.txt"]
-  deployment: {}
+  evidence: ["evidence/03-tests-local.txt", "evidence/07-review-repairs-local.txt", "evidence/10-delivery.txt"]
+  deployment: {"image_digest": "sha256:6d8e8c172b2885f35a551eb34c53429e1ac85a1771263ba841795c683fbde944", "gitops_commit": "7a90162e4ed31aba2fa9e98e07bc765d321c30d9", "source": "1706dd0b0123cbddd510d1fb6bf9d44cc020fee5"}
   limitations: []
 
 - id: TEL-LOAD-002
   description: "Seeded and deterministic: same seed gives the same reading sequence; page shows the seed and can replay it (AC7)"
-  status: ci_verified
+  status: deployed
   implementation: ["src/main/java/org/box1/asset/control/SeededRandom.java", "src/main/java/org/box1/asset/control/RunScript.java", "src/main/java/org/box1/asset/control/SequenceDigest.java"]
   tests: ["src/test/java/org/box1/asset/RunScriptTest.java", "src/test/java/org/box1/asset/it/ControlTest.java#sameSeedReplaysTheSameSequenceAndRunsEndWithoutABrowser"]
   commands: ["./mvnw -B clean verify -DskipITs=false", "./mvnw clean verify -Pcontainers", "CI asset-service-validate-zr7tn at 11fa5a1"]
-  evidence: ["evidence/03-tests-local.txt", "evidence/04-scenarios-local.txt", "evidence/07-review-repairs-local.txt", "evidence/08-ci.txt"]
-  deployment: {}
+  evidence: ["evidence/03-tests-local.txt", "evidence/04-scenarios-local.txt", "evidence/07-review-repairs-local.txt", "evidence/08-ci.txt", "evidence/10-delivery.txt"]
+  deployment: {"image_digest": "sha256:6d8e8c172b2885f35a551eb34c53429e1ac85a1771263ba841795c683fbde944", "gitops_commit": "7a90162e4ed31aba2fa9e98e07bc765d321c30d9", "source": "1706dd0b0123cbddd510d1fb6bf9d44cc020fee5"}
   limitations: ["ci_verified covers only the container-free tests in CI; the rest of the proof is local"]
 
 - id: TEL-CHAOS-001
   description: "Random chaos picks only telemetry-scoped catalog entries at seeded random intervals (AC8)"
-  status: ci_verified
+  status: deployed
   implementation: ["src/main/java/org/box1/asset/control/ChaosEntry.java", "src/main/java/org/box1/asset/control/RunScript.java"]
   tests: ["src/test/java/org/box1/asset/RunScriptTest.java#chaosUsesOnlyTheCatalogWithinItsBounds", "src/test/java/org/box1/asset/it/ControlTest.java#chaosRunsInjectOnlyCatalogEntriesAndStopAllResumesTheProducer"]
   commands: ["./mvnw -B clean verify -DskipITs=false", "./mvnw clean verify -Pcontainers", "CI asset-service-validate-zr7tn at 11fa5a1"]
-  evidence: ["evidence/03-tests-local.txt", "evidence/04-scenarios-local.txt", "evidence/07-review-repairs-local.txt", "evidence/08-ci.txt"]
-  deployment: {}
+  evidence: ["evidence/03-tests-local.txt", "evidence/04-scenarios-local.txt", "evidence/07-review-repairs-local.txt", "evidence/08-ci.txt", "evidence/10-delivery.txt"]
+  deployment: {"image_digest": "sha256:6d8e8c172b2885f35a551eb34c53429e1ac85a1771263ba841795c683fbde944", "gitops_commit": "7a90162e4ed31aba2fa9e98e07bc765d321c30d9", "source": "1706dd0b0123cbddd510d1fb6bf9d44cc020fee5"}
   limitations: ["ci_verified covers only the container-free tests in CI; the rest of the proof is local"]
 
 - id: TEL-CHAOS-002
   description: "Runs are armed and confirmed; max rate, max duration, TTL auto-stop and concurrent-run cap enforced server-side, including against requests that bypass the page (AC8)"
-  status: locally_tested
+  status: deployed
   implementation: ["src/main/java/org/box1/asset/control/RunManager.java", "src/main/java/org/box1/asset/control/RunTransitions.java", "src/main/java/org/box1/asset/api/ConsoleHeaderFilter.java"]
   tests: ["src/test/java/org/box1/asset/it/ControlTest.java#capsHoldAgainstRequestsThatBypassThePage", "src/test/java/org/box1/asset/it/ControlTest.java#armThenConfirmWithTokenAndTypedNamespaceThenConcurrencyCapThenStopAll", "scripts/scenarios.py burst (actual rate incl. bursts)"]
   commands: ["./mvnw clean verify -Pcontainers"]
-  evidence: ["evidence/03-tests-local.txt", "evidence/04-scenarios-local.txt", "evidence/07-review-repairs-local.txt"]
-  deployment: {}
+  evidence: ["evidence/03-tests-local.txt", "evidence/04-scenarios-local.txt", "evidence/07-review-repairs-local.txt", "evidence/10-delivery.txt"]
+  deployment: {"image_digest": "sha256:6d8e8c172b2885f35a551eb34c53429e1ac85a1771263ba841795c683fbde944", "gitops_commit": "7a90162e4ed31aba2fa9e98e07bc765d321c30d9", "source": "1706dd0b0123cbddd510d1fb6bf9d44cc020fee5"}
   limitations: []
 
 - id: TEL-CHAOS-003
   description: "One control stops every run (stop-all), including mid-run (AC8)"
-  status: locally_tested
+  status: deployed
   implementation: ["src/main/java/org/box1/asset/control/RunManager.java"]
   tests: ["src/test/java/org/box1/asset/it/ControlTest.java#armThenConfirmWithTokenAndTypedNamespaceThenConcurrencyCapThenStopAll"]
   commands: ["./mvnw clean verify -Pcontainers"]
-  evidence: ["evidence/03-tests-local.txt", "evidence/04-scenarios-local.txt", "evidence/07-review-repairs-local.txt"]
-  deployment: {}
+  evidence: ["evidence/03-tests-local.txt", "evidence/04-scenarios-local.txt", "evidence/07-review-repairs-local.txt", "evidence/10-delivery.txt"]
+  deployment: {"image_digest": "sha256:6d8e8c172b2885f35a551eb34c53429e1ac85a1771263ba841795c683fbde944", "gitops_commit": "7a90162e4ed31aba2fa9e98e07bc765d321c30d9", "source": "1706dd0b0123cbddd510d1fb6bf9d44cc020fee5"}
   limitations: []
 
 - id: TEL-CHAOS-004
   description: "Each run has an audit record: actor from the token, seed, catalog entries chosen, start, stop and reset (AC8)"
-  status: locally_tested
+  status: deployed
   implementation: ["src/main/java/org/box1/asset/control/RunStore.java", "src/main/resources/db/migration/V1__telemetry_schema.sql"]
   tests: ["src/test/java/org/box1/asset/it/ControlTest.java"]
   commands: ["./mvnw clean verify -Pcontainers"]
-  evidence: ["evidence/03-tests-local.txt", "evidence/07-review-repairs-local.txt"]
-  deployment: {}
+  evidence: ["evidence/03-tests-local.txt", "evidence/07-review-repairs-local.txt", "evidence/10-delivery.txt"]
+  deployment: {"image_digest": "sha256:6d8e8c172b2885f35a551eb34c53429e1ac85a1771263ba841795c683fbde944", "gitops_commit": "7a90162e4ed31aba2fa9e98e07bc765d321c30d9", "source": "1706dd0b0123cbddd510d1fb6bf9d44cc020fee5"}
   limitations: []
 
 - id: TEL-CHAOS-005
   description: "A pod restart never resumes a run silently"
-  status: locally_tested
+  status: deployed
   implementation: ["src/main/java/org/box1/asset/control/RunTransitions.java#reap"]
   tests: ["src/test/java/org/box1/asset/it/ControlTest.java#reaperAbortsRunsWhoseOwnerStoppedAndExpiresRunsPastTtl", "scripts/scenarios.py dboutage (fail-safe without the database)"]
   commands: ["./mvnw clean verify -Pcontainers"]
-  evidence: ["evidence/03-tests-local.txt", "evidence/04-scenarios-local.txt", "evidence/07-review-repairs-local.txt"]
-  deployment: {}
+  evidence: ["evidence/03-tests-local.txt", "evidence/04-scenarios-local.txt", "evidence/07-review-repairs-local.txt", "evidence/10-delivery.txt"]
+  deployment: {"image_digest": "sha256:6d8e8c172b2885f35a551eb34c53429e1ac85a1771263ba841795c683fbde944", "gitops_commit": "7a90162e4ed31aba2fa9e98e07bc765d321c30d9", "source": "1706dd0b0123cbddd510d1fb6bf9d44cc020fee5"}
   limitations: []
 
 - id: TEL-CHAOS-006
   description: "The page reports state honestly and shows unknown when the backend cannot confirm it"
-  status: locally_tested
+  status: deployed
   implementation: ["src/main/resources/META-INF/resources/console/console.js"]
   tests: ["scripts/console-check.mjs (state calls aborted)"]
   commands: ["node console-check.mjs"]
-  evidence: ["evidence/05-browser-local.txt", "evidence/screenshots/06-unknown-state.png", "evidence/07-review-repairs-local.txt"]
-  deployment: {}
+  evidence: ["evidence/05-browser-local.txt", "evidence/screenshots/06-unknown-state.png", "evidence/07-review-repairs-local.txt", "evidence/10-delivery.txt"]
+  deployment: {"image_digest": "sha256:6d8e8c172b2885f35a551eb34c53429e1ac85a1771263ba841795c683fbde944", "gitops_commit": "7a90162e4ed31aba2fa9e98e07bc765d321c30d9", "source": "1706dd0b0123cbddd510d1fb6bf9d44cc020fee5"}
   limitations: []
 
 - id: TEL-CHAOS-007
   description: "TTL expiry stops a run with the browser closed"
-  status: locally_tested
+  status: deployed
   implementation: ["src/main/java/org/box1/asset/control/RunManager.java", "src/main/java/org/box1/asset/control/RunTransitions.java#reap"]
   tests: ["src/test/java/org/box1/asset/it/ControlTest.java#sameSeedReplaysTheSameSequenceAndRunsEndWithoutABrowser", "src/test/java/org/box1/asset/it/ControlTest.java#reaperAbortsRunsWhoseOwnerStoppedAndExpiresRunsPastTtl"]
   commands: ["./mvnw clean verify -Pcontainers"]
-  evidence: ["evidence/03-tests-local.txt", "evidence/04-scenarios-local.txt", "evidence/07-review-repairs-local.txt"]
-  deployment: {}
+  evidence: ["evidence/03-tests-local.txt", "evidence/04-scenarios-local.txt", "evidence/07-review-repairs-local.txt", "evidence/10-delivery.txt"]
+  deployment: {"image_digest": "sha256:6d8e8c172b2885f35a551eb34c53429e1ac85a1771263ba841795c683fbde944", "gitops_commit": "7a90162e4ed31aba2fa9e98e07bc765d321c30d9", "source": "1706dd0b0123cbddd510d1fb6bf9d44cc020fee5"}
   limitations: []
 
 - id: TEL-GATE-001
   description: "Chaos is off unless a configuration flag enables it and the namespace is on an allowlist named by the user (AC9)"
-  status: ci_verified
+  status: live_verified
   implementation: ["src/main/java/org/box1/asset/control/ChaosGate.java"]
   tests: ["src/test/java/org/box1/asset/ChaosGateTest.java", "src/test/java/org/box1/asset/it/GateNotAllowlistedTest.java", "src/test/java/org/box1/asset/it/GateDisabledTest.java"]
-  commands: ["./mvnw -B clean verify -DskipITs=false", "./mvnw clean verify -Pcontainers", "CI asset-service-validate-zr7tn at 11fa5a1"]
-  evidence: ["evidence/03-tests-local.txt", "evidence/04-scenarios-local.txt", "evidence/07-review-repairs-local.txt", "evidence/08-ci.txt"]
-  deployment: {}
-  limitations: ["The namespace to allowlist is open (D-015)", "ci_verified covers only the container-free tests in CI; the rest of the proof is local"]
+  commands: ["./mvnw -B clean verify -DskipITs=false", "./mvnw clean verify -Pcontainers", "CI asset-service-validate-zr7tn at 11fa5a1", "read-only live checks, evidence/10"]
+  evidence: ["evidence/03-tests-local.txt", "evidence/04-scenarios-local.txt", "evidence/07-review-repairs-local.txt", "evidence/08-ci.txt", "evidence/10-delivery.txt"]
+  deployment: {"image_digest": "sha256:6d8e8c172b2885f35a551eb34c53429e1ac85a1771263ba841795c683fbde944", "gitops_commit": "7a90162e4ed31aba2fa9e98e07bc765d321c30d9", "source": "1706dd0b0123cbddd510d1fb6bf9d44cc020fee5"}
+  limitations: ["The namespace to allowlist is open (D-015)", "ci_verified covers only the container-free tests in CI; the rest of the proof is local", "live: live pod reports chaos gate CHAOS_DISABLED with the flag off (negative case only)"]
 
 - id: TEL-UX-001
   description: "Console follows the box1 design ethos and brand-kit cube 1 mark; keyboard operable; reduced motion; passes automated accessibility checks (AC10)"
-  status: locally_tested
+  status: deployed
   implementation: ["src/main/resources/META-INF/resources/console/"]
   tests: ["scripts/console-check.mjs"]
   commands: ["node console-check.mjs"]
-  evidence: ["evidence/05-browser-local.txt", "evidence/screenshots/", "evidence/07-review-repairs-local.txt"]
-  deployment: {}
+  evidence: ["evidence/05-browser-local.txt", "evidence/screenshots/", "evidence/07-review-repairs-local.txt", "evidence/10-delivery.txt"]
+  deployment: {"image_digest": "sha256:6d8e8c172b2885f35a551eb34c53429e1ac85a1771263ba841795c683fbde944", "gitops_commit": "7a90162e4ed31aba2fa9e98e07bc765d321c30d9", "source": "1706dd0b0123cbddd510d1fb6bf9d44cc020fee5"}
   limitations: ["Brand mark open (D-016): text wordmark only"]
 
 - id: TEL-UX-002
   description: "Live readouts of rate, alerts and producer lag come from the service's own metrics"
-  status: locally_tested
+  status: deployed
   implementation: ["src/main/java/org/box1/asset/ops/Readouts.java"]
   tests: ["scripts/console-check.mjs", "scripts/scenarios.py"]
   commands: ["node console-check.mjs"]
-  evidence: ["evidence/05-browser-local.txt", "evidence/screenshots/03-running-chaos.png", "evidence/07-review-repairs-local.txt"]
-  deployment: {}
+  evidence: ["evidence/05-browser-local.txt", "evidence/screenshots/03-running-chaos.png", "evidence/07-review-repairs-local.txt", "evidence/10-delivery.txt"]
+  deployment: {"image_digest": "sha256:6d8e8c172b2885f35a551eb34c53429e1ac85a1771263ba841795c683fbde944", "gitops_commit": "7a90162e4ed31aba2fa9e98e07bc765d321c30d9", "source": "1706dd0b0123cbddd510d1fb6bf9d44cc020fee5"}
   limitations: []
 
 - id: TEL-SMOKE-001
   description: "Golden Path smoke endpoints keep working so release smoke passes"
-  status: ci_verified
+  status: live_verified
   implementation: ["src/main/java/org/box1/asset/../GreetingResource.java"]
   tests: ["src/test/java/org/box1/asset/SecurityTest.java#goldenPathSmokePathsStayPublic"]
-  commands: ["./mvnw -B clean verify -DskipITs=false", "CI asset-service-validate-zr7tn at 11fa5a1"]
-  evidence: ["evidence/03-tests-local.txt", "evidence/07-review-repairs-local.txt", "evidence/08-ci.txt"]
-  deployment: {}
-  limitations: ["ci_verified covers only the container-free tests in CI; the rest of the proof is local"]
+  commands: ["./mvnw -B clean verify -DskipITs=false", "CI asset-service-validate-zr7tn at 11fa5a1", "read-only live checks, evidence/10"]
+  evidence: ["evidence/03-tests-local.txt", "evidence/07-review-repairs-local.txt", "evidence/08-ci.txt", "evidence/10-delivery.txt"]
+  deployment: {"image_digest": "sha256:6d8e8c172b2885f35a551eb34c53429e1ac85a1771263ba841795c683fbde944", "gitops_commit": "7a90162e4ed31aba2fa9e98e07bc765d321c30d9", "source": "1706dd0b0123cbddd510d1fb6bf9d44cc020fee5"}
+  limitations: ["ci_verified covers only the container-free tests in CI; the rest of the proof is local", "live: release smoke passed against the Route"]
 
 - id: TEL-CONTRACT-001
   description: "equipment.threshold-exceeded.v1 schema reviewed in box1-ops-contracts; service validates against shared contracts without a local copy"
-  status: ci_verified
+  status: deployed
   implementation: ["box1-ops-contracts: events/v1/equipment.threshold-exceeded.schema.json, openapi/asset-service.yaml"]
   tests: ["src/test/java/org/box1/asset/ContractTest.java", "src/test/java/org/box1/asset/OpenApiContractTest.java", "box1-ops-contracts npm test / npm run validate"]
   commands: ["./mvnw -B clean verify -DskipITs=false", "npm test && npm run validate", "CI asset-service-validate-zr7tn at 11fa5a1"]
-  evidence: ["evidence/03-tests-local.txt", "evidence/07-review-repairs-local.txt", "evidence/08-ci.txt"]
-  deployment: {}
+  evidence: ["evidence/03-tests-local.txt", "evidence/07-review-repairs-local.txt", "evidence/08-ci.txt", "evidence/10-delivery.txt"]
+  deployment: {"image_digest": "sha256:6d8e8c172b2885f35a551eb34c53429e1ac85a1771263ba841795c683fbde944", "gitops_commit": "7a90162e4ed31aba2fa9e98e07bc765d321c30d9", "source": "1706dd0b0123cbddd510d1fb6bf9d44cc020fee5"}
   limitations: ["Contracts PR not merged; pinned to branch commit", "ci_verified covers only the container-free tests in CI; the rest of the proof is local"]
 
 - id: TEL-DOC-001
   description: "OpenAPI, event fixtures, migrations, config docs, architecture and runbook"
-  status: implemented
+  status: deployed
   implementation: ["README.md", "docs/architecture.md", "docs/runbook.md"]
   tests: []
   commands: []
-  evidence: []
-  deployment: {}
+  evidence: ["evidence/10-delivery.txt"]
+  deployment: {"image_digest": "sha256:6d8e8c172b2885f35a551eb34c53429e1ac85a1771263ba841795c683fbde944", "gitops_commit": "7a90162e4ed31aba2fa9e98e07bc765d321c30d9", "source": "1706dd0b0123cbddd510d1fb6bf9d44cc020fee5"}
   limitations: []
 
 - id: TEL-DEL-001
   description: "Release gates pass; immutable digest promoted through GitOps for this service only; Argo reports it"
-  status: proposed
+  status: live_verified
   implementation: []
   tests: []
-  commands: []
-  evidence: []
-  deployment: {}
-  limitations: ["Needs merges and approvals"]
+  commands: ["read-only live checks, evidence/10"]
+  evidence: ["evidence/10-delivery.txt"]
+  deployment: {"image_digest": "sha256:6d8e8c172b2885f35a551eb34c53429e1ac85a1771263ba841795c683fbde944", "gitops_commit": "7a90162e4ed31aba2fa9e98e07bc765d321c30d9", "source": "1706dd0b0123cbddd510d1fb6bf9d44cc020fee5"}
+  limitations: ["Needs merges and approvals", "live: gate pass, promotion #72, Argo Synced/Healthy at 7a90162e, pod imageID = release digest"]
 
 - id: TEL-LIVE-001
   description: "One seeded load run and one random chaos run on the cluster with audit, alert and clear evidence, after approval"
@@ -319,4 +319,4 @@
   commands: []
   evidence: []
   deployment: {}
-  limitations: ["Needs D-012 to D-015 and approval"]
+  limitations: ["Seeded load run: user will drive the console", "Random chaos run on the cluster: blocked by D-015 (deferred by the user)"]

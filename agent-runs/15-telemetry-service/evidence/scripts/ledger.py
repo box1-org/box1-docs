@@ -89,6 +89,29 @@ for _rid in ['TEL-INGEST-001', 'TEL-INGEST-002', 'TEL-ALERT-002', 'TEL-BP-001', 
     L[_rid]['commands'] = list(dict.fromkeys(L[_rid]['commands'] + ['CI asset-service-validate-zr7tn at 11fa5a1']))
     L[_rid]['limitations'].append(CI_NOTE)
 
+EV10 = 'evidence/10-delivery.txt'
+DEPLOY = {'image_digest': 'sha256:6d8e8c172b2885f35a551eb34c53429e1ac85a1771263ba841795c683fbde944',
+          'gitops_commit': '7a90162e4ed31aba2fa9e98e07bc765d321c30d9', 'source': '1706dd0b0123cbddd510d1fb6bf9d44cc020fee5'}
+for _rid, _e in L.items():
+    if _rid in ('TEL-LIVE-001',):
+        continue
+    if _e['status'] in ('locally_tested', 'ci_verified', 'implemented', 'proposed'):
+        _e['status'] = 'deployed'
+    _e['deployment'] = DEPLOY
+    _e['evidence'].append(EV10)
+for _rid, _why in {
+        'TEL-SEC-001': 'anonymous POST /api/v1/telemetry/readings through the Route: 401',
+        'TEL-SMOKE-001': 'release smoke passed against the Route',
+        'TEL-DEL-001': 'gate pass, promotion #72, Argo Synced/Healthy at 7a90162e, pod imageID = release digest',
+        'TEL-GATE-001': 'live pod reports chaos gate CHAOS_DISABLED with the flag off (negative case only)',
+        'TEL-STORE-001': 'Flyway V1 applied on the cluster database (retention job not observed live)'}.items():
+    L[_rid]['status'] = 'live_verified'
+    L[_rid]['commands'].append('read-only live checks, evidence/10')
+    L[_rid]['limitations'].append('live: ' + _why)
+L['TEL-CON-002']['limitations'].append('live: anonymous 302/499 verified; operator login with the role not yet exercised on the cluster')
+L['TEL-LIVE-001']['status'] = 'proposed'
+L['TEL-LIVE-001']['limitations'] = ['Seeded load run: user will drive the console', 'Random chaos run on the cluster: blocked by D-015 (deferred by the user)']
+
 if __name__ == '__main__':
     updates = json.loads(sys.argv[1]) if len(sys.argv) > 1 else {}
     for rid, change in updates.items():

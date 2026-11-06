@@ -1,29 +1,28 @@
 # Checkpoint: box1-docs#15, frontier
 
-**Current phase:** 6 entry. **STOPPED** for approvals and decisions (pilot-log stop 1). Phases 0 to 5 complete.
-**Updated:** 2026-11-05 ~20:05 EST.
+**Current phase:** 7. Delivered and verified live; waiting for the user-driven console load run (pilot-log stop 2).
+**Updated:** 2026-11-05 ~21:00 EST.
 
-## Branches, commits and PRs (none merged)
-| Repo | Branch | Commit | PR | What merging deploys |
-|---|---|---|---|---|
-| box1-gitops | telemetry-dlq-topic | 8bca2c0 | #62 | nothing until a selective `box1-kafka` sync (separate approval) |
-| box1-gitops | asset-service-keycloak-client | b313754 | #63 | Keycloak client `asset-service` + 3 client roles in live realm `box1` (automated sync) |
-| box1-workloads-dev | asset-service-runtime-config | bb0bcae | #64 | PostgreSQL + PVC + NetworkPolicy, Deployment env; needs the Secret first |
-| box1-ops-contracts | asset-service-v1 | 2fe191d | #7 | nothing; service pins 2fe191d (repin if the merge rewrites it) |
-| asset-service | telemetry-service | 490a7e2 | #1 | release: build, gate, promote, smoke into asset-service-dev |
+## Delivered
+| Item | Result |
+|---|---|
+| box1-gitops#62 | merged 169dda0c; KafkaTopic box1.telemetry.dlq.v1 synced (only it, prune off), Ready |
+| box1-gitops#63 | merged 39e2e8fe; KeycloakClient asset-service live (https callback accepted, http refused) |
+| box1-workloads-dev#64 | merged 5ec7bf5d; PostgreSQL + PVC Bound; app env rolled |
+| box1-ops-contracts#7 | merged d57a4efb (main merged into the branch first; pin 2fe191d on main) |
+| asset-service#1 | merged 1706dd0b; release asset-service-release-rmcdq Succeeded: gate policy pass, promotion #72 (7a90162e), smoke pass |
+| Running | digest sha256:6d8e8c172b2885f35a551eb34c53429e1ac85a1771263ba841795c683fbde944, Argo Synced/Healthy at 7a90162e |
 
-## Evidence
-- Local: `evidence/03` (tests), `04` (scenarios), `05` (browser), `06` (gate dependencies), `07` (review repairs). Screenshots in `evidence/screenshots/`.
-- Suites: `./mvnw clean verify -Pcontainers` 62/62 at 742f9d7; CI-equivalent `-B clean verify -DskipITs=false` 45+5 at 11fa5a1.
-- CI asset-service-validate-zr7tn at 11fa5a1: Succeeded (45 + 5 tests). Ledger: 10 ci_verified, 19 locally_tested, 1 implemented, 2 proposed.
+Evidence: `evidence/10-delivery.txt`. Ledger: 26 deployed, 5 live_verified, 1 proposed (TEL-LIVE-001).
 
-## Open decisions (all reported together)
-- D-012 approve merge of box1-gitops#62, then the selective sync of KafkaTopic `box1.telemetry.dlq.v1`.
-- D-013 approve merge of box1-gitops#63; assign `chaos-operator` to the console user; decide who drives the live runs.
-- D-014 choose the database credential option (recommended: out-of-band Secret; runbook command), and create it if agreed.
-- D-015 deferred by the user ("another day"): chaos stays off; the cluster chaos run in Phase 7 is blocked by it.
-- D-016 supply the brand-kit cube mark, or approve an interim option.
-- Then approve, one at a time: workloads#64, contracts#7, asset-service#1; any Argo sync; Phase 7 live load run and chaos run.
+## Open
+- User: assign client role `chaos-operator` (client asset-service) to their account, sign in at https://asset-service-dev.apps.ocp.box1.org/console/, run one seeded load run. Then the agent records audit and readings evidence read-only.
+- D-015 deferred: chaos stays off; the live chaos run (with alert and clear evidence) is blocked until a namespace is named.
+- Release review pass: running/recorded in review-findings/release.md.
+- Follow-ups: OpenTelemetry VertxTracer warning noise per request; machine client for telemetry-writer (ARCH-10); Secret-backed session key (SEC-5); catch-up memory measurement (OPS-11).
+
+## Rollback
+Revert box1-workloads-dev 7a90162e (promotion #72) to restore the scaffold digest sha256:0dc4185e…; tables, PVC, topic and client stay. Not exercised.
 
 ## Exact next action
-On approval of D-012, merge box1-gitops#62 and (on its own approval) sync only KafkaTopic box1.telemetry.dlq.v1 with prune off; confirm Ready. Then proceed down the table in order, checking the runbook preflight before asset-service#1.
+After the user's console run: read `oc -n asset-service-dev logs deploy/asset-service` (read-only; run start, completion and alert lines), take the run ID, seed and sequence digest from the user's Recent runs view, and check the readings through the Route only if the user provides a bearer session. Record evidence for TEL-LIVE-001 (load part) and update the ledger. Do not run load on the cluster without a separate approval.

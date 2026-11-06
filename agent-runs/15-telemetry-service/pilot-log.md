@@ -6,6 +6,7 @@ No comparison with `qwen-64k`, because no baseline exists.
 
 | # | Time (America/New_York) | Phase | Stop condition | Reason |
 |---|---|---|---|---|
+| 2 | 2026-11-05 ~21:00 EST | 7 | Requirement cannot be proven without the user; decision deferred | Delivered and verified live. The live load run needs a person logged in with the role (no credential was issued to the run). The live chaos run is blocked: the user deferred naming the namespace (D-015). |
 | 1 | 2026-11-05 ~20:05 EST | 6 entry | Next action needs approval; user decisions required | Phases 0 to 5 are complete locally. Every remaining step is a merge, a sync, a credential, a namespace name or a brand asset: D-012 to D-016. |
 
 Phase 0 found four items that need the user (D-013 to D-016) plus approval-gated work (D-012). Per the run request, a stop blocks only dependent work, so these are being collected for one report while independent work continues. None blocks design, contracts, local implementation or verification.
@@ -54,6 +55,8 @@ Test harness and test defects: wrong expected codes for a form post (415 is a re
 
 ## Places I was unsure of my authority
 
+6. **"Do the needful."** I read it as approval for the sequence I had just listed: four merges, the one selective sync, and the release that merging the service starts. I did not read it as approval to run load on the cluster or to sign in as the user; the user said they would drive the console. The contracts PR needed a merge of `main` into its branch to resolve additive conflicts with two other runs' merged changes. I treated that as part of "merge contracts" and kept both sides.
+
 5. **"Do all that, update the logo, then I'll let you merge."** I read "all that" as the four items in that message: the logo, explaining the runbook, deferring chaos, and console instructions. I did not read it as approval to create the database Secret, which is a new credential. It also does not approve any merge yet; the merge permission is stated as coming after.
 
 2. **The asset-service PR's description** names a merge order across four repositories. I wrote it as a recommendation, because merges are the user's.
@@ -77,6 +80,7 @@ Test harness and test defects: wrong expected codes for a form post (415 is a re
 | Don't publish live weaknesses (order) | Discovery findings reported to the user directly; pointers only | Applied |
 | Check that a release-gate dependency actually works (order) | The pipeline's own recent runs: TPA upload and RHACS scan completed within the hour (`evidence/06`) | **Applied** without probing with credentials; this image's own policy result is unknown until release |
 | Laptop sleep | `caffeinate -ims` on every long run; clocks checked before each | No sleep observed; clocks agreed at every check, apart from one reading inflated by a slow `podman machine ssh` |
+| Release-gate CVEs and promote failures (order, inventory) | Guava override, `gate`, Deployment `env` entries | **Prevented.** The first release passed every task (gate policy pass, promote, smoke) with no retry |
 | Run what CI runs (inventory, implicitly) | Not applied: I ran `verify` without `-DskipITs=false` | **Repeated.** CI failed three times before I read its command |
 | Reviewers find defects tests miss (order, inventory) | Five passes after Phase 4 | **Confirmed again.** 57 findings; 2 that would have broken the cluster (SEC-1 login, OPS-1 replay) and several medium correctness issues |
 | Clock domains (order) | Run timing, heartbeats, reaper and outbox use the database clock | No clock-domain defect found so far |
@@ -96,7 +100,11 @@ Test harness and test defects: wrong expected codes for a form post (415 is a re
 - Five reviewer subagents read the diffs and local clones. One disassembled SmallRye jars from `~/.m2` into its own scratch space.
 - Local tooling in the session scratch directory: Playwright 1.65 with its Firefox build, axe-core 4.14. No Chrome was used.
 - Local app processes on port 18080, all started and stopped by this run. One was killed after it hung (see the evidence/07 incident).
-- The cluster was read only: get, describe, logs and pipeline status. No `oc` mutation, no Argo action, no Keycloak or Kafka change.
+- The cluster was read only until the user's approval (~20:50 EST). With approval: merged box1-gitops#62 (169dda0c) and #63 (39e2e8fe), box1-workloads-dev#64 (5ec7bf5d), box1-ops-contracts#7 (d57a4efb, after merging main into the branch), asset-service#1 (1706dd0b).
+  - Set Argo refresh annotations on `box1-kafka`, `keycloak`, `asset-service` and `box1-workloads-dev`. Synced only KafkaTopic `box1.telemetry.dlq.v1` in `box1-kafka`, prune off.
+  - The release built and pushed an image, uploaded one SBOM to RHTPA, scanned in RHACS, opened and auto-merged box1-workloads-dev#72, and smoke-tested the Route.
+  - On the cluster this created: topic `box1.telemetry.dlq.v1`, KeycloakClient `asset-service`, a PostgreSQL Deployment with a 5Gi PVC, schema V1, and consumer group `asset-service`.
+  - The Secret `asset-service-postgres` was created by the user.
 
 - `git fetch` in the user's `box1-docs` clone (no prune; checkout, branch and untracked file unchanged). The discovery subagent ran `git fetch` in the `box1-gitops`, `box1-ops-contracts`, `box1-workloads-dev`, `box1-templates`, `quarkus-reference` and `inventory-service` clones.
 - New worktree `run15-docs` (branch `agent-run/15-telemetry-service`). New clone `run15-asset-service`. Discovery subagents cloned asset-service and extracted white-paper images into the session scratch directory.
