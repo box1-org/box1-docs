@@ -48,7 +48,8 @@
   limitations: [Pod-level restart on the cluster not exercised]
 - id: AC-5
   description: Fixtures seed idempotently through service APIs; seeding twice gives the same state; nothing outside the fixture set is changed or deleted
-  status: locally_tested
+  status: deployed
+  live_evidence: ["evidence/11: first cluster seed created=26 through inventory's API; a second seed (idempotence) not yet run live"]
   implementation: [src/main/java/org/box1/scenario/fixtures/, inventory-service#3]
   tests: [ScenarioRunsTest.seedingTwiceGivesTheSameStateAndTouchesOnlyFixtures, inventory ReservationScenariosTest.sitesAndStockRecordsAreCreatedOnceAndNeverChanged]
   commands: ["evidence/scripts/e2e.py seed collateral"]
@@ -56,7 +57,8 @@
   limitations: [Cluster seeding needs inventory-service#3 merged, the Keycloak clients, and approval]
 - id: AC-6
   description: '"The Trouble with Tribbles" ends with exactly one reservation for the last tribble and one rejected order'
-  status: locally_tested
+  status: live_verified
+  live_evidence: ["evidence/11-live-seed-and-tribbles.md: run scn_2bbc06797d066122ba9e VERIFIED on the cluster, one reservation and one INSUFFICIENT_STOCK rejection, reset restored 0->1"]
   tests: [ScenarioRunsTest.theTroubleWithTribblesHasExactlyOneWinnerAndCanBeRepeated]
   commands: ["evidence/scripts/e2e.py tribbles"]
   evidence: [evidence/04-local-e2e.txt, evidence/07-local-e2e-after-review.txt]
@@ -141,7 +143,8 @@
   evidence: [evidence/04-local-e2e.txt, evidence/07-local-e2e-after-review.txt]
 - id: VS-TRIBBLE
   description: Tribble contention with two simultaneous orders
-  status: locally_tested
+  status: live_verified
+  live_evidence: ["evidence/11-live-seed-and-tribbles.md"]
   evidence: [evidence/04-local-e2e.txt, evidence/07-local-e2e-after-review.txt]
 - id: VS-GUIDED-TIMEOUT
   description: A guided step not performed
@@ -174,7 +177,8 @@
   status: proposed
 - id: LIVE-TRIBBLES
   description: '"The Trouble with Tribbles" on the cluster with audit and end-state evidence, after approval'
-  status: proposed
+  status: live_verified
+  live_evidence: ["evidence/11-live-seed-and-tribbles.md (run by the user from the console)"]
 - id: LIVE-GUIDED-ERP
   description: One guided ERP scenario on the cluster with audit and end-state evidence, after approval
   status: proposed
