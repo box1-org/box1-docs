@@ -28,21 +28,25 @@ Updated 2026-11-06T15:53:13-05:00. Phase 7 is partial. **The first acceptance cr
 6. Done for order-service only: box1-workloads-dev#119 merged as `b8513c1`, per the user's "just the order-service for now".
 7. Pending: box1-gitops#83 (tidy-up; syncing it restarts the collector).
 
-## Exact next action (updated 2026-11-06T16:38:41-05:00)
-**All seven services export traces.** Every Argo app is Synced/Healthy, with no orphaned ConfigMaps.
+## Exact next action (updated 2026-11-06T16:53:49-05:00)
+**Console Traces view (decision 007):** box1-gitops#87 is open. It has passed review and the dry run (`observability-console-traces`).
 
-**Housekeeping (needs the user's go-ahead):**
-- Close the stale asset promotion #126.
-- Two stranded Pending validate runs in `box1-ci`: `brw2n` and `5tkqk`.
-- box1-gitops#83 is merged but `observability-tracing` is not synced; syncing restarts the collector.
+After the user approves, in this order:
+1. Merge #87.
+2. Sync `observability-operators`. Approve the COO InstallPlan after checking the CSV (v1.5.3 or v1.5.5).
+3. Review the Argo diff for `observability-tracing` (includes the `edge` → `reencrypt` drift), then sync.
+4. Verify:
+   - the `tempo-box1-gateway` endpoints;
+   - the collector's `otelcol_exporter_sent_spans` rising and `send_failed` absent;
+   - a new order trace readable through the gateway.
+5. Sync `observability-console`.
+6. Verify Observe → Traces lists `box1-observability/box1` (tenant `dev`) and shows the order trace. Check the Jaeger UI at `/api/traces/v1/dev/search`. Check that a user without `box1-traces-read-dev` is denied.
 
-**Measurement:** re-check `/var/tempo` growth after a few hours at about 18.7 spans/s, and confirm the 10Gi / 72 h sizing.
+**All seven services export traces** (unchanged).
 
-**Next slice (criterion 2):**
-- ServiceMonitors for the services' `/q/metrics`.
-- PrometheusRules for ERP backlog/slowdown and order age.
-- A dashboard showing order age and adapter errors.
-- Measure alert latency with an ERP MANUAL backlog. That is fault injection, so it needs approval.
+**Housekeeping:** close #126; two stranded Pending validate runs.
+
+**Then:** the metrics/alerts slice.
 
 ## Open risks
 - Vendor support on OpenShift 5.0.0-rc.7 is not established.
