@@ -62,3 +62,6 @@ The earlier note above attributed it to the COO. That was wrong.
 - **User decision:** keep it and document it in Git without Argo management. The ownership choice was put to the user with the trade-offs.
 - **Delivery:** box1-gitops#89 (README only); checks passed. Merged as `8d215b2` after explicit user approval ("Yes, merge #89").
 - **Not established:** a supported HyperConverged switch to turn it off.
+
+## User verification of the console Traces view (2026-11-06)
+The user reported in chat: "the Traces are working properly". This confirms the Observe → Traces page in the OpenShift console with the user's own session, which this run could not check itself.

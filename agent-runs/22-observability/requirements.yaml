@@ -87,3 +87,11 @@
   commands: []
   evidence: []
   limitations: [Deferred by user decision 2026-11-06 to box1-docs#82]
+- id: OBS-TRACE-CONSOLE
+  description: Traces viewable in the OpenShift console (COO distributed-tracing UIPlugin) and Jaeger UI, both behind Tempo gateway tenant RBAC
+  status: live_verified
+  implementation: [box1-gitops#87, box1-gitops#88]
+  tests: []
+  commands: ["SubjectAccessReview tempo.grafana.com/dev traces", "gateway read with/without token"]
+  evidence: [evidence/phase6-console-traces-gateway.md]
+  limitations: [Console page verified by the user, not by the run]
