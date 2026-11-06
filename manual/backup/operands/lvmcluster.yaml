@@ -1,0 +1,21 @@
+# Cleaned export from the Box1 cluster (status and live metadata removed).
+apiVersion: lvm.topolvm.io/v1alpha1
+kind: LVMCluster
+metadata:
+  name: box1-storage
+  namespace: openshift-lvm-storage
+spec:
+  storage:
+    deviceClasses:
+    - default: true
+      deviceSelector:
+        paths:
+        - /dev/disk/by-id/nvme-Fanxiang_S690Q_1TB_26081421636001649
+      fstype: xfs
+      name: vg1
+      thinPoolConfig:
+        chunkSizeCalculationPolicy: Static
+        metadataSizeCalculationPolicy: Host
+        name: thin-pool-1
+        overprovisionRatio: 1
+        sizePercent: 90

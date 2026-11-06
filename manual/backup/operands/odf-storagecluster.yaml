@@ -1,0 +1,31 @@
+# Cleaned export from the Box1 cluster (status and live metadata removed).
+apiVersion: ocs.openshift.io/v1
+kind: StorageCluster
+metadata:
+  annotations:
+    uninstall.ocs.openshift.io/cleanup-policy: delete
+    uninstall.ocs.openshift.io/mode: graceful
+  name: ocs-storagecluster
+  namespace: openshift-storage
+spec:
+  arbiter: {}
+  encryption:
+    keyRotation:
+      schedule: '@weekly'
+    kms: {}
+  externalStorage: {}
+  managedResources:
+    cephBlockPools: {}
+    cephCluster: {}
+    cephDashboard: {}
+    cephFilesystems: {}
+    cephNonResilientPools: {}
+    cephObjectStoreUsers: {}
+    cephObjectStores:
+      enableSTS: true
+    cephRBDMirror: {}
+    cephToolbox: {}
+  multiCloudGateway:
+    dbStorageClassName: lvms-vg1
+    reconcileStrategy: standalone
+  resourceProfile: balanced

@@ -11,6 +11,9 @@ document never records their values.
 - **Method:** read-only `oc get` calls; no cluster changes were made
 - **GitOps reference:** `box1-gitops` `origin/main`. Local checkouts can be
   stale; one was missing `console-links` and `openshift-ai/operator`.
+- **Backup:** cleaned YAML exports of these objects are in
+  [`backup/`](backup/README.md). Secrets there are redacted templates; read
+  the backup README before applying anything.
 
 ## How ownership was determined
 

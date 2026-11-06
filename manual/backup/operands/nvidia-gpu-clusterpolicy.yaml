@@ -1,0 +1,105 @@
+# Cleaned export from the Box1 cluster (status and live metadata removed).
+apiVersion: nvidia.com/v1
+kind: ClusterPolicy
+metadata:
+  name: gpu-cluster-policy
+spec:
+  ccManager:
+    enabled: true
+  cdi:
+    default: false
+    enabled: true
+    nriPluginEnabled: false
+  daemonsets:
+    rollingUpdate:
+      maxUnavailable: '1'
+    updateStrategy: RollingUpdate
+  dcgm:
+    enabled: true
+  dcgmExporter:
+    config:
+      name: ''
+    enabled: true
+    serviceMonitor:
+      enabled: true
+  devicePlugin:
+    config:
+      default: ''
+      name: ''
+    enabled: true
+    mps:
+      root: /run/nvidia/mps
+  driver:
+    certConfig:
+      name: ''
+    enabled: true
+    kernelModuleConfig:
+      name: ''
+    kernelModuleType: auto
+    licensingConfig:
+      nlsEnabled: true
+      secretName: ''
+    repoConfig:
+      configMapName: ''
+    upgradePolicy:
+      autoUpgrade: true
+      drain:
+        deleteEmptyDir: false
+        enable: false
+        force: false
+        timeoutSeconds: 300
+      maxParallelUpgrades: 1
+      maxUnavailable: 25%
+      podDeletion:
+        deleteEmptyDir: false
+        force: false
+        timeoutSeconds: 300
+      waitForCompletion:
+        timeoutSeconds: 0
+    useNvidiaDriverCRD: false
+    virtualTopology:
+      config: ''
+  gdrcopy:
+    enabled: false
+  gds:
+    enabled: false
+  gfd:
+    enabled: true
+  hostPaths:
+    kubeletRootDir: /var/lib/kubelet
+  kataManager:
+    config:
+      artifactsDir: /opt/nvidia-gpu-operator/artifacts/runtimeclasses
+  kataSandboxDevicePlugin:
+    enabled: true
+  mig:
+    strategy: single
+  migManager:
+    config:
+      default: all-disabled
+    enabled: true
+  nodeStatusExporter:
+    enabled: true
+  operator:
+    runtimeClass: nvidia
+    use_ocp_driver_toolkit: true
+  sandboxDevicePlugin:
+    enabled: true
+  sandboxWorkloads:
+    defaultWorkload: container
+    enabled: false
+    mode: kubevirt
+  toolkit:
+    enabled: true
+    installDir: /usr/local/nvidia
+  validator:
+    plugin:
+      env: []
+  vfioManager:
+    enabled: true
+  vgpuDeviceManager:
+    config:
+      default: default
+    enabled: true
+  vgpuManager:
+    enabled: false

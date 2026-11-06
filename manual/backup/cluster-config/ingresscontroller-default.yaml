@@ -1,0 +1,23 @@
+# Cleaned export from the Box1 cluster (status and live metadata removed).
+apiVersion: operator.openshift.io/v1
+kind: IngressController
+metadata:
+  name: default
+  namespace: openshift-ingress-operator
+spec:
+  clientTLS:
+    clientCA:
+      name: ''
+    clientCertificatePolicy: ''
+  closedClientConnectionPolicy: Continue
+  defaultCertificate:
+    name: openshift-apps-tls
+  httpCompression: {}
+  httpEmptyRequestsPolicy: Respond
+  httpErrorCodePages:
+    name: ''
+  idleConnectionTerminationPolicy: Immediate
+  replicas: 1
+  tuningOptions:
+    reloadInterval: 0s
+  unsupportedConfigOverrides: null
