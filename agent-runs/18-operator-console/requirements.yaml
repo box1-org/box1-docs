@@ -239,7 +239,7 @@
   commands: ["LIVE=1 npx playwright test (src/test/e2e/live, Firefox, real Route)"]
   evidence: ["evidence/06-live-acceptance.md"]
   deployment: {"image_digest": "sha256:584e7e378c18fb838ac30ab8192bc22a8cd08990ce1fcb03d6b6f7bbb09e965f", "gitops_commit": "b3a1a52001a9a83a3dd65c4e66c8a16277ed3167", "source": "267152e"}
-  limitations: ["Only 2 live orders; filters and sort exercised locally"]
+  limitations: ["Only 2 live orders; filters and sort exercised locally", "Place order dropdowns from inventory (operations-console#5, open): locally tested 18/18; live after release"]
 - id: CON-PAGE-DETAIL
   description: 'Order detail: state, customer-safe metadata, reservation and fulfillment status, timeline'
   source: 'pages'

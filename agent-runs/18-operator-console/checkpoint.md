@@ -23,7 +23,9 @@
   - delivery and revision consistency.
 
 ## Exact next action
-0. After box1-gitops#77 merges and Argo `keycloak` syncs, rerun the live logout test: the signed-out page shows, and a revisit shows the login form.
+- operations-console#5 (Place order dropdowns, user request) is open, CI pending. Merging needs approval. After release, run the live check `-g "place order lists"` (read-only).
+- box1-gitops#77 is merged and synced. **The live logout recheck is blocked:** the `claude` password no longer works. It needs a new password, put in `$RUN_DIR/live-password`, or the user checks by hand.
+0. (#77 merged and synced.) Rerun the live logout test: the signed-out page shows, and a revisit shows the login form.
 Once the user has signed in, or has approved a run test user, work through this checklist on `https://operations-console-dev.apps.ocp.box1.org` in Firefox:
 
 1. Sign in. Navigation matches the roles; Delivery is shown only with `console-developer`.

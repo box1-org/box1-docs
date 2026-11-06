@@ -50,6 +50,10 @@ Found in live acceptance (Phase 7):
 
 17. **Logout left the Keycloak SSO session alive on RH-SSO 7.6.** RH-SSO 7.6 rejects `post_logout_redirect_uri` unless it is a valid redirect URI. My SEC-2 repair had narrowed those to `/callback`, and Keycloak 26 in local e2e honours the separate `post.logout.redirect.uris` attribute, so only the real Route showed it. This is the run 15 lesson "local Keycloak 26.4 is not RH-SSO 7.6", met again in a new place. The fix (box1-gitops#77) awaits approval. Both logout tests now require the SSO session to end.
 
+User-requested change after delivery (Place order dropdowns, operations-console#5):
+
+18. **NumberField commits on blur**, so a "more than available" warning would have appeared only as the operator clicked Submit. The warning now follows the typed value. Found by the new e2e test, not by review.
+
 Test harness and test defects:
 - The logout URL carried `?state=`, which my regex did not allow.
 - The keyboard test tabbed forward from `main` instead of back into the navigation.
@@ -93,6 +97,10 @@ Test harness and test defects:
 | Re-read upstream state before relying on it | Re-compared order, inventory and asset main at 23:28 EST: only `.tekton` changed | Applied |
 
 ## Environment findings
+
+- **The laptop slept about 12.5 hours** (~00:40 to 13:28 EST on 2026-11-06). The host and Podman VM clocks agreed after waking (13:28:24 / 13:28:25), and no cascade followed.
+- **13:28–13:38 EST, one cause and 6 symptoms:** a test locator assumed React Aria's Select label is a `<label>`; it is a `<span>`. The cause was read from one page snapshot before any change.
+- **13:41 EST:** the live user `claude` no longer authenticates (presumably rotated, as I had recommended). I stopped after one attempt.
 
 - **00:3x EST, git slip (mine).** A stray `git checkout run18-guava-cve --` inside a compound command switched branches, so my commit landed on the already-merged local branch and an empty branch was pushed. PR creation failed with "no commits", which exposed it. I moved the commit with cherry-pick and reset the local branch. Nothing wrong was pushed to a PR.
 
@@ -142,7 +150,8 @@ Test harness and test defects:
 - Opened box1-org/box1-gitops#73 (branch `run18-operations-console-keycloak`, worktree `run18-gitops`) and box1-org/box1-workloads-dev#90 (branch `run18-operations-console-runtime`, worktree `run18-workloads`). Neither is merged.
 - Ran one server-side dry run (`oc apply --dry-run=server`) of the KeycloakClient. Nothing was persisted.
 - Local: container `run18-keycloak` (port 18280), a Node stub process (18081) and a console JVM (18080), all started and stopped by `src/test/e2e/local-*.sh`. Playwright Firefox was installed into `~/Library/Caches/ms-playwright` (shared cache).
-- Four issue comments on box1-docs#18.
+- Five issue comments on box1-docs#18.
+- Opened box1-gitops#77 (logout redirect), operations-console#4 (live spec) and #5 (dropdowns). The user merged #77 and #4.
 - Opened operations-console#3 (Guava). The user merged #73, #90, #2 and #3. Release `-mtdgc` failed at the gate; release `-859h8` promoted via box1-workloads-dev#96 (auto-merged by the pipeline).
 - Five reviewer subagents. Two scratch clones (`rev-security`, `rev-ops`), and a prod jar the ops reviewer ran on port 18555, all in the scratchpad.
 - One process stopped by PID (12735, my own console from the restart probe, confirmed by start time and working directory).
