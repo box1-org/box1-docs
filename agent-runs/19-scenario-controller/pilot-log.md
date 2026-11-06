@@ -57,6 +57,8 @@ Test harness and test defects:
 
 15. **The console kept showing a confirmed step as the operator's task** (console integration, found by the local end-to-end run). The controller keeps a step's text on the run after confirmation. The page now shows "Your step" only while the run is `AWAITING_OPERATOR`. Also, a new console test triggered a 60 s probe cache that broke an existing test; it now stubs asset-service as on the cluster.
 
+16. **The controller's service-account token had no roles** (live, found by the user's failed seed). The `scenario-controller` KeycloakClient from #78 listed no `defaultClientScopes`, so the `roles` scope was missing and tokens had no `resource_access` claim. Fixed by box1-gitops#84. **Missed in local proof, twice:** after repair 14, the local realm still did not mimic the cluster's client defaults (Keycloak 26 adds `roles`; `fullScopeAllowed` was left true). Lesson: build local identity fixtures from the same CR fields as the cluster, or diff the cluster client against the local one before calling an identity path locally tested.
+
 ## Profile ambiguity and friction
 
 3. **Reviewer passes were the most productive phase.** Five same-model passes found 57 findings: 13 medium and none high. They included two verification checks that could never fail (MSG-1, MSG-2) and that the local end-to-end run had passed. A green end-to-end run proved the happy path; only adversarial reading found the checks that could not detect a failure.

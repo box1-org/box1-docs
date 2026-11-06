@@ -18,6 +18,9 @@ test('live /demo shows the controller catalog for a signed-in operator', async (
   console.log('titles:', cat.items.map((s: { title: string; availability: string }) => `${s.title} [${s.availability}]`).join(' | '));
   const runs = await (await page.request.get('/api/v1/scenario-runs')).json();
   console.log('runs:', runs.items.length, JSON.stringify(runs.sources.map((s: { status: string }) => s.status)));
+  for (const r of runs.items) console.log('run:', JSON.stringify({ id: r.scenarioRunId, scenario: r.scenario, status: r.status, detail: r.detail, actor: r.actor, startedAt: r.startedAt, reset: r.resetResult, resetDetail: r.resetDetail }));
+  const audit = await (await page.request.get('/api/v1/scenario-audit')).json();
+  for (const a of audit.items.slice(0, 15)) console.log('audit:', JSON.stringify({ seq: a.seq, at: a.occurredAt, action: a.action, outcome: a.outcome, actor: a.actor, detail: a.detail }));
   await page.screenshot({ path: `${SHOTS}/live-demo.png`, fullPage: true });
   console.log('start buttons visible:', await page.locator('[data-testid^="start-"]').count(), 'csp errors:', csp.length);
 });

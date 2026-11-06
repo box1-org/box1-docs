@@ -64,3 +64,26 @@ The first attempt left a crash run open. It was stopped through the controller (
 **Signed-in live check: not done.** The `claude` test user's password was refused by Keycloak ("Invalid username or password"); it had worked at about 13:20 EST. I did not retry. `scripts/console-e2e/live-readonly.spec.ts` is ready: it signs in, then only reads `/demo`, `/api/v1/me`, `/api/v1/scenarios` and `/api/v1/scenario-runs`.
 
 **Leftover:** the pending PipelineRun `operations-console-validate-kplrr` in `box1-ci`, left by the Pipelines as Code failure, was not deleted.
+
+## Signed-in live check and the seeding 403, 2026-11-06 ~15:00–15:30 EST
+
+**Signed-in check.** The user supplied a new test password. `live-readonly.spec.ts`, run read-only as the test user, found:
+- `/api/v1/me`: console roles `console-viewer`, `console-operator`, `console-developer`; scenario roles `scenario-operator`.
+- The catalog: 10 items, controller source OK (3 ms), titles shown, 5 AVAILABLE.
+- Five Start buttons and no CSP errors.
+
+**Live operator access through the console: verified.**
+
+**The user's seeding failure.** The controller's audit shows:
+- SEED FAILED at 19:12Z, "Inventory answered 403 to a site create", actor the user.
+- A `baseline-order` run at 19:57Z, FAILED "Fixtures are not seeded", with reset RESET_OK.
+
+**Diagnosis (repair 16).**
+- inventory-service needs only audience `inventory-service` and `resource_access.inventory-service.roles`. A 403 therefore means the role is missing from the token.
+- The user checked the admin console: `inventory-admin` is assigned to the service account and scope-mapped. The Evaluate token had `scope: openid` and no `resource_access` claim at all.
+- Cause: the `scenario-controller` client (#78) listed no `defaultClientScopes`, so the `roles` scope that writes `resource_access` was missing. Every other box1 client lists `roles`.
+- Why the local stack missed it: Keycloak 26 gives new clients `roles` by default, and the local client also kept `fullScopeAllowed: true`.
+
+**Fix.** box1-org/box1-gitops#84, merged by the user as `8203a7d`. Argo `keycloak` synced; the CR is `ready=true` with `defaultClientScopes: ["roles"]`.
+
+**Not yet verified:** seeding after the fix. It needs the user to click Seed, or approval for me to do it.
