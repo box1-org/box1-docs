@@ -1,0 +1,89 @@
+# status: proposed | implemented | locally_tested | ci_verified | deployed | live_verified | blocked | superseded
+- id: OBS-TRACE-BACKEND
+  description: Trace backend without object storage (TempoMonolithic, PV, 72h)
+  status: implemented
+  implementation: [box1-gitops PR #82 platform/observability/tracing/tempo.yaml]
+  tests: []
+  commands: ["oc kustomize platform/observability/tracing"]
+  evidence: [evidence/phase0-discovery.md]
+  limitations: [Not synced; operator install and sync need approval]
+- id: OBS-TRACE-PIPELINE
+  description: OTLP collector; backend outage drops spans without affecting business flow
+  status: implemented
+  implementation: [box1-gitops PR #82 platform/observability/tracing/collector.yaml]
+  tests: []
+  commands: []
+  evidence: []
+  limitations: [Outage behaviour not yet exercised]
+- id: OBS-TRACE-EXPORT
+  description: Services export traces (order, inventory, adapter, notification, asset, scenario, console)
+  status: implemented
+  implementation: [box1-workloads-dev PR #119 (draft)]
+  tests: []
+  commands: ["kubectl kustomize workloads/<service>"]
+  evidence: []
+  limitations: [Must merge after the tracing instance is healthy]
+- id: OBS-TRACE-E2E
+  description: Sample orderId resolves to one trace across order, inventory and adapter boundary
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  limitations: [Adapter Kafka consumer creates no span (decision 005)]
+- id: OBS-TRACE-ACCESS
+  description: Anonymous trace query rejected; Tempo ingest only from collector
+  status: implemented
+  implementation: [box1-gitops PR #82 networkpolicy.yaml, tempo.yaml jaegerui.authentication]
+  tests: []
+  commands: []
+  evidence: []
+  limitations: []
+- id: OBS-UWM
+  description: User-workload monitoring enabled for business metrics and alerts
+  status: implemented
+  implementation: [box1-gitops PR #82 platform/observability/user-workload-monitoring]
+  tests: []
+  commands: []
+  evidence: []
+  limitations: [Approval required to sync]
+- id: OBS-LOGS-JSON
+  description: Structured JSON logs with bounded fields and redaction
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  limitations: [Centralized log store deferred to #82]
+- id: OBS-METRICS-ALERTS
+  description: ServiceMonitors, ERP slowdown/backlog alert, order-age and adapter-error dashboard
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  limitations: [Depends on OBS-UWM]
+- id: OBS-DEPLOY-OVERLAY
+  description: Deployment SHA/digest/time correlated with a simulated regression
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  limitations: []
+- id: OBS-OPERATE-PROFILE
+  description: Disabling the operate profile does not break order POST or fulfillment
+  status: implemented
+  implementation: [Applications labelled box1.org/profile=operate; README disable procedure]
+  tests: []
+  commands: []
+  evidence: []
+  limitations: [Not exercised]
+- id: OBS-LOGS-CENTRAL
+  description: Centralized log query
+  status: superseded
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  limitations: [Deferred by user decision 2026-11-06 to box1-docs#82]

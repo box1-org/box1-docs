@@ -1,0 +1,14 @@
+{
+  "issue": "box1-org/box1-docs#22",
+  "profile": "frontier",
+  "current_phase": 5,
+  "phase_state": "review_in_progress_awaiting_approvals",
+  "updated_at": "2026-11-06T14:50:08-05:00",
+  "open_decisions": ["approve-operator-install", "approve-uwm-enable", "merge-gitops-82", "merge-workloads-119-after-tracing-healthy"],
+  "repositories": {
+    "box1-docs": {"branch": "agent-run/22-observability", "base": "5123b62"},
+    "box1-gitops": {"role": "shared infrastructure", "main": "f257bb6", "run_branch": "observability-tracing-platform", "commit": "aa660a6727ed640bad62fc56b017cd44259464dd", "pr": 82},
+    "box1-workloads-dev": {"role": "service workloads", "main": "c197e38", "run_branch": "observability-trace-export", "commit": "564baf87bcb7787c01ed4f4332b96fad5d408dcd", "pr": 119, "draft": true},
+    "box1-ops-contracts": {"role": "trace context contract (envelope traceparent)", "run_branch": null}
+  }
+}
