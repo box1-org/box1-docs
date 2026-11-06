@@ -60,5 +60,5 @@ The earlier note above attributed it to the COO. That was wrong.
 - **Owner:** the UIPlugin carries `platform.kubevirt.io/managed-by: virt-platform-autopilot`.
 - **What the autopilot did:** `openshift-cnv/virt-platform-autopilot` started watching UIPlugins at 21:56:07Z and applied asset `monitoring-ui-plugin` at 21:56:25Z. It keeps reconciling it ("No drift detected, skipping apply").
 - **User decision:** keep it and document it in Git without Argo management. The ownership choice was put to the user with the trade-offs.
-- **Delivery:** box1-gitops#89 (README only); checks passed. **Not merged:** the merge was blocked for lack of explicit approval and is left to the user.
+- **Delivery:** box1-gitops#89 (README only); checks passed. Merged as `8d215b2` after explicit user approval ("Yes, merge #89").
 - **Not established:** a supported HyperConverged switch to turn it off.
