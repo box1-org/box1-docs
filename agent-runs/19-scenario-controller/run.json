@@ -1,0 +1,15 @@
+{
+  "issue": "box1-org/box1-docs#19",
+  "title": "Service 09 — Scenario control / deterministic fixture service",
+  "profile": "frontier",
+  "prompt": "box1_operations_agent_prompts/01-services/09_scenario_controller.md@8c90a0c (main; PR #70 merged 2026-11-06T05:38:36Z)",
+  "started": "2026-11-06T00:47:48-05:00",
+  "current_phase": "0 Discovery complete (stopped: user decisions O-1 to O-12)",
+  "repositories": [
+    {"name": "box1-org/scenario-controller", "branch": "main", "commit": "203968e", "role": "implementation target (Golden Path template 1.1.0, onboarded by the user)"},
+    {"name": "box1-org/box1-docs", "branch": "agent-run/19-scenario-controller", "role": "run state"},
+    {"name": "box1-org/box1-workloads-dev", "branch": "main", "commit": "8af72f9", "role": "workload manifests (workloads/scenario-controller)"},
+    {"name": "box1-org/box1-gitops", "branch": "main", "role": "shared infrastructure (Keycloak client, RBAC)"}
+  ],
+  "local_names": {"worktrees": ["run19-docs", "run19-scenario-controller", "run19-workloads", "run19-gitops"], "containers_prefix": "run19-"}
+}

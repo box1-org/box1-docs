@@ -1,0 +1,102 @@
+# Requirement ledger, run 19 (scenario controller), frontier profile.
+# IDs derive from 09_scenario_controller.md acceptance evidence (AC-*), the frontier
+# verification scenarios (VS-*) and interface constraints (SC-*). Status is the highest
+# level actually observed: proposed -> implemented -> locally_tested -> ci_verified -> deployed -> live_verified.
+# Parent IDs from the white paper: FR-09, OBS-06, DEMO-A/B/C (defined only in the PDF; not restated here).
+
+- id: AC-1
+  description: Attempt to run in a non-demo namespace fails closed; unknown scenario name rejected
+  status: proposed
+- id: AC-2
+  description: Every named fault has bounded duration, complete audit trail, stop/reset behavior and positive end-state verification
+  status: proposed
+- id: AC-3
+  description: ERP delayed processing or a manual hold reproduces alert and long-running order without data loss; inventory contention shows one reservation
+  status: proposed
+- id: AC-4
+  description: Interrupted orchestration process does not leave a fault permanently enabled beyond TTL
+  status: proposed
+- id: AC-5
+  description: Starfleet Feline Supply fixtures seed idempotently through service APIs; seeding twice gives the same state; nothing outside the fixture set changed or deleted
+  status: proposed
+- id: AC-6
+  description: "The Trouble with Tribbles" ends with exactly one reservation for the last tribble and one rejected order
+  status: proposed
+- id: AC-7
+  description: Guided ERP scenarios state the operator's console step and verify the result before reporting success; a step not performed times out and is reported as not verified
+  status: proposed
+- id: AC-8
+  description: Every scenario shows its display title, while IDs, errors and audit fields stay plain
+  status: proposed
+
+- id: SC-API
+  description: POST /internal/v1/scenarios/{name}/start|stop|reset and GET /internal/v1/scenarios behind operator authorization and namespace/environment allowlist
+  status: proposed
+- id: SC-NOEXEC
+  description: No arbitrary exec, shell, unrestricted Kubernetes writes or arbitrary URL fetches
+  status: proposed
+- id: SC-CATALOG
+  description: Declarative catalog; each scenario has prerequisites, fixture IDs, duration, expected observation, reset action, mechanism and title
+  status: proposed
+- id: SC-RUNID
+  description: Every start creates scenarioRunId and a stable correlation marker; audit has actor, time, environment, mode, TTL, impact, reset result, stardate (display only)
+  status: proposed
+- id: SC-TTL
+  description: Automatic TTL-based reset; abandoned run detected and reset after restart; documented manual recovery
+  status: proposed
+- id: SC-VERIFY
+  description: Verification checks actual order IDs and business invariants before claiming completion
+  status: proposed
+- id: SC-CLI
+  description: CLI scripts and README so an agent can demonstrate without expanding cluster RBAC
+  status: proposed
+- id: SC-OBS
+  description: Health, OpenAPI, Micrometer metrics, structured JSON logs with correlation ID, W3C traceparent propagated to called services
+  status: proposed
+
+- id: VS-NS
+  description: Start in a non-allowlisted namespace is refused
+  status: proposed
+- id: VS-UNKNOWN
+  description: Unknown scenario name is rejected
+  status: proposed
+- id: VS-TTL-KILL
+  description: TTL expiry with the controller killed mid-run resets the fault
+  status: proposed
+- id: VS-STOP-RESET
+  description: Stop and reset work and verify the end state
+  status: proposed
+- id: VS-SEED-TWICE
+  description: Seeding twice gives the same state
+  status: proposed
+- id: VS-TRIBBLE
+  description: Tribble contention with two simultaneous orders gives one reservation and one rejection
+  status: proposed
+- id: VS-GUIDED-TIMEOUT
+  description: A guided step not performed times out and is reported as not verified
+  status: proposed
+- id: VS-ANON
+  description: Anonymous request is rejected (401)
+  status: proposed
+- id: VS-NOROLE
+  description: Request without the role is rejected (403)
+  status: proposed
+- id: VS-REDALERT-STOPALL
+  description: red-alert is stopped through the telemetry service's stop-all
+  status: proposed
+- id: VS-AUDIT
+  description: Audit record complete for every run
+  status: proposed
+- id: VS-NO-COLLATERAL
+  description: No data outside the fixture set changed
+  status: proposed
+
+- id: LIVE-BASELINE
+  description: '"Make it so" on the cluster with audit and end-state evidence, after approval'
+  status: proposed
+- id: LIVE-TRIBBLES
+  description: '"The Trouble with Tribbles" on the cluster with audit and end-state evidence, after approval'
+  status: proposed
+- id: LIVE-GUIDED-ERP
+  description: One guided ERP scenario on the cluster with audit and end-state evidence, after approval
+  status: proposed
