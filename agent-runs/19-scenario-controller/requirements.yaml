@@ -5,7 +5,10 @@
 # "locally_tested" here means one or both of: the container suite (real PostgreSQL, fake upstreams; evidence/03) and the
 # local end-to-end run against the real services and ERP harness (evidence/04). Neither is cluster proof.
 # Parent IDs from the white paper: FR-09, OBS-06, DEMO-A/B/C (defined only in the PDF).
-# Source: scenario-controller run19-controller e061f6d; inventory-service run19-fixture-admin fca04be.
+# Source: scenario-controller run19-controller 7f0f9ea (after Phase 5 repairs); inventory-service run19-fixture-admin fca04be.
+# "ci_verified": the CI-set tests named in the entry passed in the cluster's PR pipeline (evidence/06-ci.txt,
+# scenario-controller-validate-std6t on 7f0f9ea). Container tests and the end-to-end run are not part of CI.
+# All local results were rerun after the reviewer repairs (evidence/03 last block, evidence/07).
 
 - id: AC-1
   description: Attempt to run in a non-demo namespace fails closed; unknown scenario name rejected
@@ -21,7 +24,7 @@
   implementation: [src/main/resources/catalog/scenarios.yaml, src/main/java/org/box1/scenario/run/Engine.java, src/main/java/org/box1/scenario/scenarios/]
   tests: [CatalogTest.everyScenarioHasItsTitleAndClassifiedMechanism, ScenarioRunsTest.stopEndsTheRunAndResets]
   commands: ["evidence/scripts/e2e.py (all steps)"]
-  evidence: [evidence/04-local-e2e.txt]
+  evidence: [evidence/04-local-e2e.txt, evidence/07-local-e2e-after-review.txt]
   limitations: [The controller enables no fault itself; ERP faults are set and undone at the ERP console (RESET_GUIDED). Five scenarios are not yet possible and have no fault code.]
 - id: AC-3
   description: ERP delayed processing or a manual hold reproduces alert and long-running order without data loss; inventory contention shows one reservation
@@ -29,15 +32,15 @@
   implementation: [src/main/java/org/box1/scenario/scenarios/ErpManualHold.java, ErpDelayedProcessing.java, InventoryContention.java]
   tests: [ScenarioRunsTest.holdThatOrderNumberOneIsVerifiedThroughTheAdapter, ScenarioRunsTest.impulsePowerOnlyNeedsAVisibleDelay]
   commands: ["evidence/scripts/e2e.py hold delay tribbles"]
-  evidence: [evidence/04-local-e2e.txt]
-  limitations: ["No alert rule exists on the platform (no PrometheusRule); the alert half is the adapter's fulfillment_held gauge, observed >= 1 while held"]
+  evidence: [evidence/04-local-e2e.txt, evidence/07-local-e2e-after-review.txt]
+  limitations: ["No alert rule exists on the platform (no PrometheusRule); the alert half is the adapter's fulfillment_held gauge, required to rise over its baseline while held", "ERP faults and holds have no ERP-side expiry (review ARCH-4)"]
 - id: AC-4
   description: Interrupted orchestration process does not leave a fault permanently enabled beyond TTL
   status: locally_tested
   implementation: [Engine.recover, Engine.sweep]
   tests: [AbandonedRunTest.aRunLeftByADeadProcessIsAbortedAndResetAtStartup, AbandonedRunTest.aRunPastItsTtlWithNoThreadIsExpiredAndReset]
   commands: ["evidence/scripts/e2e.py kill (SIGKILL mid-run, 45 s down past a 30 s TTL, restart)"]
-  evidence: [evidence/04-local-e2e.txt]
+  evidence: [evidence/04-local-e2e.txt, evidence/07-local-e2e-after-review.txt]
   limitations: [Pod-level restart on the cluster not exercised]
 - id: AC-5
   description: Fixtures seed idempotently through service APIs; seeding twice gives the same state; nothing outside the fixture set is changed or deleted
@@ -45,26 +48,26 @@
   implementation: [src/main/java/org/box1/scenario/fixtures/, inventory-service#3]
   tests: [ScenarioRunsTest.seedingTwiceGivesTheSameStateAndTouchesOnlyFixtures, inventory ReservationScenariosTest.sitesAndStockRecordsAreCreatedOnceAndNeverChanged]
   commands: ["evidence/scripts/e2e.py seed collateral"]
-  evidence: [evidence/04-local-e2e.txt]
+  evidence: [evidence/04-local-e2e.txt, evidence/07-local-e2e-after-review.txt]
   limitations: [Cluster seeding needs inventory-service#3 merged, the Keycloak clients, and approval]
 - id: AC-6
   description: '"The Trouble with Tribbles" ends with exactly one reservation for the last tribble and one rejected order'
   status: locally_tested
   tests: [ScenarioRunsTest.theTroubleWithTribblesHasExactlyOneWinnerAndCanBeRepeated]
   commands: ["evidence/scripts/e2e.py tribbles"]
-  evidence: [evidence/04-local-e2e.txt]
+  evidence: [evidence/04-local-e2e.txt, evidence/07-local-e2e-after-review.txt]
 - id: AC-7
   description: Guided ERP scenarios state the console step and verify before reporting success; a step not performed times out as not verified
   status: locally_tested
   tests: [ScenarioRunsTest.aGuidedStepNotPerformedTimesOutAsNotVerified]
   commands: ["evidence/scripts/e2e.py hold timeout delay crash"]
-  evidence: [evidence/04-local-e2e.txt]
-  limitations: [The local console step was performed through the ERP domain API, not the TUI]
+  evidence: [evidence/04-local-e2e.txt, evidence/07-local-e2e-after-review.txt]
+  limitations: [The local console step was performed through the ERP domain API, not the TUI. The crash scenario relies on audited operator confirmations for what the controller cannot observe.]
 - id: AC-8
   description: Every scenario shows its display title, while IDs, errors and audit fields stay plain
-  status: locally_tested
+  status: ci_verified
   tests: [CatalogTest.everyScenarioHasItsTitleAndClassifiedMechanism, SecurityTest.aViewerReadsTheCatalogWithTitles]
-  evidence: [evidence/04-local-e2e.txt]
+  evidence: [evidence/04-local-e2e.txt, evidence/07-local-e2e-after-review.txt]
 
 - id: SC-API
   description: start/stop/reset and GET catalog behind operator authorization and allowlist
@@ -74,17 +77,18 @@
 - id: SC-NOEXEC
   description: No arbitrary exec, shell, unrestricted Kubernetes writes or arbitrary URL fetches
   status: implemented
-  implementation: [src/main/java/org/box1/scenario/upstream/Http.java]
-  limitations: [Established by construction (fixed base URLs, ID-pattern path segments, no Kubernetes client); confirmed by review in Phase 5]
+  implementation: [src/main/java/org/box1/scenario/upstream/Http.java, src/main/java/org/box1/scenario/Gate.java]
+  evidence: [review-findings/architecture.md, review-findings/security.md]
+  limitations: [By construction (fixed base URLs on a host allowlist, ID-pattern path segments, no Kubernetes client, no process execution); the architecture and security passes found no exec, shell, SSRF or Kubernetes write. A review is not a test.]
 - id: SC-CATALOG
   description: Declarative catalog with prerequisites, fixture IDs, duration, expected observation, reset action, mechanism and title
-  status: locally_tested
+  status: ci_verified
   tests: [CatalogTest]
 - id: SC-RUNID
   description: scenarioRunId, correlation marker, audit with actor, time, environment, mode, TTL, impact, reset result, stardate
   status: locally_tested
   tests: [ScenarioRunsTest (complete()), CatalogTest.stardateIsDisplayOnlyAndDeterministic]
-  evidence: [evidence/04-local-e2e.txt]
+  evidence: [evidence/04-local-e2e.txt, evidence/07-local-e2e-after-review.txt]
 - id: SC-TTL
   description: TTL reset, abandoned-run detection and documented manual recovery
   status: locally_tested
@@ -93,19 +97,19 @@
 - id: SC-VERIFY
   description: Verification checks actual order IDs and business invariants
   status: locally_tested
-  evidence: [evidence/04-local-e2e.txt]
+  evidence: [evidence/04-local-e2e.txt, evidence/07-local-e2e-after-review.txt]
 - id: SC-CLI
   description: CLI script and README for demonstration without cluster RBAC
-  status: implemented
+  status: locally_tested
   implementation: [scripts/scenario.sh, README.md, docs/runbook.md]
-  limitations: [Script syntax-checked only; not exercised]
+  evidence: [evidence/07-local-e2e-after-review.txt (CLI section)]
 - id: SC-OBS
   description: Health, OpenAPI, metrics, JSON logs with correlation ID, traceparent to called services
   status: implemented
-  limitations: [Health/OpenAPI/metrics in tests; traceparent propagation not observed in an upstream's logs]
+  limitations: [Health/OpenAPI/metrics in tests; a span per run since 7f0f9ea, but traceparent propagation was not observed in an upstream's logs; trace export is none platform-wide]
 - id: SC-CONTRACT
   description: The controller's order bodies, states and inventory routes match box1-ops-contracts
-  status: locally_tested
+  status: ci_verified
   tests: [ContractTest]
 
 - id: VS-NS
@@ -115,35 +119,35 @@
 - id: VS-UNKNOWN
   description: Unknown scenario name is rejected
   status: locally_tested
-  evidence: [evidence/04-local-e2e.txt]
+  evidence: [evidence/04-local-e2e.txt, evidence/07-local-e2e-after-review.txt]
 - id: VS-TTL-KILL
   description: TTL expiry with the controller killed mid-run
   status: locally_tested
-  evidence: [evidence/04-local-e2e.txt]
+  evidence: [evidence/04-local-e2e.txt, evidence/07-local-e2e-after-review.txt]
 - id: VS-STOP-RESET
   description: Stop and reset
   status: locally_tested
-  evidence: [evidence/04-local-e2e.txt]
+  evidence: [evidence/04-local-e2e.txt, evidence/07-local-e2e-after-review.txt]
 - id: VS-SEED-TWICE
   description: Seeding twice
   status: locally_tested
-  evidence: [evidence/04-local-e2e.txt]
+  evidence: [evidence/04-local-e2e.txt, evidence/07-local-e2e-after-review.txt]
 - id: VS-TRIBBLE
   description: Tribble contention with two simultaneous orders
   status: locally_tested
-  evidence: [evidence/04-local-e2e.txt]
+  evidence: [evidence/04-local-e2e.txt, evidence/07-local-e2e-after-review.txt]
 - id: VS-GUIDED-TIMEOUT
   description: A guided step not performed
   status: locally_tested
-  evidence: [evidence/04-local-e2e.txt]
+  evidence: [evidence/04-local-e2e.txt, evidence/07-local-e2e-after-review.txt]
 - id: VS-ANON
   description: Anonymous request
-  status: locally_tested
-  evidence: [evidence/04-local-e2e.txt]
+  status: ci_verified
+  evidence: [evidence/04-local-e2e.txt, evidence/07-local-e2e-after-review.txt]
 - id: VS-NOROLE
   description: Request without the role
-  status: locally_tested
-  evidence: [evidence/04-local-e2e.txt]
+  status: ci_verified
+  evidence: [evidence/04-local-e2e.txt, evidence/07-local-e2e-after-review.txt]
 - id: VS-REDALERT-STOPALL
   description: red-alert stopped through the telemetry service's stop-all
   status: blocked
@@ -151,11 +155,11 @@
 - id: VS-AUDIT
   description: Audit record complete for every run
   status: locally_tested
-  evidence: [evidence/04-local-e2e.txt]
+  evidence: [evidence/04-local-e2e.txt, evidence/07-local-e2e-after-review.txt]
 - id: VS-NO-COLLATERAL
   description: No data outside the fixture set changed
   status: locally_tested
-  evidence: [evidence/04-local-e2e.txt]
+  evidence: [evidence/04-local-e2e.txt, evidence/07-local-e2e-after-review.txt]
 
 - id: LIVE-BASELINE
   description: '"Make it so" on the cluster with audit and end-state evidence, after approval'

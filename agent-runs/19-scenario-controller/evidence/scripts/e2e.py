@@ -211,7 +211,7 @@ def step_hold():
     r = ended(op, rid, 180)
     log(json.dumps(summary(r)))
     check("hold that order: VERIFIED", r["status"] == "VERIFIED", r["detail"])
-    check("hold that order: held signal recorded", "held signal: fulfillment_held >= 1" in r["detail"], r["detail"])
+    check("hold that order: held signal rose over its baseline", "held signal: fulfillment_held rose from" in r["detail"], r["detail"])
     check("hold that order: audit complete", audit_complete(r))
 
 
@@ -241,13 +241,20 @@ def step_delay():
 def step_crash():
     op = token("operator")
     log("ERP console step (local stand-in): AUTO", stack("erp", "mode", "AUTO"))
-    log("ERP console step (local stand-in): arm crash", stack("erp", "fault", "crash_after_commit", "1"))
     status, run = http("POST", f"{C}/internal/v1/scenarios/erp-crash-after-commit/start", op, {"ttlSeconds": 300})
-    r = ended(op, run["scenarioRunId"], 360)
-    log(json.dumps(summary(r)))
+    rid = run["scenarioRunId"]
+    r = wait(op, rid, lambda r: r.get("operatorStepId") == "crash-armed", 60)
+    log("operator step shown:", r["operatorStep"])
+    log("ERP console step (local stand-in): arm crash", stack("erp", "fault", "crash_after_commit", "1"))
+    log("confirm crash-armed:", http("POST", f"{C}/internal/v1/runs/{rid}/confirm", op, {"step": "crash-armed"})[0])
+    r = wait(op, rid, lambda r: r.get("operatorStepId") == "crash-observed", 120)
     journal = stack("erp", "journal", "60")
     crashed = "status=70" in journal or "code=exited" in journal
-    log("ERP journal shows the crash exit:", crashed)
+    log("operator checks the ERP journal for the crash exit:", crashed)
+    if crashed:
+        log("confirm crash-observed:", http("POST", f"{C}/internal/v1/runs/{rid}/confirm", op, {"step": "crash-observed"})[0])
+    r = ended(op, rid, 360)
+    log(json.dumps(summary(r)))
     check("warp core breach: VERIFIED, shipped exactly once", r["status"] == "VERIFIED", r["detail"])
     check("warp core breach: the ERP actually crashed (journal)", crashed)
     log("ERP console step (local stand-in): MANUAL", stack("erp", "mode", "MANUAL"))

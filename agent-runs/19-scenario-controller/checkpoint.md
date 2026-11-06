@@ -1,29 +1,35 @@
 # Checkpoint, run 19 (scenario controller)
 
-- **Updated:** 2026-11-06 ~02:15 EST
-- **Phase:** 4 Verification complete. Next: 5 Review (reviewer subagents).
-- **Branches:**
-  - scenario-controller `run19-controller` `e061f6d` (PR #1, CI pending at last check);
-  - inventory-service `run19-fixture-admin` `fca04be` (PR #3, CI passed);
+- **Updated:** 2026-11-06 02:30 EST
+- **Phase:** 0–5 complete. **Stopped (stop 2) at Phase 6 entry**: every next action needs approval (`open-decisions.md` A-1 to A-11, decisions O-11, O-13, O-14).
+- **Branches and commits:**
+  - scenario-controller `run19-controller` `7f0f9ea` (PR #1, CI Succeeded `scenario-controller-validate-std6t`);
+  - inventory-service `run19-fixture-admin` `fca04be` (PR #3, CI Succeeded `inventory-service-validate-8hlzm`);
+  - box1-gitops `run19-scenario-controller-keycloak` `63c0624` (PR #78);
+  - box1-workloads-dev `run19-scenario-controller-runtime` `4c039d3` (PR #103);
   - run state `agent-run/19-scenario-controller`.
+  - Nothing is merged or deployed. The cluster still runs the scaffold image.
 - **Tests:**
-  - controller: CI set 19 (now 22 with ContractTest) pass; containers 38 + 5 IT pass (`evidence/03`).
-  - inventory: 74 + 10 IT pass.
-  - local end to end against the real services and ERP harness: all steps pass (`evidence/04`).
-- **Ledger:**
-  - most AC/VS entries are `locally_tested`;
-  - VS-REDALERT-STOPALL is `blocked`;
-  - LIVE-* are `proposed`;
-  - SC-NOEXEC, SC-CLI and SC-OBS are `implemented`.
-- **Platform change:** P-3 is superseded (adapter SFTP to the ERP is live, `evidence/05`). LIVE-GUIDED-ERP via `erp-manual-hold` is feasible once the controller is deployed.
-- **Local stack:** `run19-*` containers and four JVMs are still running for possible reruns. Tear down with `evidence/scripts/stack.sh down`.
-- **Still open for the user:**
-  - O-3 identity (Keycloak clients `scenario-controller` and `inventory-service`, client secret);
-  - O-11 database credential;
-  - every merge (inventory-service#3, scenario-controller#1, the workloads PR, the Keycloak PR);
-  - the contract patch;
-  - cluster seeding and each cluster run.
+  - controller CI set passes;
+  - controller containers set: 48 + 5 IT pass;
+  - inventory: 74 + 10 IT pass;
+  - local end to end: 37/37 after review (`evidence/07`);
+  - CLI exercised (`evidence/07`).
+- **Reviews:** five passes, 57 findings, all fixed or recorded (`review-findings/outcomes.md`). The Release pass runs after deployment.
+- **Ledger:** 5 `ci_verified`, 21 `locally_tested`, 2 `implemented`, 3 `proposed` (LIVE-*), 1 `blocked` (VS-REDALERT-STOPALL).
+- **Local stack:** the `run19-*` containers and four JVMs are running. Tear down with `evidence/scripts/stack.sh down`.
 
 ## Exact next action
 
-Run the Phase 5 reviewer passes (architecture, persistence, messaging/integration, security, operations) as fresh read-only subagents on `run19-controller` `e061f6d` and inventory-service#3, then fix in-scope findings, rerun both suites and the end-to-end check, and record `review-findings/`. Then prepare (do not merge) the box1-workloads-dev PR (gates, upstream URLs, POD_NAMESPACE, token Secret reference) and the box1-gitops Keycloak PR, and stop for approvals.
+When the user approves A-1 and A-3:
+1. Merge inventory-service#3, then scenario-controller#1.
+2. Watch the release runs (`*-release-*` in `box1-ci`) and the promotion PRs.
+3. Record the image digest, the GitOps commit and the Argo state.
+4. Run the Release reviewer pass.
+
+Then, as each is approved:
+1. A-4: merge box1-gitops#78 and check the roles on the cluster.
+2. A-5: the user provisions the Secret.
+3. A-6: merge box1-workloads-dev#103 and check that the pod's gates report allowed (a 403 without a role, a 200 catalog with one).
+4. A-8: seed.
+5. A-9 to A-11: the live runs, each recorded in `evidence/` with its run JSON and audit.

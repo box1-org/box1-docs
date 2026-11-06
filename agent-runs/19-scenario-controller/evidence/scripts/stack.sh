@@ -27,7 +27,8 @@ controller() {
   jvm controller 39084 "$BOX/run19-scenario-controller/target/quarkus-app/quarkus-run.jar" \
     QUARKUS_DATASOURCE_JDBC_URL=jdbc:postgresql://localhost:39432/scenario_controller QUARKUS_DATASOURCE_USERNAME=postgres \
     QUARKUS_DATASOURCE_PASSWORD=postgres SCENARIO_CONTROL_ENABLED=true POD_NAMESPACE=scenario-controller-dev \
-    SCENARIO_NAMESPACE_ALLOWLIST=scenario-controller-dev SCENARIO_ENVIRONMENT=local-e2e \
+    SCENARIO_NAMESPACE_ALLOWLIST=scenario-controller-dev SCENARIO_ENVIRONMENT=local-e2e SCENARIO_UPSTREAM_HOST_ALLOWLIST=localhost \
+    SCENARIO_ALLOWED_AZP=scenario-controller \
     ORDER_SERVICE_URL=http://localhost:39081 INVENTORY_SERVICE_URL=http://localhost:39082 FULFILLMENT_ADAPTER_URL=http://localhost:39083 \
     INVENTORY_TOKEN_URL="$ISS/protocol/openid-connect/token" INVENTORY_TOKEN_CLIENT_ID=scenario-controller \
     INVENTORY_TOKEN_CLIENT_SECRET="$(cat "$WORK/client-secret")" SCENARIO_JWT_ISSUER="$ISS" \

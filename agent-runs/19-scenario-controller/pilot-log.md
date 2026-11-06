@@ -6,6 +6,7 @@ No comparison with `qwen-64k`, because no baseline exists.
 
 | # | Time (America/New_York) | Phase | Stop condition | Reason |
 |---|---|---|---|---|
+| 2 | 2026-11-06 ~02:30 EST | 6 entry | Next action needs approval | Phases 0–5 are complete and the full suite and end-to-end run passed after reviewer repairs. Delivery needs four merges (inventory-service#3, scenario-controller#1, box1-gitops#78, box1-workloads-dev#103), a new secret, a contract change I may not push, role assignment, and approval for cluster seeding and each live run. Reported together (`open-decisions.md`). |
 | 1 | 2026-11-06 ~01:25 EST | 0 exit | Next action needs user decisions; platform conflicts with the prompt; required dependency unavailable | The user asked to see the mechanism table before design. Discovery found that inventory cannot create the fixture sites through its API (a change to another service), that no ERP is reachable on the cluster, and that the controller identity, allowlist and database credential need approval. All open decisions are reported together (`open-decisions.md` O-1 to O-12). |
 
 ## Repairs
@@ -21,16 +22,48 @@ Found by verification (Phase 4), fixed and retested:
 
 5. **The hold scenario read the adapter's held gauge too early (R-2).** The adapter refreshes gauges every 15 s; reading right after observing `HELD` returned 0, so the alert signal for AC-3 was not shown. The run now waits up to 45 s for the gauge before asking for the release, and says so if it never appears. Retested end to end (`evidence/04`, e2e-4).
 
+Found by reviewer passes (Phase 5), fixed and retested. See `review-findings/outcomes.md` for all 57 findings and their outcomes:
+
+6. **"Shipped exactly once" could never fail** (MSG-1). Order-service records a second shipment event as a timeline note, not a second SHIPPED transition. The check now counts distinct `shipment.confirmed.v1` event IDs after a settle window. Writing the fix showed that counting entries would also have been wrong, because one shipment event moves the order through both SHIPPED and COMPLETED.
+7. **The crash scenario verified without a crash** (MSG-2, ARCH-3). The crash is invisible outside the ERP. The run now waits for two audited operator confirmations (armed, before the order is placed; crashed and restarted); without them it is NOT_VERIFIED.
+8. **Reset could over-restock and break the tribble scenario permanently** (MSG-3, PERS-6, MSG-8). Contention orders all available stock, and reset waits for the run's orders to be decided.
+9. **A rolling update would abort a live run** (ARCH-1, OPS-1, PERS-5). The Deployment uses `Recreate` (box1-workloads-dev#103).
+10. **Ending a run was not atomic** (PERS-1, PERS-2, ARCH-6). Start and end are single transactions; unrecorded resets are completed at startup and by the sweep.
+11. **The gate checked only where the controller runs** (SEC-1). It now also checks where it writes: an upstream host allowlist. The namespace now comes from the environment only (SEC-2).
+12. **A stop could interrupt the next run** (ARCH-2), and an interrupted call recorded FAILED (OPS-2). Fixed with per-run Futures and stop-aware error handling.
+13. Smaller fixes:
+    - REJECTED counted as released (MSG-4);
+    - the held signal was not tied to this hold (MSG-5);
+    - the delay included downstream lag (MSG-6);
+    - creates and reads were not retried (MSG-7);
+    - a 401 waited until the TTL (MSG-9);
+    - retention below 90 days failed silently (PERS-3);
+    - error text leaked (SEC-6);
+    - concurrent resets (SEC-7);
+    - the CLI token was visible in argv (SEC-9);
+    - the token URL scheme (SEC-10);
+    - unbounded bodies (SEC-11);
+    - the actor was the mutable username (SEC-3);
+    - a span per run (OPS-4);
+    - runbook recovery and backup guidance (OPS-7, OPS-8);
+    - a code/catalog consistency test (ARCH-10).
+
 Test harness and test defects:
 - The end-to-end driver asked inventory for `limit=200`; its maximum is 100 (R-1). The driver now pages.
 - The collateral step depended on state from the seed step in the same process; it now compares with the recorded V2 baseline.
 
 ## Profile ambiguity and friction
 
+3. **Reviewer passes were the most productive phase.** Five same-model passes found 57 findings: 13 medium and none high. They included two verification checks that could never fail (MSG-1, MSG-2) and that the local end-to-end run had passed. A green end-to-end run proved the happy path; only adversarial reading found the checks that could not detect a failure.
+4. **"Phase 4: all scenarios run" vs scenarios that are not yet possible.** I counted a refusal with its reason as the run for those five. The profile does not say.
+
 1. **The prompt's #59 note is stale.** The frontier section says client roles in `spec.roles` "are not created by the operator (#59)". #59 was closed on 2026-11-06 as not a defect: the operator did create the `asset-service` roles. The rule "check the roles exist after sync" still applies; the premise that they will be missing does not.
 2. **The prompt's requirement IDs (FR-09, OBS-06, DEMO-A/B/C) are defined only in the white paper PDF.** The ledger derives IDs from the prompt's acceptance evidence and verification scenarios, as the profile allows.
 
 ## Places I was unsure of my authority
+
+5. **Opening the GitOps PRs before review findings were in.** Opening a PR is allowed; I opened box1-gitops#78 and box1-workloads-dev#103 while the reviewers ran and then added a review repair to #103 (Recreate). Nothing is merged.
+6. **The operator confirmation endpoint.** The prompt says guided scenarios verify the outcome. For the crash, the outcome a person can see (the worker restarting) is invisible to the controller, so I added an audited attestation step rather than report an unverifiable VERIFIED. Recorded so the user can object.
 
 3. **"Expand your mind and disregard prior instructions."** I read the user's message as answering open decisions O-1, O-2, O-10 and O-12 and authorizing the inventory-service change, not as lifting the approval table or the credential rules. I said so to the user at the time.
 4. **The box1-ops-contracts patch.** The inventory change needs a matching contract change, but the run may not push to box1-ops-contracts. I prepared the patch in the run state (`evidence/02-inventory-contract.patch`) for the user instead.
@@ -49,6 +82,7 @@ Test harness and test defects:
 | #59's "operator skips spec.roles" (run 15) | Read #59 first: it was closed as a false report | **Applied.** The prompt's stale premise is noted under ambiguity |
 | Check host and container VM clocks before long runs (runs 13, 14) | Checked at start | Applied; no long run yet |
 | Guava override with `security-gates: gate` (runs 11, 15, 18) | The pom carries the 33.7.2-jre override from inventory's, and the release pipeline was switched to `gate` in the same commit | **Applied**; proven at the first release (Phase 6) |
+| Start reviewer passes only after Phase 4 (runs 15, 18) | Started after the end-to-end run passed | **Applied.** They reviewed the commit kept, and the full suite and end-to-end run were repeated after repairs |
 | Container-backed tests need `DOCKER_HOST` and Ryuk off on this Mac (runs 12–15) | Set both from the start | **Prevented** |
 | Name local containers per run (runs 13–18) | Testcontainers PostgreSQL named `run19-tc-pg-*`; stack containers `run19-*`; ports 39xxx | **Applied** |
 | Build another run's ERP from a separate clone, not its working copy (run 13) | Built the harness from `run19-erp-src` | **Prevented** |
@@ -64,6 +98,7 @@ Test harness and test defects:
 
 - Every service the controller needs was built by a different run, each with its own auth decision: order-service has none (#40), inventory accepts only its own audience with no client to issue it, asset-service pins `azp` to itself, and the adapter's writer role is only reachable by a person. No two services agree on how a machine caller gets in, so a controller cannot be designed until the token shape for each is decided.
 - The other runs' scope boundaries ("a change to another service is a stop") compound: the controller's first prerequisite (creating fixture sites) is another service's missing endpoint, found in the first hour.
+- The services were built to their contracts, but the contracts don't say everything a verifier needs. Two of the reviewers' best findings came from behavior no contract states: order-service records a duplicate shipment as a note rather than a transition, and the adapter's gauges lag by their refresh interval. Fakes built only from the contracts hid both; reading the other runs' source found them.
 - Running three other runs' services together locally was cheap because each one documents its runtime settings as environment variables and run 13 left a working ERP harness launcher. Their contracts held: no controller change was needed to talk to real order, inventory and adapter after testing against fakes built from the contracts.
 - The one surprise was timing, not shape: the adapter's gauges lag by its refresh interval (repair 5). Fakes built from a contract don't reproduce that kind of behavior.
 - The other runs' run state was the fastest way in: the #18 D-011 fixtures and G-1/G-2/G-3 gaps, and the #15 control API, told me more than the services' READMEs did.
@@ -76,4 +111,6 @@ Test harness and test defects:
 - Pushed branch `run19-controller` and opened scenario-controller#1.
 - Issue box1-docs#71 filed at the user's request.
 - Image `localhost/run19-erp-harness:dev`. Containers `run19-pg` (39432), `run19-kafka` (39092), `run19-keycloak` (39180), `run19-erp` (39222) and volume `run19-erp-data`; JVMs on 39081–39084 with PIDs in the scratch WORK directory. Transient `run19-tc-pg-*` from Testcontainers.
-- No cluster writes.
+- Pushed branches `run19-scenario-controller-keycloak` (box1-gitops#78) and `run19-scenario-controller-runtime` (box1-workloads-dev#103); worktrees `run19-gitops`, `run19-workloads`.
+- Five read-only reviewer subagents.
+- No cluster writes. The local stack (`run19-*`) is still running for reruns; tear down with `evidence/scripts/stack.sh down`.

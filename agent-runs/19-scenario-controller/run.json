@@ -4,13 +4,15 @@
   "profile": "frontier",
   "prompt": "box1_operations_agent_prompts/01-services/09_scenario_controller.md@8c90a0c (main; PR #70 merged 2026-11-06T05:38:36Z)",
   "started": "2026-11-06T00:47:48-05:00",
-  "current_phase": "3 Implementation",
+  "current_phase": "6 Delivery (stopped at entry: approvals A-1..A-11, decisions O-11, O-13, O-14)",
   "repositories": [
     {
       "name": "box1-org/scenario-controller",
-      "branch": "main",
-      "commit": "203968e",
-      "role": "implementation target (Golden Path template 1.1.0, onboarded by the user)"
+      "branch": "run19-controller",
+      "commit": "7f0f9ea255bc2912ff7828d3eab72d534231b53f",
+      "role": "implementation target (Golden Path template 1.1.0, onboarded by the user)",
+      "pr": "https://github.com/box1-org/scenario-controller/pull/1",
+      "ci": "box1-ci/scenario-controller-validate-std6t Succeeded"
     },
     {
       "name": "box1-org/box1-docs",
@@ -19,21 +21,25 @@
     },
     {
       "name": "box1-org/box1-workloads-dev",
-      "branch": "main",
-      "commit": "8af72f9",
-      "role": "workload manifests (workloads/scenario-controller)"
+      "branch": "run19-scenario-controller-runtime",
+      "commit": "4c039d3",
+      "role": "workload manifests (workloads/scenario-controller)",
+      "pr": "https://github.com/box1-org/box1-workloads-dev/pull/103"
     },
     {
       "name": "box1-org/box1-gitops",
-      "branch": "main",
-      "role": "shared infrastructure (Keycloak client, RBAC)"
+      "branch": "run19-scenario-controller-keycloak",
+      "role": "shared infrastructure (Keycloak client, RBAC)",
+      "commit": "63c0624",
+      "pr": "https://github.com/box1-org/box1-gitops/pull/78"
     },
     {
       "name": "box1-org/inventory-service",
       "role": "fixture admin routes (user-authorized 2026-11-06)",
       "branch": "run19-fixture-admin",
       "commit": "fca04be",
-      "pr": "https://github.com/box1-org/inventory-service/pull/3"
+      "pr": "https://github.com/box1-org/inventory-service/pull/3",
+      "ci": "box1-ci/inventory-service-validate-8hlzm Succeeded"
     }
   ],
   "local_names": {
@@ -47,5 +53,13 @@
   },
   "issues_filed": [
     "https://github.com/box1-org/box1-docs/issues/71"
-  ]
+  ],
+  "upstreams_read_only": {
+    "order-service": "11360f2",
+    "fulfillment-adapter": "4c98522",
+    "box1-ops-erp-simulator": "7b13529",
+    "box1-ops-contracts": "d57a4ef"
+  },
+  "image_digest": null,
+  "gitops_commit": null
 }

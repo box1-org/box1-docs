@@ -1,22 +1,36 @@
-# Open decisions, run 19 (stop 1, Phase 0 exit)
+# Open decisions, run 19 (stop 2, Phase 6 entry)
 
-Reported together, 2026-11-06 ~01:25 EST. Evidence: `evidence/01-mechanism-classification.md` (P-1 to P-8). Each item says what it blocks and what I recommend.
+Reported together, 2026-11-06 ~02:30 EST. Stop 1's decisions (O-1 to O-12) are resolved except O-3 and O-11, which reappear below.
 
-| ID | Decision | Blocks | Recommendation |
+**Resolved at stop 1 (user, 2026-11-06):**
+- O-1: the mechanism table is accepted (D-004).
+- O-2: the inventory-service change was authorized; it is inventory-service#3.
+- O-10: the allowlist was delegated; it is `scenario-controller-dev` (D-006).
+- O-12: the Kafka issue was filed as #71.
+- O-4 to O-9: per the accepted table, those scenarios are recorded as not yet possible (D-010).
+
+## Needed for delivery (Phase 6), in order
+
+Each item is a separate approval; nothing below is approved yet.
+
+| ID | Action | What it does | Status |
 |---|---|---|---|
-| O-1 | Accept the mechanism classification (D-004) | All design | Accept as written |
-| O-2 | **Fixture sites and SKUs cannot be created through inventory-service's API** (P-1). Under D-003, seeding needs an inventory-service change that adds an admin API, which this run cannot push | Seeding; `inventory-contention`; `baseline-order` | An inventory-service change, by its owner, adding an idempotent admin endpoint that creates a site (with status) and a site/SKU stock row, behind `inventory-admin`. Not a Flyway seed, which would bypass "seed through the API" |
-| O-3 | **Controller identity.** (a) A `scenario-controller` Keycloak client: confidential with a service account (a new secret) for calling inventory admin; (b) an `inventory-service` client holding `inventory-admin`, which does not exist yet (P-2), with an audience for the controller; (c) the operator-facing roles on the controller, proposed `scenario-operator` and `scenario-viewer` | Seeding, stock reset, any authenticated call | Approve the shape first; each client, audience and secret is a separate approval later |
-| O-4 | **`red-alert` needs an asset-service change** (P-5: `azp` pin, browser-login tenant on control paths). Out of scope for this run | `red-alert` | Record `red-alert` as not yet possible from the controller; at most, the controller links to the asset-service console. A machine path is the asset owner's change |
-| O-5 | **No ERP on the cluster** (P-3: adapter SFTP disabled, no ERP Service) | Every ERP scenario on the cluster, the "ships and completes" half of `baseline-order`, and the Phase 7 guided-ERP check | Prove the ERP scenarios locally against the harness. Leave the cluster guided-ERP acceptance `blocked` until #13/#25 connect the adapter, unless you plan that sooner |
-| O-6 | ERP demo faults are off in the VM (P-4) | `erp-delayed-processing`, `erp-crash-after-commit` on the cluster | Leave off; local proof only. Enabling them is a VM change for #25 |
-| O-7 | `broker-outage` and `erp-unavailable` are platform- or VM-level with no approved mechanism or RBAC; Argo selfHeal would undo a VM stop | Those two scenarios | Record both as not yet possible on the cluster for this run; local proof only. No RBAC PR unless you want one |
-| O-8 | `poison-event`: the only route is the controller producing a malformed record directly to a shared business topic, which works only because the broker accepts unauthenticated producers (reported to you separately) | `poison-event` on the cluster | Local proof only until the broker has authentication and the controller has a scoped producer identity |
-| O-9 | `bad-artifact-gate`: nothing checks signatures (P-8). A guided variant would have an operator open a workloads PR with an outside image and the controller read `box1-gitops-validate`'s failure | `bad-artifact-gate` | Record as not yet possible; the guided variant demonstrates digest pinning, not trust |
-| O-10 | The demo namespace/environment allowlist, which you name | Any cluster scenario | Your choice; the controller refuses everything until it is set |
-| O-11 | Database credential while #41 is open (D-005; details sent to you directly) | Deployment of the controller's audit store | Your choice: keep the template Secret as disposable lab data (as order-service does), or you create a Secret out of band |
-| O-12 | Whether to file a backlog issue for the broker's unauthenticated access, given box1-docs is public | Nothing in this run | Your choice; I recorded only this pointer |
+| A-1 | Merge **box1-org/inventory-service#3** | Release builds, gates and promotes inventory-service with the create-once routes (migration V3 is additive). CI green | Ready |
+| A-2 | Apply **evidence/02-inventory-contract.patch** to box1-ops-contracts | Adds the two routes to `openapi/inventory-service.yaml`. I may not push there: you apply it, or authorize me to open the PR | Ready |
+| A-3 | Merge **box1-org/scenario-controller#1** | Release builds, runs the security gate (`gate`, Guava override in place), promotes to `scenario-controller-dev`. CI green on 7f0f9ea | Ready |
+| A-4 | Merge **box1-org/box1-gitops#78**, then Argo sync of `keycloak` | Creates clients `inventory-service`, `scenario-controller`, `scenario-controller-cli` and their roles. I then check that the roles exist on the cluster | Ready |
+| A-5 | **New secret:** copy `keycloak-client-secret-scenario-controller` (namespace keycloak) into `scenario-controller-dev` as Secret `scenario-controller-inventory-token`, key `client-secret` | The controller's inventory admin identity. You create it, or authorize me to (I would not read the value) | After A-4 |
+| A-6 | Merge **box1-org/box1-workloads-dev#103** | Gates, upstream URLs, host allowlist, CLI azp, token Secret reference, Recreate | After A-3 |
+| A-7 | Assign `scenario-operator` (client scenario-controller) to the person who runs scenarios, and get a token from `scenario-controller-cli` | Needed to call the controller. Whether RH-SSO 7.6 enables the device grant by attribute is not established | After A-4 |
+| A-8 | **Cluster seeding** | `POST /internal/v1/fixtures/seed`: four sites and 22 stock records through inventory's API; nothing else changes | After A-1, A-3, A-5, A-6 |
+| A-9 | **Live run: The Trouble with Tribbles** | Two fixture orders; one reserved, one rejected; additive reset | After A-8 |
+| A-10 | **Live run: Make it so** | One fixture order; you ship it in the ERP console when the run shows the step (or switch the ERP to AUTO) | After A-8 |
+| A-11 | **Live run: Hold that order, Number One** (the guided ERP scenario) | One fixture order; you hold and then release it in the ERP console (`virtctl console legacy-erp -n legacy-erp-dev`). It needs no demo faults. If you don't do the step, it times out as not verified | After A-8 |
 
-## Independent of these decisions
+## Decisions
 
-None that is useful before O-1: you asked to see the classification before design depends on it.
+| ID | Decision | Recommendation |
+|---|---|---|
+| O-11 | The controller's database credential while #41 is open: the template Secret is inline in Git in a public repository (details sent to you directly) | Treat the audit store as disposable lab data, as order-service does, until #41; or create a Secret out of band |
+| O-13 | File backlog issues for the follow-ups: (a) an ERP-side expiry for demo faults and holds (ARCH-4, the ERP repo's change); (b) a fixture-only inventory role narrower than `inventory-admin` (SEC-4); (c) rate-limiting audited refusals (SEC-8) | File (a) and (b); (c) can wait |
+| O-14 | #18 console adoption: the catalog read now needs a token (prompt: catalog behind operator authorization), so the deployed console's tokenless catalog read gets 401 and shows the controller as unavailable | #18's change (forward a token with audience `scenario-controller`); an audience change needs your approval |

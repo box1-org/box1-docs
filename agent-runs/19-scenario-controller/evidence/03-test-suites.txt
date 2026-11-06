@@ -14,3 +14,22 @@
 [INFO] You have 0 Checkstyle violations.
 [INFO] BugInstance size is 0
 [INFO] BUILD SUCCESS
+
+# After reviewer repairs (7f0f9ea), 2026-11-06 ~02:22 EST, local
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.910 s -- in org.box1.GreetingResourceTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.549 s -- in org.box1.scenario.SecurityTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.755 s -- in org.box1.scenario.GateClosedTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.538 s -- in org.box1.scenario.GateTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.419 s -- in org.box1.scenario.GateUpstreamTest
+[INFO] Tests run: 17, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 18.54 s -- in org.box1.scenario.ScenarioRunsTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.857 s -- in org.box1.scenario.run.AbandonedRunTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in org.box1.GreetingServiceTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.072 s -- in org.box1.scenario.CatalogTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.322 s -- in org.box1.scenario.ContractTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in org.box1.scenario.scenarios.FixtureConsistencyTest
+[INFO] Tests run: 48, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.743 s -- in org.box1.GreetingResourceIT
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0
+[INFO] You have 0 Checkstyle violations.
+[INFO] BugInstance size is 0
+[INFO] BUILD SUCCESS

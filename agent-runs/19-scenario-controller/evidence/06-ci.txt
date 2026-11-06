@@ -1,0 +1,4 @@
+# CI evidence (Pipelines as Code PR validation), read-only, 2026-11-06 ~02:25 EST
+scenario-controller-validate-4dbn5 sha=e061f6d566f35f1629a5e07c921626493660f80f status=Succeeded start=2026-11-06T07:04:10Z end=2026-11-06T07:05:41Z
+inventory-service-validate-8hlzm sha=fca04be01faf2f9e9ba6364463ef6e74c5d7c021 status=Succeeded start=2026-11-06T06:14:36Z end=2026-11-06T06:16:14Z
+scenario-controller-validate-std6t sha=7f0f9ea255bc2912ff7828d3eab72d534231b53f status=Succeeded end=2026-11-06T07:25:34Z
