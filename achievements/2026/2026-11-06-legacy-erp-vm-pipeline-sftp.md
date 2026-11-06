@@ -208,9 +208,7 @@ How the pieces fit:
 - **[#13](https://github.com/box1-org/box1-docs/issues/13) and [#14](https://github.com/box1-org/box1-docs/issues/14):** their VM-dependent criteria can now be judged against the evidence above. They have not been updated yet.
 - **[#64](https://github.com/box1-org/box1-docs/issues/64):** the PaC check-run 404 strands checks. A `/retest <name>` posted as a **PR** comment recovers; posted on a commit it fails.
 - **[#52](https://github.com/box1-org/box1-docs/issues/52):** adapter and ERP in one namespace.
-- **Not yet filed as issues:**
-  - pin guest host keys in `box1-bootc-apply` instead of trusting on first use;
-  - persist the admin sshd host key, which is regenerated on guest rebuild;
-  - retire the now-unused simulator bundle ImageStream and the `ci-erp-release` RBAC;
-  - close the unneeded re-trigger PR [legacy-erp#4](https://github.com/box1-org/legacy-erp/pull/4).
+- **[#75](https://github.com/box1-org/box1-docs/issues/75):** pin guest host keys in `box1-bootc-apply` instead of trusting on first use, and make the admin sshd host key durable across guest rebuild.
+- **[#76](https://github.com/box1-org/box1-docs/issues/76):** retire the now-unused simulator bundle ImageStream and the `ci-erp-release` RBAC.
+- **Housekeeping:** close the unneeded re-trigger PR [legacy-erp#4](https://github.com/box1-org/legacy-erp/pull/4).
 - **Cluster cleanup.** The orphan PipelineRun `box1-phase1-smoke-kf7kf` left by #64 is for the user to delete; the agent's attempt was refused.
