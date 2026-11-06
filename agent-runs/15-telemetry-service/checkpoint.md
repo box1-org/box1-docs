@@ -16,6 +16,8 @@
 Evidence: `evidence/10-delivery.txt`. Ledger: 26 deployed, 5 live_verified, 1 proposed (TEL-LIVE-001).
 
 ## Open
+- asset-service#2 (CORS: allow the console's own https origin) open, CI pending; merge needs approval. Until it ships, Arm/Start/Stop from the browser return 403.
+- Client roles were created by hand by the user (operator did not apply `spec.roles`).
 - User: assign client role `chaos-operator` (client asset-service) to their account, sign in at https://asset-service-dev.apps.ocp.box1.org/console/, run one seeded load run. Then the agent records audit and readings evidence read-only.
 - D-015 deferred: chaos stays off; the live chaos run (with alert and clear evidence) is blocked until a namespace is named.
 - Release review pass: running/recorded in review-findings/release.md.
