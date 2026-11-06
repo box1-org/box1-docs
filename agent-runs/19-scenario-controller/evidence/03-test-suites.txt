@@ -1,0 +1,16 @@
+# Controller test suites after repair R-2 (e061f6d), 2026-11-06 ~02:10 EST, local
+# ./mvnw -B -Pcontainers verify -DskipITs=false (PostgreSQL 15 in run19-tc-pg-*, fake upstreams)
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.922 s -- in org.box1.GreetingResourceTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.706 s -- in org.box1.scenario.SecurityTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.793 s -- in org.box1.scenario.GateTest
+[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 12.10 s -- in org.box1.scenario.ScenarioRunsTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.736 s -- in org.box1.scenario.run.AbandonedRunTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 s -- in org.box1.GreetingServiceTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.110 s -- in org.box1.scenario.CatalogTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.413 s -- in org.box1.scenario.ContractTest
+[INFO] Tests run: 38, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 5.834 s -- in org.box1.GreetingResourceIT
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0
+[INFO] You have 0 Checkstyle violations.
+[INFO] BugInstance size is 0
+[INFO] BUILD SUCCESS

@@ -1,95 +1,161 @@
 # Requirement ledger, run 19 (scenario controller), frontier profile.
-# IDs derive from 09_scenario_controller.md acceptance evidence (AC-*), the frontier
-# verification scenarios (VS-*) and interface constraints (SC-*). Status is the highest
-# level actually observed: proposed -> implemented -> locally_tested -> ci_verified -> deployed -> live_verified.
-# Parent IDs from the white paper: FR-09, OBS-06, DEMO-A/B/C (defined only in the PDF; not restated here).
+# IDs derive from 09_scenario_controller.md acceptance evidence (AC-*), the frontier verification scenarios (VS-*) and
+# interface constraints (SC-*). Status is the highest level actually observed:
+#   proposed -> implemented -> locally_tested -> ci_verified -> deployed -> live_verified
+# "locally_tested" here means one or both of: the container suite (real PostgreSQL, fake upstreams; evidence/03) and the
+# local end-to-end run against the real services and ERP harness (evidence/04). Neither is cluster proof.
+# Parent IDs from the white paper: FR-09, OBS-06, DEMO-A/B/C (defined only in the PDF).
+# Source: scenario-controller run19-controller e061f6d; inventory-service run19-fixture-admin fca04be.
 
 - id: AC-1
   description: Attempt to run in a non-demo namespace fails closed; unknown scenario name rejected
-  status: proposed
+  status: locally_tested
+  implementation: [src/main/java/org/box1/scenario/Gate.java, src/main/java/org/box1/scenario/run/Engine.java]
+  tests: [GateTest.everyActionIsRefusedAndAudited, ScenarioRunsTest.notYetPossibleAndUnknownScenariosAreRefusedAndAudited, SecurityTest.unknownAndMalformedNamesGetAPlain404]
+  commands: ["./mvnw -B -Pcontainers verify -DskipITs=false", "evidence/scripts/e2e.py auth"]
+  evidence: [evidence/03-test-suites.txt, evidence/04-local-e2e.txt]
+  limitations: [Non-allowlisted namespace proven in the container suite only, not against the real JVM stack]
 - id: AC-2
   description: Every named fault has bounded duration, complete audit trail, stop/reset behavior and positive end-state verification
-  status: proposed
+  status: locally_tested
+  implementation: [src/main/resources/catalog/scenarios.yaml, src/main/java/org/box1/scenario/run/Engine.java, src/main/java/org/box1/scenario/scenarios/]
+  tests: [CatalogTest.everyScenarioHasItsTitleAndClassifiedMechanism, ScenarioRunsTest.stopEndsTheRunAndResets]
+  commands: ["evidence/scripts/e2e.py (all steps)"]
+  evidence: [evidence/04-local-e2e.txt]
+  limitations: [The controller enables no fault itself; ERP faults are set and undone at the ERP console (RESET_GUIDED). Five scenarios are not yet possible and have no fault code.]
 - id: AC-3
   description: ERP delayed processing or a manual hold reproduces alert and long-running order without data loss; inventory contention shows one reservation
-  status: proposed
+  status: locally_tested
+  implementation: [src/main/java/org/box1/scenario/scenarios/ErpManualHold.java, ErpDelayedProcessing.java, InventoryContention.java]
+  tests: [ScenarioRunsTest.holdThatOrderNumberOneIsVerifiedThroughTheAdapter, ScenarioRunsTest.impulsePowerOnlyNeedsAVisibleDelay]
+  commands: ["evidence/scripts/e2e.py hold delay tribbles"]
+  evidence: [evidence/04-local-e2e.txt]
+  limitations: ["No alert rule exists on the platform (no PrometheusRule); the alert half is the adapter's fulfillment_held gauge, observed >= 1 while held"]
 - id: AC-4
   description: Interrupted orchestration process does not leave a fault permanently enabled beyond TTL
-  status: proposed
+  status: locally_tested
+  implementation: [Engine.recover, Engine.sweep]
+  tests: [AbandonedRunTest.aRunLeftByADeadProcessIsAbortedAndResetAtStartup, AbandonedRunTest.aRunPastItsTtlWithNoThreadIsExpiredAndReset]
+  commands: ["evidence/scripts/e2e.py kill (SIGKILL mid-run, 45 s down past a 30 s TTL, restart)"]
+  evidence: [evidence/04-local-e2e.txt]
+  limitations: [Pod-level restart on the cluster not exercised]
 - id: AC-5
-  description: Starfleet Feline Supply fixtures seed idempotently through service APIs; seeding twice gives the same state; nothing outside the fixture set changed or deleted
-  status: proposed
+  description: Fixtures seed idempotently through service APIs; seeding twice gives the same state; nothing outside the fixture set is changed or deleted
+  status: locally_tested
+  implementation: [src/main/java/org/box1/scenario/fixtures/, inventory-service#3]
+  tests: [ScenarioRunsTest.seedingTwiceGivesTheSameStateAndTouchesOnlyFixtures, inventory ReservationScenariosTest.sitesAndStockRecordsAreCreatedOnceAndNeverChanged]
+  commands: ["evidence/scripts/e2e.py seed collateral"]
+  evidence: [evidence/04-local-e2e.txt]
+  limitations: [Cluster seeding needs inventory-service#3 merged, the Keycloak clients, and approval]
 - id: AC-6
-  description: "The Trouble with Tribbles" ends with exactly one reservation for the last tribble and one rejected order
-  status: proposed
+  description: '"The Trouble with Tribbles" ends with exactly one reservation for the last tribble and one rejected order'
+  status: locally_tested
+  tests: [ScenarioRunsTest.theTroubleWithTribblesHasExactlyOneWinnerAndCanBeRepeated]
+  commands: ["evidence/scripts/e2e.py tribbles"]
+  evidence: [evidence/04-local-e2e.txt]
 - id: AC-7
-  description: Guided ERP scenarios state the operator's console step and verify the result before reporting success; a step not performed times out and is reported as not verified
-  status: proposed
+  description: Guided ERP scenarios state the console step and verify before reporting success; a step not performed times out as not verified
+  status: locally_tested
+  tests: [ScenarioRunsTest.aGuidedStepNotPerformedTimesOutAsNotVerified]
+  commands: ["evidence/scripts/e2e.py hold timeout delay crash"]
+  evidence: [evidence/04-local-e2e.txt]
+  limitations: [The local console step was performed through the ERP domain API, not the TUI]
 - id: AC-8
   description: Every scenario shows its display title, while IDs, errors and audit fields stay plain
-  status: proposed
+  status: locally_tested
+  tests: [CatalogTest.everyScenarioHasItsTitleAndClassifiedMechanism, SecurityTest.aViewerReadsTheCatalogWithTitles]
+  evidence: [evidence/04-local-e2e.txt]
 
 - id: SC-API
-  description: POST /internal/v1/scenarios/{name}/start|stop|reset and GET /internal/v1/scenarios behind operator authorization and namespace/environment allowlist
-  status: proposed
+  description: start/stop/reset and GET catalog behind operator authorization and allowlist
+  status: locally_tested
+  tests: [SecurityTest, GateTest]
+  evidence: [evidence/03-test-suites.txt, evidence/04-local-e2e.txt]
 - id: SC-NOEXEC
   description: No arbitrary exec, shell, unrestricted Kubernetes writes or arbitrary URL fetches
-  status: proposed
+  status: implemented
+  implementation: [src/main/java/org/box1/scenario/upstream/Http.java]
+  limitations: [Established by construction (fixed base URLs, ID-pattern path segments, no Kubernetes client); confirmed by review in Phase 5]
 - id: SC-CATALOG
-  description: Declarative catalog; each scenario has prerequisites, fixture IDs, duration, expected observation, reset action, mechanism and title
-  status: proposed
+  description: Declarative catalog with prerequisites, fixture IDs, duration, expected observation, reset action, mechanism and title
+  status: locally_tested
+  tests: [CatalogTest]
 - id: SC-RUNID
-  description: Every start creates scenarioRunId and a stable correlation marker; audit has actor, time, environment, mode, TTL, impact, reset result, stardate (display only)
-  status: proposed
+  description: scenarioRunId, correlation marker, audit with actor, time, environment, mode, TTL, impact, reset result, stardate
+  status: locally_tested
+  tests: [ScenarioRunsTest (complete()), CatalogTest.stardateIsDisplayOnlyAndDeterministic]
+  evidence: [evidence/04-local-e2e.txt]
 - id: SC-TTL
-  description: Automatic TTL-based reset; abandoned run detected and reset after restart; documented manual recovery
-  status: proposed
+  description: TTL reset, abandoned-run detection and documented manual recovery
+  status: locally_tested
+  tests: [AbandonedRunTest]
+  evidence: [evidence/04-local-e2e.txt, docs/runbook.md]
 - id: SC-VERIFY
-  description: Verification checks actual order IDs and business invariants before claiming completion
-  status: proposed
+  description: Verification checks actual order IDs and business invariants
+  status: locally_tested
+  evidence: [evidence/04-local-e2e.txt]
 - id: SC-CLI
-  description: CLI scripts and README so an agent can demonstrate without expanding cluster RBAC
-  status: proposed
+  description: CLI script and README for demonstration without cluster RBAC
+  status: implemented
+  implementation: [scripts/scenario.sh, README.md, docs/runbook.md]
+  limitations: [Script syntax-checked only; not exercised]
 - id: SC-OBS
-  description: Health, OpenAPI, Micrometer metrics, structured JSON logs with correlation ID, W3C traceparent propagated to called services
-  status: proposed
+  description: Health, OpenAPI, metrics, JSON logs with correlation ID, traceparent to called services
+  status: implemented
+  limitations: [Health/OpenAPI/metrics in tests; traceparent propagation not observed in an upstream's logs]
+- id: SC-CONTRACT
+  description: The controller's order bodies, states and inventory routes match box1-ops-contracts
+  status: locally_tested
+  tests: [ContractTest]
 
 - id: VS-NS
   description: Start in a non-allowlisted namespace is refused
-  status: proposed
+  status: locally_tested
+  tests: [GateTest]
 - id: VS-UNKNOWN
   description: Unknown scenario name is rejected
-  status: proposed
+  status: locally_tested
+  evidence: [evidence/04-local-e2e.txt]
 - id: VS-TTL-KILL
-  description: TTL expiry with the controller killed mid-run resets the fault
-  status: proposed
+  description: TTL expiry with the controller killed mid-run
+  status: locally_tested
+  evidence: [evidence/04-local-e2e.txt]
 - id: VS-STOP-RESET
-  description: Stop and reset work and verify the end state
-  status: proposed
+  description: Stop and reset
+  status: locally_tested
+  evidence: [evidence/04-local-e2e.txt]
 - id: VS-SEED-TWICE
-  description: Seeding twice gives the same state
-  status: proposed
+  description: Seeding twice
+  status: locally_tested
+  evidence: [evidence/04-local-e2e.txt]
 - id: VS-TRIBBLE
-  description: Tribble contention with two simultaneous orders gives one reservation and one rejection
-  status: proposed
+  description: Tribble contention with two simultaneous orders
+  status: locally_tested
+  evidence: [evidence/04-local-e2e.txt]
 - id: VS-GUIDED-TIMEOUT
-  description: A guided step not performed times out and is reported as not verified
-  status: proposed
+  description: A guided step not performed
+  status: locally_tested
+  evidence: [evidence/04-local-e2e.txt]
 - id: VS-ANON
-  description: Anonymous request is rejected (401)
-  status: proposed
+  description: Anonymous request
+  status: locally_tested
+  evidence: [evidence/04-local-e2e.txt]
 - id: VS-NOROLE
-  description: Request without the role is rejected (403)
-  status: proposed
+  description: Request without the role
+  status: locally_tested
+  evidence: [evidence/04-local-e2e.txt]
 - id: VS-REDALERT-STOPALL
-  description: red-alert is stopped through the telemetry service's stop-all
-  status: proposed
+  description: red-alert stopped through the telemetry service's stop-all
+  status: blocked
+  limitations: [red-alert is not yet possible (D-010, P-5): asset-service accepts only azp=asset-service and chaos is disabled on the cluster]
 - id: VS-AUDIT
   description: Audit record complete for every run
-  status: proposed
+  status: locally_tested
+  evidence: [evidence/04-local-e2e.txt]
 - id: VS-NO-COLLATERAL
   description: No data outside the fixture set changed
-  status: proposed
+  status: locally_tested
+  evidence: [evidence/04-local-e2e.txt]
 
 - id: LIVE-BASELINE
   description: '"Make it so" on the cluster with audit and end-state evidence, after approval'
@@ -100,3 +166,4 @@
 - id: LIVE-GUIDED-ERP
   description: One guided ERP scenario on the cluster with audit and end-state evidence, after approval
   status: proposed
+  limitations: ["Became feasible during the run: box1-workloads-dev#100 enabled adapter SFTP to the ERP VM (01:07 EST). erp-manual-hold needs no demo faults."]

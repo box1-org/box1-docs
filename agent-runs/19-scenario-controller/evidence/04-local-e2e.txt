@@ -1,0 +1,132 @@
+# Local end-to-end verification, run 19 (2026-11-06 01:57-02:03 EST)
+#
+# Proof level: LOCAL. Real order-service (main 11360f2), inventory-service (PR #3 head fca04be), fulfillment-adapter
+# (main 4c98522) and scenario-controller (run19-controller, rebuilt after repair R-2) as JVMs on the workstation;
+# PostgreSQL 15, Kafka 4.2.0, Keycloak 26.4 (not the cluster's RH-SSO 7.6) and the ERP harness built from
+# box1-ops-erp-simulator 7b13529 (faults = true) in run19-* containers. Launcher: scripts/stack.sh, realm: scripts/realm.sh,
+# driver: scripts/e2e.py. The ERP console steps were performed through the ERP's own domain API (what its console calls),
+# standing in for an operator at the console; the real TUI was not driven.
+# Clocks: host and Podman VM agreed at 06:55:32 and 06:58:58 UTC.
+# Tokens: real Keycloak tokens (client credentials for inventory admin; password grant for the test users). None printed.
+#
+# Sequence: e2e-1 auth (seed attempt failed on a driver paging bug, R-1 test defect), e2e-2 seed, e2e-3 tribbles x2,
+# baseline, hold (held-signal check FAILED: repair R-2), e2e-4 hold after R-2, e2e-5 timeout, delay, crash, stop, kill,
+# e2e-6 collateral. Run JSON lines are included as recorded.
+
+######## e2e-1
+01:57:13 == step auth
+01:57:13 PASS anonymous catalog read is 401 
+01:57:13 PASS anonymous start is 401 
+01:57:13 PASS no-role catalog read is 403 
+01:57:13 PASS viewer start is 403 
+01:57:13 PASS viewer reads the catalog with titles [('baseline-order', 'Make it so', 'AVAILABLE'), ('inventory-contention', 'The Trouble with Tribbles', 'AVAILABLE'), ('erp-manual-hold', 'Hold that order, Number One', 'AVAILABLE'), ('erp-delayed-processing', 'Impulse power only', 'AVAILABLE'), ('erp-crash-after-commit', 'Warp core breach (one-shot, contained)', 'AVAILABLE'), ('erp-unavailable', 'The ERP has cloaked', 'NOT_YET_POSSIBLE'), ('broker-outage', 'Subspace interference', 'NOT_YET_POSSIBLE'), ('poison-event', 'Q was here', 'NOT_YET_POSSIBLE'), ('bad-artifact-gate', 'Unsigned shuttlecraft denied docking', 'NOT_YET_POSSIBLE'), ('red-alert', 'Red alert', 'NOT_YET_POSSIBLE')]
+01:57:13 PASS unknown scenario is 404 {'type': 'about:blank', 'title': 'Not Found', 'status': 404, 'detail': 'Scenario is not in the catalog'}
+01:57:13 PASS not-yet-possible scenario is 409 with its reason {'type': 'about:blank', 'title': 'Conflict', 'status': 409, 'detail': 'Scenario erp-unavailable is not yet possible: Stopping the ERP VM needs Kubernetes RBAC that is not approved, Argo self-heal restores the VM, and the fulfillment adapter cannot reach the ERP on this cluster.'}
+01:57:13 == step seed
+Traceback (most recent call last):
+  File "/Users/mike/Documents/ChatGPT/box1/run19-docs/agent-runs/19-scenario-controller/evidence/scripts/e2e.py", line 302, in <module>
+    STEPS[name]()
+  File "/Users/mike/Documents/ChatGPT/box1/run19-docs/agent-runs/19-scenario-controller/evidence/scripts/e2e.py", line 133, in step_seed
+    STATE["lab_before"] = lab_seed(inventory_rows())
+  File "/Users/mike/Documents/ChatGPT/box1/run19-docs/agent-runs/19-scenario-controller/evidence/scripts/e2e.py", line 102, in lab_seed
+    return sorted((x["siteId"], x["sku"], x["onHand"], x["reserved"]) for x in rows if x["siteId"] in ("site_nyc", "site_bos", "site_closed"))
+  File "/Users/mike/Documents/ChatGPT/box1/run19-docs/agent-runs/19-scenario-controller/evidence/scripts/e2e.py", line 102, in <genexpr>
+    return sorted((x["siteId"], x["sku"], x["onHand"], x["reserved"]) for x in rows if x["siteId"] in ("site_nyc", "site_bos", "site_closed"))
+TypeError: string indices must be integers
+
+######## e2e-2
+01:57:23 == step seed
+01:57:24 PASS first seed creates 26 (4 sites, 22 stock records) (200, {'created': 26, 'unchanged': 0})
+01:57:24 PASS second seed changes nothing (200, {'created': 0, 'unchanged': 26})
+01:57:24 PASS seeding twice gives the same inventory state 27
+01:57:24 PASS lab seed unchanged by seeding [('site_bos', 'SKU-42', 10, 0), ('site_closed', 'SKU-42', 50, 0), ('site_nyc', 'SKU-42', 100, 0), ('site_nyc', 'SKU-7', 25, 0), ('site_nyc', 'SKU-LAST', 1, 0)]
+01:57:24 RESULT 4 passed, 0 failed []
+
+######## e2e-3
+01:57:29 == step tribbles
+01:57:34 {"scenarioRunId": "scn_39ad06c6f26ae158c63a", "scenario": "inventory-contention", "title": "The Trouble with Tribbles", "mode": "SERVICE_API", "status": "VERIFIED", "detail": "One reservation won (ord_2ce321bbeaf3475d81cbb222d4cee4d3); ord_d0f8c834b5cd4bb298ec3372def02630 REJECTED INSUFFICIENT_STOCK; site_ds9 CAT-TRIBBLE-TOY available 0", "actor": "operator", "environment": "local-e2e", "namespace": "scenario-controller-dev", "ttlSeconds": 180, "correlationId": "scenario-scn_39ad06c6f26ae158c63a", "impact": {"orders": ["ord_2ce321bbeaf3475d81cbb222d4cee4d3", "ord_d0f8c834b5cd4bb298ec3372def02630"], "fixtures": ["cust_kirk", "cust_sisko", "site_ds9", "CAT-TRIBBLE-TOY"]}, "startedAt": "2026-11-06T06:57:29.617248Z", "startedStardate": "-296152.6", "endedAt": "2026-11-06T06:57:33.791847Z", "resetResult": "RESET_OK", "resetDetail": "restored [Restored[siteId=site_ds9, sku=CAT-TRIBBLE-TOY, before=0, after=1]]", "audit": ["START/ACCEPTED", "ORDERS_PLACED/OK", "RESULT/VERIFIED", "RESET/RESET_OK"]}
+01:57:34 PASS tribbles round 1: VERIFIED One reservation won (ord_2ce321bbeaf3475d81cbb222d4cee4d3); ord_d0f8c834b5cd4bb298ec3372def02630 REJECTED INSUFFICIENT_STOCK; site_ds9 CAT-TRIBBLE-TOY available 0
+01:57:34 PASS tribbles round 1: one reserved, one REJECTED INSUFFICIENT_STOCK [('cust_kirk', 'FULFILLMENT_REQUESTED', 'INVENTORY_RESERVED'), ('cust_sisko', 'REJECTED', 'INSUFFICIENT_STOCK')]
+01:57:34 PASS tribbles round 1: reset restored one available, additively {'siteId': 'site_ds9', 'sku': 'CAT-TRIBBLE-TOY', 'onHand': 2, 'reserved': 1, 'available': 1, 'updatedAt': '2026-11-06T06:57:33.807143Z'}
+01:57:34 PASS tribbles round 1: audit complete 
+01:57:39 {"scenarioRunId": "scn_dba6b20ae708655ebd64", "scenario": "inventory-contention", "title": "The Trouble with Tribbles", "mode": "SERVICE_API", "status": "VERIFIED", "detail": "One reservation won (ord_932309cdc351429392e061c97819421d); ord_97f5772a4161443ba85080fafc0267dd REJECTED INSUFFICIENT_STOCK; site_ds9 CAT-TRIBBLE-TOY available 0", "actor": "operator", "environment": "local-e2e", "namespace": "scenario-controller-dev", "ttlSeconds": 180, "correlationId": "scenario-scn_dba6b20ae708655ebd64", "impact": {"orders": ["ord_97f5772a4161443ba85080fafc0267dd", "ord_932309cdc351429392e061c97819421d"], "fixtures": ["cust_kirk", "cust_sisko", "site_ds9", "CAT-TRIBBLE-TOY"]}, "startedAt": "2026-11-06T06:57:34.786409Z", "startedStardate": "-296152.6", "endedAt": "2026-11-06T06:57:38.876972Z", "resetResult": "RESET_OK", "resetDetail": "restored [Restored[siteId=site_ds9, sku=CAT-TRIBBLE-TOY, before=0, after=1]]", "audit": ["START/ACCEPTED", "ORDERS_PLACED/OK", "RESULT/VERIFIED", "RESET/RESET_OK"]}
+01:57:39 PASS tribbles round 2: VERIFIED One reservation won (ord_932309cdc351429392e061c97819421d); ord_97f5772a4161443ba85080fafc0267dd REJECTED INSUFFICIENT_STOCK; site_ds9 CAT-TRIBBLE-TOY available 0
+01:57:39 PASS tribbles round 2: one reserved, one REJECTED INSUFFICIENT_STOCK [('cust_kirk', 'REJECTED', 'INSUFFICIENT_STOCK'), ('cust_sisko', 'FULFILLMENT_REQUESTED', 'INVENTORY_RESERVED')]
+01:57:39 PASS tribbles round 2: reset restored one available, additively {'siteId': 'site_ds9', 'sku': 'CAT-TRIBBLE-TOY', 'onHand': 3, 'reserved': 2, 'available': 1, 'updatedAt': '2026-11-06T06:57:38.884733Z'}
+01:57:39 PASS tribbles round 2: audit complete 
+01:57:39 == step baseline
+01:57:43 operator step shown: In the ERP console, ship ful_91d7e716db9845cdb925c56e4cf478c3 ("/", ful_91d7e716db9845cdb925c56e4cf478c3, Enter, "s", "Y"), or switch the ERP to AUTO ("m", "Y").
+01:57:46 ERP console step (local stand-in): ship ful_91d7e716db9845cdb925c56e4cf478c3 shp_94ed9b20b0447b6f26060267ba8ca6ea
+01:57:49 {"scenarioRunId": "scn_9212f7b0e99df90f4464", "scenario": "baseline-order", "title": "Make it so", "mode": "SERVICE_API", "status": "VERIFIED", "detail": "Order ord_91d7e716db9845cdb925c56e4cf478c3 reached SHIPPED; replay returned the same order", "actor": "operator", "environment": "local-e2e", "namespace": "scenario-controller-dev", "ttlSeconds": 600, "correlationId": "scenario-scn_9212f7b0e99df90f4464", "impact": {"orders": ["ord_91d7e716db9845cdb925c56e4cf478c3"], "fixtures": ["cust_picard", "site_spacedock", "CAT-SPOT-BOWL"], "fulfillmentRequests": ["ful_91d7e716db9845cdb925c56e4cf478c3"]}, "startedAt": "2026-11-06T06:57:40.023203Z", "startedStardate": "-296152.6", "endedAt": "2026-11-06T06:57:49.186562Z", "resetResult": "RESET_OK", "resetDetail": "restored [Restored[siteId=site_spacedock, sku=CAT-SPOT-BOWL, before=499, after=500]]", "audit": ["START/ACCEPTED", "ORDER_PLACED/OK", "OPERATOR_STEP/WAITING", "RESULT/VERIFIED", "RESET/RESET_OK"]}
+01:57:49 PASS make it so: VERIFIED Order ord_91d7e716db9845cdb925c56e4cf478c3 reached SHIPPED; replay returned the same order
+01:57:49 PASS make it so: order shipped once ['SUBMITTED', 'RESERVED', 'FULFILLMENT_REQUESTED', 'SHIPPED']
+01:57:49 PASS make it so: audit complete 
+01:57:49 == step hold
+01:57:56 operator step shown: In the ERP console, find ful_45fb9f2290254532814f4fb86bb2a189 ("/", ful_45fb9f2290254532814f4fb86bb2a189, Enter) and hold it ("h", a reason, Enter).
+01:57:57 ERP console step (local stand-in): hold ful_45fb9f2290254532814f4fb86bb2a189 
+01:57:58 operator step shown: In the ERP console, release ful_45fb9f2290254532814f4fb86bb2a189 ("l").
+01:57:58 adapter while held: {'dispatch': 'UPLOADED', 'erpAcknowledgement': 'ACKNOWLEDGED', 'outcome': 'HELD'}
+01:57:58 ERP console step (local stand-in): release ful_45fb9f2290254532814f4fb86bb2a189 
+01:57:59 {"scenarioRunId": "scn_1937c720ba884c7335e8", "scenario": "erp-manual-hold", "title": "Hold that order, Number One", "mode": "GUIDED_ERP", "status": "VERIFIED", "detail": "Held and released ful_45fb9f2290254532814f4fb86bb2a189; order ord_45fb9f2290254532814f4fb86bb2a189 stayed FULFILLMENT_REQUESTED while held, now FULFILLMENT_REQUESTED; adapter outcome PENDING; fulfillment_held was 0.0", "actor": "operator", "environment": "local-e2e", "namespace": "scenario-controller-dev", "ttlSeconds": 900, "correlationId": "scenario-scn_1937c720ba884c7335e8", "impact": {"orders": ["ord_45fb9f2290254532814f4fb86bb2a189"], "fixtures": ["cust_janeway", "site_utopia_planitia", "CAT-COMBADGE-COLLAR"], "heldSignal": "fulfillment_held=0.0", "fulfillmentRequests": ["ful_45fb9f2290254532814f4fb86bb2a189"]}, "startedAt": "2026-11-06T06:57:49.683973Z", "startedStardate": "-296152.6", "endedAt": "2026-11-06T06:57:58.952222Z", "resetResult": "RESET_OK", "resetDetail": "restored [Restored[siteId=site_utopia_planitia, sku=CAT-COMBADGE-COLLAR, before=1999, after=2000]]", "audit": ["START/ACCEPTED", "OPERATOR_STEP/WAITING", "HELD_OBSERVED/OK", "OPERATOR_STEP/WAITING", "RESULT/VERIFIED", "RESET/RESET_OK"]}
+01:57:59 PASS hold that order: VERIFIED Held and released ful_45fb9f2290254532814f4fb86bb2a189; order ord_45fb9f2290254532814f4fb86bb2a189 stayed FULFILLMENT_REQUESTED while held, now FULFILLMENT_REQUESTED; adapter outcome PENDING; fulfillment_held was 0.0
+01:57:59 FAIL hold that order: held signal recorded Held and released ful_45fb9f2290254532814f4fb86bb2a189; order ord_45fb9f2290254532814f4fb86bb2a189 stayed FULFILLMENT_REQUESTED while held, now FULFILLMENT_REQUESTED; adapter outcome PENDING; fulfillment_held was 0.0
+01:57:59 PASS hold that order: audit complete 
+01:57:59 RESULT 13 passed, 1 failed ['hold that order: held signal recorded']
+
+######## e2e-4
+01:58:38 == step hold
+01:58:45 operator step shown: In the ERP console, find ful_045933acd1334ae4ad8faa372a311da2 ("/", ful_045933acd1334ae4ad8faa372a311da2, Enter) and hold it ("h", a reason, Enter).
+01:58:45 ERP console step (local stand-in): hold ful_045933acd1334ae4ad8faa372a311da2 
+01:58:50 operator step shown: In the ERP console, release ful_045933acd1334ae4ad8faa372a311da2 ("l").
+01:58:50 adapter while held: {'dispatch': 'UPLOADED', 'erpAcknowledgement': 'ACKNOWLEDGED', 'outcome': 'HELD'}
+01:58:50 ERP console step (local stand-in): release ful_045933acd1334ae4ad8faa372a311da2 
+01:58:52 {"scenarioRunId": "scn_07f9673f172d07c477f5", "scenario": "erp-manual-hold", "title": "Hold that order, Number One", "mode": "GUIDED_ERP", "status": "VERIFIED", "detail": "Held and released ful_045933acd1334ae4ad8faa372a311da2; order ord_045933acd1334ae4ad8faa372a311da2 stayed FULFILLMENT_REQUESTED while held, now FULFILLMENT_REQUESTED; adapter outcome PENDING; held signal: fulfillment_held >= 1", "actor": "operator", "environment": "local-e2e", "namespace": "scenario-controller-dev", "ttlSeconds": 900, "correlationId": "scenario-scn_07f9673f172d07c477f5", "impact": {"orders": ["ord_045933acd1334ae4ad8faa372a311da2"], "fixtures": ["cust_janeway", "site_utopia_planitia", "CAT-COMBADGE-COLLAR"], "heldSignal": "fulfillment_held >= 1", "fulfillmentRequests": ["ful_045933acd1334ae4ad8faa372a311da2"]}, "startedAt": "2026-11-06T06:58:38.547549Z", "startedStardate": "-296152.6", "endedAt": "2026-11-06T06:58:51.943851Z", "resetResult": "RESET_OK", "resetDetail": "restored [Restored[siteId=site_utopia_planitia, sku=CAT-COMBADGE-COLLAR, before=1999, after=2000]]", "audit": ["START/ACCEPTED", "OPERATOR_STEP/WAITING", "HELD_OBSERVED/OK", "OPERATOR_STEP/WAITING", "RESULT/VERIFIED", "RESET/RESET_OK"]}
+01:58:52 PASS hold that order: VERIFIED Held and released ful_045933acd1334ae4ad8faa372a311da2; order ord_045933acd1334ae4ad8faa372a311da2 stayed FULFILLMENT_REQUESTED while held, now FULFILLMENT_REQUESTED; adapter outcome PENDING; held signal: fulfillment_held >= 1
+01:58:52 PASS hold that order: held signal recorded Held and released ful_045933acd1334ae4ad8faa372a311da2; order ord_045933acd1334ae4ad8faa372a311da2 stayed FULFILLMENT_REQUESTED while held, now FULFILLMENT_REQUESTED; adapter outcome PENDING; held signal: fulfillment_held >= 1
+01:58:52 PASS hold that order: audit complete 
+01:58:52 RESULT 3 passed, 0 failed []
+
+######## e2e-5
+01:58:58 == step timeout
+01:59:43 {"scenarioRunId": "scn_a600dba0e118547fe61e", "scenario": "erp-manual-hold", "title": "Hold that order, Number One", "mode": "GUIDED_ERP", "status": "NOT_VERIFIED", "detail": "Operator step not observed before the TTL: ful_25999e9ccdef45b69382ca9c152a7ec6 was never HELD", "actor": "operator", "environment": "local-e2e", "namespace": "scenario-controller-dev", "ttlSeconds": 45, "correlationId": "scenario-scn_a600dba0e118547fe61e", "impact": {"orders": ["ord_25999e9ccdef45b69382ca9c152a7ec6"], "fixtures": ["cust_janeway", "site_utopia_planitia", "CAT-COMBADGE-COLLAR"], "fulfillmentRequests": ["ful_25999e9ccdef45b69382ca9c152a7ec6"]}, "startedAt": "2026-11-06T06:58:58.871737Z", "startedStardate": "-296152.6", "endedAt": "2026-11-06T06:59:43.552490Z", "resetResult": "RESET_OK", "resetDetail": "restored [Restored[siteId=site_utopia_planitia, sku=CAT-COMBADGE-COLLAR, before=1999, after=2000]]", "audit": ["START/ACCEPTED", "OPERATOR_STEP/WAITING", "RESULT/NOT_VERIFIED", "RESET/RESET_OK"]}
+01:59:43 PASS guided step not performed: NOT_VERIFIED Operator step not observed before the TTL: ful_25999e9ccdef45b69382ca9c152a7ec6 was never HELD
+01:59:43 PASS guided step not performed: reset ran restored [Restored[siteId=site_utopia_planitia, sku=CAT-COMBADGE-COLLAR, before=1999, after=2000]]
+01:59:43 == step delay
+01:59:43 ERP console step (local stand-in): AUTO 
+01:59:44 ERP console step (local stand-in): delay 90 s 
+02:01:21 {"scenarioRunId": "scn_c97db63154cdc3e7aae1", "scenario": "erp-delayed-processing", "title": "Impulse power only", "mode": "GUIDED_ERP", "status": "VERIFIED", "detail": "Order ord_4217524c650d4a45b377bd4cdf3eabaa waited at least 90 s in FULFILLMENT_REQUESTED after ERP acknowledgement, then shipped once", "actor": "operator", "environment": "local-e2e", "namespace": "scenario-controller-dev", "ttlSeconds": 400, "correlationId": "scenario-scn_c97db63154cdc3e7aae1", "impact": {"orders": ["ord_4217524c650d4a45b377bd4cdf3eabaa"], "fixtures": ["cust_data", "site_spacedock", "CAT-PHASER-LASER"], "fulfillmentRequests": ["ful_4217524c650d4a45b377bd4cdf3eabaa"]}, "startedAt": "2026-11-06T06:59:44.127769Z", "startedStardate": "-296152.6", "endedAt": "2026-11-06T07:01:21.537154Z", "resetResult": "RESET_GUIDED", "resetDetail": "restored [Restored[siteId=site_spacedock, sku=CAT-PHASER-LASER, before=499, after=500]]. Operator step: Set the ERP delay back to 0 (\"X\", \"3\", 0, Enter).", "audit": ["START/ACCEPTED", "OPERATOR_STEP/WAITING", "ACKNOWLEDGED/OK", "RESULT/VERIFIED", "RESET/RESET_GUIDED"]}
+02:01:21 ERP console step (local stand-in): delay 0 
+02:01:21 PASS impulse power only: VERIFIED with a visible wait Order ord_4217524c650d4a45b377bd4cdf3eabaa waited at least 90 s in FULFILLMENT_REQUESTED after ERP acknowledgement, then shipped once
+02:01:21 PASS impulse power only: RESET_GUIDED names the undo step restored [Restored[siteId=site_spacedock, sku=CAT-PHASER-LASER, before=499, after=500]]. Operator step: Set the ERP delay back to 0 ("X", "3", 0, Enter).
+02:01:21 == step crash
+02:01:22 ERP console step (local stand-in): AUTO 
+02:01:22 ERP console step (local stand-in): arm crash 
+02:01:33 {"scenarioRunId": "scn_4429027e8e84a906d10e", "scenario": "erp-crash-after-commit", "title": "Warp core breach (one-shot, contained)", "mode": "GUIDED_ERP", "status": "VERIFIED", "detail": "Order ord_c200fa74013d4916b428fb92e6662e19 shipped exactly once (shp_ee460524849b683c3f599159d4bea7d9). The crash and restart are visible only in the ERP journal", "actor": "operator", "environment": "local-e2e", "namespace": "scenario-controller-dev", "ttlSeconds": 300, "correlationId": "scenario-scn_4429027e8e84a906d10e", "impact": {"orders": ["ord_c200fa74013d4916b428fb92e6662e19"], "fixtures": ["cust_sisko", "site_ds9", "CAT-DILITHIUM-NIP"], "fulfillmentRequests": ["ful_c200fa74013d4916b428fb92e6662e19"]}, "startedAt": "2026-11-06T07:01:22.416950Z", "startedStardate": "-296152.6", "endedAt": "2026-11-06T07:01:33.586554Z", "resetResult": "RESET_GUIDED", "resetDetail": "restored [Restored[siteId=site_ds9, sku=CAT-DILITHIUM-NIP, before=19, after=20]]. Operator step: Check the ERP status line; if the crash is still armed, disarm it (\"X\", \"2\").", "audit": ["START/ACCEPTED", "OPERATOR_STEP/WAITING", "RESULT/VERIFIED", "RESET/RESET_GUIDED"]}
+02:01:33 ERP journal shows the crash exit: True
+02:01:33 PASS warp core breach: VERIFIED, shipped exactly once Order ord_c200fa74013d4916b428fb92e6662e19 shipped exactly once (shp_ee460524849b683c3f599159d4bea7d9). The crash and restart are visible only in the ERP journal
+02:01:33 PASS warp core breach: the ERP actually crashed (journal) 
+02:01:33 ERP console step (local stand-in): MANUAL 
+02:01:33 == step stop
+02:01:37 {"scenarioRunId": "scn_4af590372730740fd90f", "scenario": "baseline-order", "title": "Make it so", "mode": "SERVICE_API", "status": "STOPPED", "detail": "Stopped by operator", "actor": "operator", "environment": "local-e2e", "namespace": "scenario-controller-dev", "ttlSeconds": 600, "correlationId": "scenario-scn_4af590372730740fd90f", "impact": {"orders": ["ord_07b7a55a9966425489dc3fcf6e097728"], "fixtures": ["cust_picard", "site_spacedock", "CAT-SPOT-BOWL"], "fulfillmentRequests": ["ful_07b7a55a9966425489dc3fcf6e097728"]}, "startedAt": "2026-11-06T07:01:33.938026Z", "startedStardate": "-296152.6", "endedAt": "2026-11-06T07:01:37.009247Z", "resetResult": "RESET_OK", "resetDetail": "restored [Restored[siteId=site_spacedock, sku=CAT-SPOT-BOWL, before=499, after=500]]", "audit": ["START/ACCEPTED", "ORDER_PLACED/OK", "OPERATOR_STEP/WAITING", "STOP/ACCEPTED", "RESULT/STOPPED", "RESET/RESET_OK"]}
+02:01:37 PASS stop: STOPPED and reset restored [Restored[siteId=site_spacedock, sku=CAT-SPOT-BOWL, before=499, after=500]]
+02:01:37 == step kill
+02:01:40 controller killed with SIGKILL mid-run; waiting past the 30 s TTL with no controller
+02:02:27 controller pid 87737 ready on 39084
+02:02:27 {"scenarioRunId": "scn_110e53aacb05ffbebe04", "scenario": "baseline-order", "title": "Make it so", "mode": "SERVICE_API", "status": "ABORTED_RESTART", "detail": "Controller restarted during the run", "actor": "operator", "environment": "local-e2e", "namespace": "scenario-controller-dev", "ttlSeconds": 30, "correlationId": "scenario-scn_110e53aacb05ffbebe04", "impact": {"orders": ["ord_cad6ec9fe14b4ca7b7ba53e6ec9648a1"], "fixtures": ["cust_picard", "site_spacedock", "CAT-SPOT-BOWL"], "fulfillmentRequests": ["ful_cad6ec9fe14b4ca7b7ba53e6ec9648a1"]}, "startedAt": "2026-11-06T07:01:37.142373Z", "startedStardate": "-296152.6", "endedAt": "2026-11-06T07:02:26.147745Z", "resetResult": "RESET_OK", "resetDetail": "restored [Restored[siteId=site_spacedock, sku=CAT-SPOT-BOWL, before=499, after=500]]", "audit": ["START/ACCEPTED", "ORDER_PLACED/OK", "OPERATOR_STEP/WAITING", "RESULT/ABORTED_RESTART", "RESET/RESET_OK"]}
+02:02:27 PASS killed mid-run: ABORTED_RESTART and reset at restart restored [Restored[siteId=site_spacedock, sku=CAT-SPOT-BOWL, before=499, after=500]]
+02:02:27 PASS after recovery a new run can start scn_5cefde2d45a1b7ac4cb3
+02:02:30 == step collateral
+Traceback (most recent call last):
+  File "/Users/mike/Documents/ChatGPT/box1/run19-docs/agent-runs/19-scenario-controller/evidence/scripts/e2e.py", line 308, in <module>
+    STEPS[name]()
+  File "/Users/mike/Documents/ChatGPT/box1/run19-docs/agent-runs/19-scenario-controller/evidence/scripts/e2e.py", line 290, in step_collateral
+    check("no data outside the fixture set changed: lab seed stock", lab_seed(inventory_rows()) == STATE["lab_before"])
+KeyError: 'lab_before'
+
+######## e2e-6
+02:02:39 == step collateral
+02:02:39 PASS no data outside the fixture set changed: lab seed stock 
+02:02:39 PASS no data outside the fixture set changed: no non-fixture orders created 0
+02:02:39 PASS audit record complete for every run 11 runs; incomplete []
+02:02:39 refusals audited: [('START', 'erp-unavailable', 'Scenario erp-unavailable is not yet possible: Stopping the ERP VM needs Kubernetes RBAC that is not approved, Argo self-heal restores the VM, and the fulfillment adapter cannot reach the ERP on this cluster.'), ('START', None, 'Unknown scenario')]
+02:02:39 RESULT 3 passed, 0 failed []

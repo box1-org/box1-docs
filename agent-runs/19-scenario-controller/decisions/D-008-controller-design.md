@@ -29,7 +29,7 @@
 ## Audit
 - PostgreSQL tables `scenario_run` and `scenario_audit` (append-only, immutable triggers), recording actor (token subject), time, environment, namespace, mode, TTL, impact (fixture IDs and order IDs), outcome and reset result. Refusals are audited as `DENIED`.
 - Retention 90 days. A daily job deletes older rows through a SQL function that is the only permitted delete path.
-- **Stardate (display only):** `1000 × (year − 2323) + 1000 × fraction of the UTC year elapsed`, one decimal (2026-11-06 00:00 UTC ≈ −296151.2). Shown beside the ISO 8601 timestamp; the timestamp is authoritative.
+- **Stardate (display only):** `1000 × (year − 2323) + 1000 × fraction of the UTC year elapsed`, one decimal (2026-11-06 00:00 UTC ≈ −296153.4). Shown beside the ISO 8601 timestamp; the timestamp is authoritative.
 
 ## Observability
 - JSON logs with `scenarioRunId` and correlation ID in MDC; OpenTelemetry spans for each step; Micrometer counters `scenario_runs_total{scenario,outcome}`, gauge `scenario_active_runs`.
