@@ -6,6 +6,7 @@ No comparison with `qwen-64k`, because no baseline exists.
 
 | # | Time (America/New_York) | Phase | Stop condition | Reason |
 |---|---|---|---|---|
+| 3 | 2026-11-06 ~13:10 EST | 6, after A-1 to A-6 | Next action needs approval; a merged change is incomplete | The approved merges, releases, Secret and runtime are done and deployed (`evidence/08-delivery.md`). The Keycloak change from #78 is only partly working: client scope mappings fail with 404 (repair 14). The fix is box1-gitops#79, a new merge needing approval. Seeding, role assignment and live runs were not approved. |
 | 2 | 2026-11-06 ~02:30 EST | 6 entry | Next action needs approval | Phases 0–5 are complete and the full suite and end-to-end run passed after reviewer repairs. Delivery needs four merges (inventory-service#3, scenario-controller#1, box1-gitops#78, box1-workloads-dev#103), a new secret, a contract change I may not push, role assignment, and approval for cluster seeding and each live run. Reported together (`open-decisions.md`). |
 | 1 | 2026-11-06 ~01:25 EST | 0 exit | Next action needs user decisions; platform conflicts with the prompt; required dependency unavailable | The user asked to see the mechanism table before design. Discovery found that inventory cannot create the fixture sites through its API (a change to another service), that no ERP is reachable on the cluster, and that the controller identity, allowlist and database credential need approval. All open decisions are reported together (`open-decisions.md` O-1 to O-12). |
 
@@ -52,6 +53,8 @@ Test harness and test defects:
 - The end-to-end driver asked inventory for `limit=200`; its maximum is 100 (R-1). The driver now pages.
 - The collateral step depended on state from the seed step in the same process; it now compares with the recorded V2 baseline.
 
+14. **Keycloak client scope mappings failed with 404 after the #78 merge** (Phase 6, a cluster failure after a merge). The RH-SSO operator's scope-mapping call takes the target client's internal UUID, and #78 gave only the clientId. I reproduced it on the local Keycloak (clientId gives 404, UUID gives 204), then opened box1-gitops#79, which pins the two target clients' existing UUIDs and sets `id` on each mapping. **Missed in local proof:** the local stack's realm was built by `realm.sh` through the admin API, not by the operator's CRs, so the CRs' mapping semantics were checked only with `--dry-run=client`, which validates the schema, not the behavior. Lesson: a CR feature nobody else in the repository uses needs a behavioral check of the operator's call, not just schema validation.
+
 ## Profile ambiguity and friction
 
 3. **Reviewer passes were the most productive phase.** Five same-model passes found 57 findings: 13 medium and none high. They included two verification checks that could never fail (MSG-1, MSG-2) and that the local end-to-end run had passed. A green end-to-end run proved the happy path; only adversarial reading found the checks that could not detect a failure.
@@ -61,6 +64,9 @@ Test harness and test defects:
 2. **The prompt's requirement IDs (FR-09, OBS-06, DEMO-A/B/C) are defined only in the white paper PDF.** The ledger derives IDs from the prompt's acceptance evidence and verification scenarios, as the profile allows.
 
 ## Places I was unsure of my authority
+
+7. **Merging a fix for a merge the user had approved.** The user approved merging #78 and syncing it. The fix, #79, is a new merge; under "every merge, one action at a time" I opened it and did not merge it, even though the approved outcome (the clients working) stays incomplete until it merges.
+8. **Creating the Secret without reading it.** A-5 authorized creating the Secret. I copied the operator-generated value through a pipe from `oc get` to `oc create`, so it was never printed or written to a file. Only the key names and the encoded length were checked.
 
 5. **Opening the GitOps PRs before review findings were in.** Opening a PR is allowed; I opened box1-gitops#78 and box1-workloads-dev#103 while the reviewers ran and then added a review repair to #103 (Recreate). Nothing is merged.
 6. **The operator confirmation endpoint.** The prompt says guided scenarios verify the outcome. For the crash, the outcome a person can see (the worker restarting) is invisible to the controller, so I added an audited attestation step rather than report an unverifiable VERIFIED. Recorded so the user can object.
@@ -81,7 +87,7 @@ Test harness and test defects:
 | Check that a dependency actually works, not just that its pod is running (runs 11, 13) | Read live inventory and orders: pods are healthy but no reservation exists and old orders are still `SUBMITTED` | **Prevented.** P-6 is recorded as unproven instead of assumed |
 | #59's "operator skips spec.roles" (run 15) | Read #59 first: it was closed as a false report | **Applied.** The prompt's stale premise is noted under ambiguity |
 | Check host and container VM clocks before long runs (runs 13, 14) | Checked at start | Applied; no long run yet |
-| Guava override with `security-gates: gate` (runs 11, 15, 18) | The pom carries the 33.7.2-jre override from inventory's, and the release pipeline was switched to `gate` in the same commit | **Applied**; proven at the first release (Phase 6) |
+| Guava override with `security-gates: gate` (runs 11, 15, 18) | The pom carries the 33.7.2-jre override from inventory's, and the release pipeline was switched to `gate` in the same commit | **Prevented.** Release `scenario-controller-release-v9qm4`: the security task passed in `gate` mode (critical 0) on the first release |
 | Start reviewer passes only after Phase 4 (runs 15, 18) | Started after the end-to-end run passed | **Applied.** They reviewed the commit kept, and the full suite and end-to-end run were repeated after repairs |
 | Container-backed tests need `DOCKER_HOST` and Ryuk off on this Mac (runs 12–15) | Set both from the start | **Prevented** |
 | Name local containers per run (runs 13–18) | Testcontainers PostgreSQL named `run19-tc-pg-*`; stack containers `run19-*`; ports 39xxx | **Applied** |
@@ -92,6 +98,7 @@ Test harness and test defects:
 - 00:50 EST: host and Podman VM clocks agreed (05:50:03 UTC both).
 - 01:55 and 01:58 EST: host and Podman VM clocks agreed before the end-to-end runs. No sleep-related failures.
 - ~02:00 EST: the platform changed under the run. box1-workloads-dev#100 (01:07 EST, another run's work) enabled the adapter's SFTP to the ERP VM, which removed blocker P-3 from Phase 0. Recorded in `evidence/05-platform-change-erp-sftp.md`; the stale reason in the `erp-unavailable` catalog entry and the runbook were corrected.
+- 12:50 EST: Phase 6 started after a ~10 h pause (the user's reply). The cluster changed meanwhile (box1-workloads-dev #102, #104 to #106 merged); a trial merge of #103 against main showed no conflict.
 - Podman machine: 4 CPU, 8 GiB. `run15-pg`, `run15-kafka`, `run15-keycloak` are running (ports 15432, 19092, 18180); this run avoids those ports and names.
 
 ## Orchestrating services other runs built
@@ -113,4 +120,5 @@ Test harness and test defects:
 - Image `localhost/run19-erp-harness:dev`. Containers `run19-pg` (39432), `run19-kafka` (39092), `run19-keycloak` (39180), `run19-erp` (39222) and volume `run19-erp-data`; JVMs on 39081–39084 with PIDs in the scratch WORK directory. Transient `run19-tc-pg-*` from Testcontainers.
 - Pushed branches `run19-scenario-controller-keycloak` (box1-gitops#78) and `run19-scenario-controller-runtime` (box1-workloads-dev#103); worktrees `run19-gitops`, `run19-workloads`.
 - Five read-only reviewer subagents.
-- No cluster writes. The local stack (`run19-*`) is still running for reruns; tear down with `evidence/scripts/stack.sh down`.
+- Phase 6: merged scenario-controller#1, box1-gitops#78 and box1-workloads-dev#103 (approved); opened box1-ops-contracts#10 (authorized, branch `run19-inventory-fixture-routes` in worktree `run19-contracts`) and box1-gitops#79 (branch `run19-keycloak-scope-mapping-ids`); created Secret `scenario-controller-inventory-token` in `scenario-controller-dev` (approved); Argo refresh annotations on `keycloak` and `scenario-controller`; filed box1-docs#72 (approved). One unneeded read-only `psql select 1` exec in `scenario-controller-postgres`, recorded in `evidence/08`. One read-only Release reviewer subagent.
+- No cluster writes before Phase 6. The local stack (`run19-*`) is still running for reruns; tear down with `evidence/scripts/stack.sh down`.

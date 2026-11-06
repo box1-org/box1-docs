@@ -4,7 +4,7 @@
   "profile": "frontier",
   "prompt": "box1_operations_agent_prompts/01-services/09_scenario_controller.md@8c90a0c (main; PR #70 merged 2026-11-06T05:38:36Z)",
   "started": "2026-11-06T00:47:48-05:00",
-  "current_phase": "6 Delivery (stopped at entry: approvals A-1..A-11, decisions O-11, O-13, O-14)",
+  "current_phase": "6 Delivery (stop 3: A-1..A-6 done; awaiting A-4b box1-gitops#79, A-7, A-8, A-9..A-11)",
   "repositories": [
     {
       "name": "box1-org/scenario-controller",
@@ -12,7 +12,11 @@
       "commit": "7f0f9ea255bc2912ff7828d3eab72d534231b53f",
       "role": "implementation target (Golden Path template 1.1.0, onboarded by the user)",
       "pr": "https://github.com/box1-org/scenario-controller/pull/1",
-      "ci": "box1-ci/scenario-controller-validate-std6t Succeeded"
+      "ci": "box1-ci/scenario-controller-validate-std6t Succeeded",
+      "merged": "f64dee6ed0160ee5e253a2659e86c57a43e4cafc",
+      "release": "box1-ci/scenario-controller-release-v9qm4 Succeeded",
+      "image": "sha256:a811c457b88269f22381f63dac1b31d7b25efa93f43a479891a02c65bd2bb269",
+      "promotion": "https://github.com/box1-org/box1-workloads-dev/pull/107"
     },
     {
       "name": "box1-org/box1-docs",
@@ -24,14 +28,18 @@
       "branch": "run19-scenario-controller-runtime",
       "commit": "4c039d3",
       "role": "workload manifests (workloads/scenario-controller)",
-      "pr": "https://github.com/box1-org/box1-workloads-dev/pull/103"
+      "pr": "https://github.com/box1-org/box1-workloads-dev/pull/103",
+      "merged": "e28c020a8f48a4a85b71fc30f50ee3bd7d3afec8",
+      "argo": "scenario-controller Synced/Healthy at e28c020"
     },
     {
       "name": "box1-org/box1-gitops",
       "branch": "run19-scenario-controller-keycloak",
       "role": "shared infrastructure (Keycloak client, RBAC)",
       "commit": "63c0624",
-      "pr": "https://github.com/box1-org/box1-gitops/pull/78"
+      "pr": "https://github.com/box1-org/box1-gitops/pull/78",
+      "merged": "7d7e0b1e38f9cdd9210aa1d943ee4d1104c56cde",
+      "followup_pr": "https://github.com/box1-org/box1-gitops/pull/79 (open: scope-mapping ids)"
     },
     {
       "name": "box1-org/inventory-service",
@@ -39,7 +47,17 @@
       "branch": "run19-fixture-admin",
       "commit": "fca04be",
       "pr": "https://github.com/box1-org/inventory-service/pull/3",
-      "ci": "box1-ci/inventory-service-validate-8hlzm Succeeded"
+      "ci": "box1-ci/inventory-service-validate-8hlzm Succeeded",
+      "merged": "ad472e1fe21cde257344c416a15b0da42772c91d",
+      "release": "box1-ci/inventory-service-release-fblwj Succeeded",
+      "image": "sha256:c8b33f7a924dfaedbbce43955b07fd24eb74499755fccaae57d1744e7827601b",
+      "promotion": "https://github.com/box1-org/box1-workloads-dev/pull/106"
+    },
+    {
+      "name": "box1-org/box1-ops-contracts",
+      "branch": "run19-inventory-fixture-routes",
+      "role": "inventory admin routes in the OpenAPI contract (user-authorized 2026-11-06)",
+      "pr": "https://github.com/box1-org/box1-ops-contracts/pull/10"
     }
   ],
   "local_names": {
@@ -52,7 +70,9 @@
     "containers_prefix": "run19-"
   },
   "issues_filed": [
-    "https://github.com/box1-org/box1-docs/issues/71"
+    "https://github.com/box1-org/box1-docs/issues/71",
+    "box1-org/box1-docs#71",
+    "box1-org/box1-docs#72"
   ],
   "upstreams_read_only": {
     "order-service": "11360f2",

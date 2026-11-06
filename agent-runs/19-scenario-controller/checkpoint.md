@@ -1,35 +1,29 @@
 # Checkpoint, run 19 (scenario controller)
 
-- **Updated:** 2026-11-06 02:30 EST
-- **Phase:** 0–5 complete. **Stopped (stop 2) at Phase 6 entry**: every next action needs approval (`open-decisions.md` A-1 to A-11, decisions O-11, O-13, O-14).
-- **Branches and commits:**
-  - scenario-controller `run19-controller` `7f0f9ea` (PR #1, CI Succeeded `scenario-controller-validate-std6t`);
-  - inventory-service `run19-fixture-admin` `fca04be` (PR #3, CI Succeeded `inventory-service-validate-8hlzm`);
-  - box1-gitops `run19-scenario-controller-keycloak` `63c0624` (PR #78);
-  - box1-workloads-dev `run19-scenario-controller-runtime` `4c039d3` (PR #103);
-  - run state `agent-run/19-scenario-controller`.
-  - Nothing is merged or deployed. The cluster still runs the scaffold image.
-- **Tests:**
-  - controller CI set passes;
-  - controller containers set: 48 + 5 IT pass;
-  - inventory: 74 + 10 IT pass;
-  - local end to end: 37/37 after review (`evidence/07`);
-  - CLI exercised (`evidence/07`).
-- **Reviews:** five passes, 57 findings, all fixed or recorded (`review-findings/outcomes.md`). The Release pass runs after deployment.
-- **Ledger:** 5 `ci_verified`, 21 `locally_tested`, 2 `implemented`, 3 `proposed` (LIVE-*), 1 `blocked` (VS-REDALERT-STOPALL).
-- **Local stack:** the `run19-*` containers and four JVMs are running. Tear down with `evidence/scripts/stack.sh down`.
+- **Updated:** 2026-11-06 13:10 EST
+- **Phase:** 6 Delivery. A-1 to A-6 were approved and are done. **Stopped (stop 3):** the Keycloak scope-mapping fix (box1-gitops#79), seeding, role assignment and live runs each need approval (`open-decisions.md`).
+
+## Deployed
+
+| Component | Revision | Live state |
+|---|---|---|
+| scenario-controller | `f64dee6` (PR #1), image `sha256:a811c457…b269` | `scenario-controller-dev`, Argo Synced and Healthy at workloads `e28c020`, Recreate, 1 pod, ready UP, anonymous 401 |
+| inventory-service | `ad472e1` (PR #3), image `sha256:c8b33f7a…7601b` | `inventory-service-dev`, migration V3 applied |
+| Keycloak clients | box1-gitops `7d7e0b1` (PR #78) | `inventory-service` ready; `scenario-controller` and `scenario-controller-cli` failing on scope mappings (404). Roles exist. Fix: box1-gitops#79 (open) |
+| Secret `scenario-controller-inventory-token` | not in Git | created in `scenario-controller-dev`, key `client-secret`, value never displayed |
+| Contract | box1-ops-contracts#10 (open) | not merged |
+
+Evidence: `evidence/08-delivery.md`. Follow-ups: box1-docs#72.
+
+**Ledger:** 1 `live_verified` (VS-ANON), 6 `deployed`, 21 `locally_tested`, 3 `proposed` (LIVE-*), 1 `blocked`.
+
+**Local stack:** the `run19-*` containers and four JVMs are still running. Tear down with `evidence/scripts/stack.sh down`.
 
 ## Exact next action
 
-When the user approves A-1 and A-3:
-1. Merge inventory-service#3, then scenario-controller#1.
-2. Watch the release runs (`*-release-*` in `box1-ci`) and the promotion PRs.
-3. Record the image digest, the GitOps commit and the Argo state.
-4. Run the Release reviewer pass.
-
-Then, as each is approved:
-1. A-4: merge box1-gitops#78 and check the roles on the cluster.
-2. A-5: the user provisions the Secret.
-3. A-6: merge box1-workloads-dev#103 and check that the pod's gates report allowed (a 403 without a role, a 200 catalog with one).
-4. A-8: seed.
-5. A-9 to A-11: the live runs, each recorded in `evidence/` with its run JSON and audit.
+1. **A-4b** (when approved): merge box1-gitops#79 and refresh Argo `keycloak`. Expect both CRs `ready=true`, and operator log SUCCESS for the scope mappings and the service-account role.
+2. **A-7** (the user): assign `scenario-operator` and get a token from `scenario-controller-cli`. Check: the catalog read returns 200 with ten titles and gates allowed, and a token without the role gets 403.
+3. **A-8** (when approved): `POST /internal/v1/fixtures/seed`, twice; record both responses and the audit.
+4. **A-9 to A-11** (each when approved): the live runs. Record the run JSON, the audit and end-state reads in `evidence/09-live-*.md`.
+5. Merge box1-ops-contracts#10 when approved.
+6. When live proof exists, tick #19's boxes, stating the proof level for each.
