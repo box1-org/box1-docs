@@ -12,7 +12,7 @@
 
 ## Mission and boundary
 
-Provide a cohesive, role-aware HTTP backend for the console so browsers do not need individual internal service routes. Proposed repo `box1-org/box1-ops-bff`. Treat this as a projection/orchestration boundary only; it **must not own** authoritative order/inventory state or copy secrets into frontend responses.
+Provide a cohesive, role-aware HTTP backend for the console so browsers do not need individual internal service routes. Proposed repo `box1-org/box1-ops-bff`. Treat this as a projection/orchestration boundary only; it **must not own** authoritative order/inventory state or copy secrets into frontend responses. The operator console (`08_operator_console.md`) ships its own console backend first; design this BFF so it can absorb that backend's endpoints without changing the console pages.
 
 ## Interfaces, domain behavior and implementation constraints
 
