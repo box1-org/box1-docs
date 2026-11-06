@@ -18,11 +18,13 @@
 - id: OBS-TRACE-EXPORT
   description: Services export traces (order, inventory, adapter, notification, asset, scenario, console)
   status: implemented
-  implementation: [box1-workloads-dev PR #119 (draft)]
-  tests: []
-  commands: ["kubectl kustomize workloads/<service>"]
-  evidence: []
-  limitations: [Must merge after the tracing instance is healthy]
+  implementation:
+    - "box1-workloads-dev PR #119 (draft): sampler arg 1.0 + endpoint"
+    - "service PRs: order-service#6 inventory-service#4 fulfillment-adapter#4 notification-service#2 asset-service#4 scenario-controller#3 operations-console#8"
+  tests: [order-service ./mvnw test (28 passed)]
+  commands: ["./mvnw -B package -DskipTests (order-service; SpanExporter synthetic bean present)", "./mvnw -B test (order-service)", "kubectl kustomize workloads/<service>"]
+  evidence: [review-findings/01-operations-security.md, decisions/006-build-time-export-switch.md]
+  limitations: [Other six services rely on PR checks; images must be rebuilt and promoted before #119 has effect]
 - id: OBS-TRACE-E2E
   description: Sample orderId resolves to one trace across order, inventory and adapter boundary
   status: proposed
@@ -54,7 +56,7 @@
   tests: []
   commands: []
   evidence: []
-  limitations: [Centralized log store deferred to #82]
+  limitations: [Centralized log store deferred to box1-docs#82]
 - id: OBS-METRICS-ALERTS
   description: ServiceMonitors, ERP slowdown/backlog alert, order-age and adapter-error dashboard
   status: proposed
