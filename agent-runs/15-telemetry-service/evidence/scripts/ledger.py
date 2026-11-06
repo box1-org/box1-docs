@@ -109,8 +109,21 @@ for _rid, _why in {
     L[_rid]['commands'].append('read-only live checks, evidence/10')
     L[_rid]['limitations'].append('live: ' + _why)
 L['TEL-CON-002']['limitations'].append('live: anonymous 302/499 verified; operator login with the role not yet exercised on the cluster')
-L['TEL-LIVE-001']['status'] = 'proposed'
-L['TEL-LIVE-001']['limitations'] = ['Seeded load run: user will drive the console', 'Random chaos run on the cluster: blocked by D-015 (deferred by the user)']
+EV11 = 'evidence/11-live-load-run.txt'
+L['TEL-LIVE-001']['status'] = 'blocked'
+L['TEL-LIVE-001']['evidence'] += [EV11]
+L['TEL-LIVE-001']['limitations'] = ['Load half live_verified: run_b63ce49d56084ec0b32a on the cluster, audited, digest matches the seed prediction (evidence/11)',
+                                    'Chaos half blocked: the user deferred naming the chaos namespace (D-015); no alert/clear on the cluster yet']
+for _rid, _why in {
+        'TEL-LOAD-001': 'user-driven LOAD run through the shared pipeline: admitted = published = stored = 1416, 0 dropped',
+        'TEL-LOAD-002': 'cluster run digest equals an independent prediction for the same seed and configuration',
+        'TEL-CON-001': 'console page served by the pod and used by the user on the cluster',
+        'TEL-CON-002': 'user login with chaos-operator on the cluster; anonymous rejected on the Route; no-role refusal local only',
+        'TEL-CHAOS-004': 'audit on the cluster: actor mike from the token, seed, stop recorded',
+        'TEL-INGEST-002': 'readings published to Kafka and projected on the cluster (1416/1416)'}.items():
+    L[_rid]['status'] = 'live_verified'
+    L[_rid]['evidence'].append(EV11)
+    L[_rid]['limitations'].append('live: ' + _why)
 
 if __name__ == '__main__':
     updates = json.loads(sys.argv[1]) if len(sys.argv) > 1 else {}

@@ -13,13 +13,13 @@
 
 - id: TEL-INGEST-002
   description: "Accepted readings publish equipment.reading.v1 with documented partition key and minimal identifiers"
-  status: deployed
+  status: live_verified
   implementation: ["src/main/java/org/box1/asset/ingest/IngestionPipeline.java", "src/main/java/org/box1/asset/ingest/Envelopes.java"]
   tests: ["src/test/java/org/box1/asset/ContractTest.java", "src/test/java/org/box1/asset/it/TelemetryFlowTest.java"]
   commands: ["./mvnw -B clean verify -DskipITs=false", "./mvnw clean verify -Pcontainers", "CI asset-service-validate-zr7tn at 11fa5a1"]
-  evidence: ["evidence/03-tests-local.txt", "evidence/07-review-repairs-local.txt", "evidence/08-ci.txt", "evidence/10-delivery.txt"]
+  evidence: ["evidence/03-tests-local.txt", "evidence/07-review-repairs-local.txt", "evidence/08-ci.txt", "evidence/10-delivery.txt", "evidence/11-live-load-run.txt"]
   deployment: {"image_digest": "sha256:4d8623986033b87bea25bed9461f0731e6616f47de00cc1bf21132dbbf0675d0", "gitops_commit": "aa0b4b044d96ce42a26e0119d2823c6591811250", "source": "828065e16c67ddbe980f591dc8c3beac8df1e300"}
-  limitations: ["ci_verified covers only the container-free tests in CI; the rest of the proof is local"]
+  limitations: ["ci_verified covers only the container-free tests in CI; the rest of the proof is local", "live: readings published to Kafka and projected on the cluster (1416/1416)"]
 
 - id: TEL-INGEST-003
   description: "A sample burst is ingested without duplicate records or unbounded growth; invalid units and payloads are rejected (AC1)"
@@ -133,43 +133,43 @@
 
 - id: TEL-CON-001
   description: "Console is plain HTML/CSS/JS served by the same Quarkus pod, no build toolchain or CDN, calls only this service's control API"
-  status: deployed
+  status: live_verified
   implementation: ["src/main/resources/META-INF/resources/console/"]
   tests: ["scripts/console-check.mjs"]
   commands: ["node console-check.mjs"]
-  evidence: ["evidence/05-browser-local.txt", "evidence/07-review-repairs-local.txt", "evidence/10-delivery.txt"]
+  evidence: ["evidence/05-browser-local.txt", "evidence/07-review-repairs-local.txt", "evidence/10-delivery.txt", "evidence/11-live-load-run.txt"]
   deployment: {"image_digest": "sha256:4d8623986033b87bea25bed9461f0731e6616f47de00cc1bf21132dbbf0675d0", "gitops_commit": "aa0b4b044d96ce42a26e0119d2823c6591811250", "source": "828065e16c67ddbe980f591dc8c3beac8df1e300"}
-  limitations: []
+  limitations: ["live: console page served by the pod and used by the user on the cluster"]
 
 - id: TEL-CON-002
   description: "Console page and control API require Keycloak box1 login with the chaos-operator role, enforced by the backend; anonymous and role-less requests rejected (AC6)"
-  status: deployed
+  status: live_verified
   implementation: ["src/main/resources/application.properties", "src/main/java/org/box1/asset/api/ControlResource.java"]
   tests: ["src/test/java/org/box1/asset/SecurityTest.java#consoleAndControlNeedABrowserLoginAndNeverAcceptAnonymousOrBearerAlone"]
   commands: ["./mvnw -B clean verify -DskipITs=false"]
-  evidence: ["evidence/03-tests-local.txt", "evidence/04-scenarios-local.txt", "evidence/07-review-repairs-local.txt", "evidence/10-delivery.txt"]
+  evidence: ["evidence/03-tests-local.txt", "evidence/04-scenarios-local.txt", "evidence/07-review-repairs-local.txt", "evidence/10-delivery.txt", "evidence/11-live-load-run.txt"]
   deployment: {"image_digest": "sha256:4d8623986033b87bea25bed9461f0731e6616f47de00cc1bf21132dbbf0675d0", "gitops_commit": "aa0b4b044d96ce42a26e0119d2823c6591811250", "source": "828065e16c67ddbe980f591dc8c3beac8df1e300"}
-  limitations: ["Local Keycloak 26.4, not RH-SSO 7.6; live needs D-013", "Cluster login (https redirect, RH-SSO 7.6) not exercised", "live: anonymous 302/499 verified; operator login with the role not yet exercised on the cluster"]
+  limitations: ["Local Keycloak 26.4, not RH-SSO 7.6; live needs D-013", "Cluster login (https redirect, RH-SSO 7.6) not exercised", "live: anonymous 302/499 verified; operator login with the role not yet exercised on the cluster", "live: user login with chaos-operator on the cluster; anonymous rejected on the Route; no-role refusal local only"]
 
 - id: TEL-LOAD-001
   description: "Load generator takes sites, assets, metrics, rate per asset and duration; uses the same validation and publication path as ingestion"
-  status: deployed
+  status: live_verified
   implementation: ["src/main/java/org/box1/asset/control/RunManager.java", "src/main/java/org/box1/asset/control/RunScript.java"]
   tests: ["src/test/java/org/box1/asset/it/ControlTest.java"]
   commands: ["./mvnw clean verify -Pcontainers"]
-  evidence: ["evidence/03-tests-local.txt", "evidence/07-review-repairs-local.txt", "evidence/10-delivery.txt"]
+  evidence: ["evidence/03-tests-local.txt", "evidence/07-review-repairs-local.txt", "evidence/10-delivery.txt", "evidence/11-live-load-run.txt"]
   deployment: {"image_digest": "sha256:4d8623986033b87bea25bed9461f0731e6616f47de00cc1bf21132dbbf0675d0", "gitops_commit": "aa0b4b044d96ce42a26e0119d2823c6591811250", "source": "828065e16c67ddbe980f591dc8c3beac8df1e300"}
-  limitations: []
+  limitations: ["live: user-driven LOAD run through the shared pipeline: admitted = published = stored = 1416, 0 dropped"]
 
 - id: TEL-LOAD-002
   description: "Seeded and deterministic: same seed gives the same reading sequence; page shows the seed and can replay it (AC7)"
-  status: deployed
+  status: live_verified
   implementation: ["src/main/java/org/box1/asset/control/SeededRandom.java", "src/main/java/org/box1/asset/control/RunScript.java", "src/main/java/org/box1/asset/control/SequenceDigest.java"]
   tests: ["src/test/java/org/box1/asset/RunScriptTest.java", "src/test/java/org/box1/asset/it/ControlTest.java#sameSeedReplaysTheSameSequenceAndRunsEndWithoutABrowser"]
   commands: ["./mvnw -B clean verify -DskipITs=false", "./mvnw clean verify -Pcontainers", "CI asset-service-validate-zr7tn at 11fa5a1"]
-  evidence: ["evidence/03-tests-local.txt", "evidence/04-scenarios-local.txt", "evidence/07-review-repairs-local.txt", "evidence/08-ci.txt", "evidence/10-delivery.txt"]
+  evidence: ["evidence/03-tests-local.txt", "evidence/04-scenarios-local.txt", "evidence/07-review-repairs-local.txt", "evidence/08-ci.txt", "evidence/10-delivery.txt", "evidence/11-live-load-run.txt"]
   deployment: {"image_digest": "sha256:4d8623986033b87bea25bed9461f0731e6616f47de00cc1bf21132dbbf0675d0", "gitops_commit": "aa0b4b044d96ce42a26e0119d2823c6591811250", "source": "828065e16c67ddbe980f591dc8c3beac8df1e300"}
-  limitations: ["ci_verified covers only the container-free tests in CI; the rest of the proof is local"]
+  limitations: ["ci_verified covers only the container-free tests in CI; the rest of the proof is local", "live: cluster run digest equals an independent prediction for the same seed and configuration"]
 
 - id: TEL-CHAOS-001
   description: "Random chaos picks only telemetry-scoped catalog entries at seeded random intervals (AC8)"
@@ -203,13 +203,13 @@
 
 - id: TEL-CHAOS-004
   description: "Each run has an audit record: actor from the token, seed, catalog entries chosen, start, stop and reset (AC8)"
-  status: deployed
+  status: live_verified
   implementation: ["src/main/java/org/box1/asset/control/RunStore.java", "src/main/resources/db/migration/V1__telemetry_schema.sql"]
   tests: ["src/test/java/org/box1/asset/it/ControlTest.java"]
   commands: ["./mvnw clean verify -Pcontainers"]
-  evidence: ["evidence/03-tests-local.txt", "evidence/07-review-repairs-local.txt", "evidence/10-delivery.txt"]
+  evidence: ["evidence/03-tests-local.txt", "evidence/07-review-repairs-local.txt", "evidence/10-delivery.txt", "evidence/11-live-load-run.txt"]
   deployment: {"image_digest": "sha256:4d8623986033b87bea25bed9461f0731e6616f47de00cc1bf21132dbbf0675d0", "gitops_commit": "aa0b4b044d96ce42a26e0119d2823c6591811250", "source": "828065e16c67ddbe980f591dc8c3beac8df1e300"}
-  limitations: []
+  limitations: ["live: audit on the cluster: actor mike from the token, seed, stop recorded"]
 
 - id: TEL-CHAOS-005
   description: "A pod restart never resumes a run silently"
@@ -313,10 +313,10 @@
 
 - id: TEL-LIVE-001
   description: "One seeded load run and one random chaos run on the cluster with audit, alert and clear evidence, after approval"
-  status: proposed
+  status: blocked
   implementation: []
   tests: []
   commands: []
-  evidence: []
+  evidence: ["evidence/11-live-load-run.txt"]
   deployment: {}
-  limitations: ["Seeded load run: user will drive the console", "Random chaos run on the cluster: blocked by D-015 (deferred by the user)"]
+  limitations: ["Load half live_verified: run_b63ce49d56084ec0b32a on the cluster, audited, digest matches the seed prediction (evidence/11)", "Chaos half blocked: the user deferred naming the chaos namespace (D-015); no alert/clear on the cluster yet"]

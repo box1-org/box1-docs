@@ -1,6 +1,6 @@
 # Checkpoint: box1-docs#15, frontier
 
-**Current phase:** 7. Delivered and verified live; waiting for the user-driven console load run (pilot-log stop 2).
+**Current phase:** 7. Delivered (second release 828065e1, CORS fix). Live load run done and verified (`evidence/11`). Chaos half blocked by D-015 (pilot-log stop 2).
 **Updated:** 2026-11-05 ~21:00 EST.
 
 ## Delivered
@@ -11,12 +11,12 @@
 | box1-workloads-dev#64 | merged 5ec7bf5d; PostgreSQL + PVC Bound; app env rolled |
 | box1-ops-contracts#7 | merged d57a4efb (main merged into the branch first; pin 2fe191d on main) |
 | asset-service#1 | merged 1706dd0b; release asset-service-release-rmcdq Succeeded: gate policy pass, promotion #72 (7a90162e), smoke pass |
-| Running | digest sha256:6d8e8c172b2885f35a551eb34c53429e1ac85a1771263ba841795c683fbde944, Argo Synced/Healthy at 7a90162e |
+| Running | digest sha256:4d8623986033b87bea25bed9461f0731e6616f47de00cc1bf21132dbbf0675d0, Argo Synced/Healthy at 7a90162e |
 
 Evidence: `evidence/10-delivery.txt`. Ledger: 26 deployed, 5 live_verified, 1 proposed (TEL-LIVE-001).
 
 ## Open
-- asset-service#2 (CORS: allow the console's own https origin) open, CI pending; merge needs approval. Until it ships, Arm/Start/Stop from the browser return 403.
+- asset-service#2 (CORS fix) merged by the user, released as sha256:4d862398… (#74, aa0b4b04), verified on the Route.
 - Client roles were created by hand by the user (operator did not apply `spec.roles`).
 - User: assign client role `chaos-operator` (client asset-service) to their account, sign in at https://asset-service-dev.apps.ocp.box1.org/console/, run one seeded load run. Then the agent records audit and readings evidence read-only.
 - D-015 deferred: chaos stays off; the live chaos run (with alert and clear evidence) is blocked until a namespace is named.
