@@ -69,7 +69,8 @@
   limitations: [The local console step was performed through the ERP domain API, not the TUI. The crash scenario relies on audited operator confirmations for what the controller cannot observe.]
 - id: AC-8
   description: Every scenario shows its display title, while IDs, errors and audit fields stay plain
-  status: deployed
+  status: live_verified
+  live_evidence: ["evidence/09-operator-access.md: cluster catalog shows all ten titles with plain IDs"]
   tests: [CatalogTest.everyScenarioHasItsTitleAndClassifiedMechanism, SecurityTest.aViewerReadsTheCatalogWithTitles]
   evidence: [evidence/04-local-e2e.txt, evidence/07-local-e2e-after-review.txt]
 
@@ -86,7 +87,8 @@
   limitations: [By construction (fixed base URLs on a host allowlist, ID-pattern path segments, no Kubernetes client, no process execution); the architecture and security passes found no exec, shell, SSRF or Kubernetes write. A review is not a test.]
 - id: SC-CATALOG
   description: Declarative catalog with prerequisites, fixture IDs, duration, expected observation, reset action, mechanism and title
-  status: deployed
+  status: live_verified
+  live_evidence: ["evidence/09-operator-access.md"]
   tests: [CatalogTest]
 - id: SC-RUNID
   description: scenarioRunId, correlation marker, audit with actor, time, environment, mode, TTL, impact, reset result, stardate

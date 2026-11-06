@@ -13,7 +13,7 @@ Stop 2 reported 2026-11-06 02:30 EST; answered about 12:50 EST. Stop 3 reported 
 
 Each item is a separate approval. A-1 to A-6 were approved at stop 2.
 
-**New at stop 3:** A-4b, merge **box1-org/box1-gitops#79** and sync Argo `keycloak` (the scope-mapping fix; needed before seeding and before the CLI client works). A-2b: merge box1-ops-contracts#10.
+**New at stop 3:** A-4b (**done**: merged by the user 12:58 EST, synced, both clients ready; evidence/09), merge **box1-org/box1-gitops#79** and sync Argo `keycloak` (the scope-mapping fix; needed before seeding and before the CLI client works). A-2b: merge box1-ops-contracts#10.
 
 | ID | Action | What it does | Status |
 |---|---|---|---|
@@ -23,7 +23,7 @@ Each item is a separate approval. A-1 to A-6 were approved at stop 2.
 | A-4 | Merge **box1-org/box1-gitops#78**, Argo sync | Merged (`7d7e0b1`), synced; roles created; scope mappings fail with 404 (repair 14) | **Done, incomplete: needs #79** |
 | A-5 | New Secret `scenario-controller-inventory-token` | Created by pipe, value never shown | **Done** |
 | A-6 | Merge **box1-org/box1-workloads-dev#103** | Merged (`e28c020`); Argo Synced and Healthy; Recreate | **Done** |
-| A-7 | Assign `scenario-operator` (client scenario-controller) to the person who runs scenarios, and get a token from `scenario-controller-cli` | Needed to call the controller. Whether RH-SSO 7.6 enables the device grant by attribute is not established | After A-4 |
+| A-7 | Assign `scenario-operator` (client scenario-controller) to the person who runs scenarios, and get a token from `scenario-controller-cli` | Needed to call the controller. Whether RH-SSO 7.6 enables the device grant by attribute is not established | **Done** (the user issued a test user with the role; device grant works with PKCE; evidence/09) |
 | A-8 | **Cluster seeding** | `POST /internal/v1/fixtures/seed`: four sites and 22 stock records through inventory's API; nothing else changes | After A-4b (#79), A-7 |
 | A-9 | **Live run: The Trouble with Tribbles** | Two fixture orders; one reserved, one rejected; additive reset | After A-8 |
 | A-10 | **Live run: Make it so** | One fixture order; you ship it in the ERP console when the run shows the step (or switch the ERP to AUTO) | After A-8 |
