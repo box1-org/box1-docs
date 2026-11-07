@@ -1,0 +1,162 @@
+# Requirement ledger for box1-docs#20 (frontier). Status = highest level actually observed.
+# Sources: AC1–AC8 = issue #20 acceptance criteria; PX-* = prompt phase exit additions; D-* = decisions/.
+- id: AIO-ERP-001
+  description: "Seeded ERP slowdown returns specific ERP/adapter evidence and a real trace/alert/deployment reference if available; absent sources stated unavailable"
+  source: 'AC1; scenario: seeded ERP slowdown with and without a source; PX-7'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: AIO-INJ-001
+  description: "Prompt injection in runbook references, logs or Kafka payloads cannot add privileges, disclose extra data or cause unsupported tool calls"
+  source: 'AC2; scenario: injection cases; D-010'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: AIO-ROLE-001
+  description: "No cross-customer data leakage through REST or MCP; operator-only v1 roles enforced server-side"
+  source: 'AC3; scenario: operator vs customer; D-005'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: AIO-MODEL-001
+  description: "Model down, timeout, truncated or invalid output returns a typed status and never an invented diagnosis"
+  source: 'AC4; scenarios: model down/timeout/truncated/invalid JSON; D-008, D-009'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: AIO-NOEXEC-001
+  description: "Analyze cannot execute rollback or remediation; proposals only, executable=false"
+  source: 'AC5; scenario: proposed rollback not executed; D-011'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: AIO-MCP-001
+  description: "MCP tool list holds only read-only evidence tools and analysis tools; anonymous, under-privileged, unknown-tool and invalid-argument calls rejected"
+  source: 'AC6; scenarios: MCP negative cases; D-004'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: AIO-PARITY-001
+  description: "Same incident through REST and MCP uses the same evidence and authorization decisions"
+  source: 'AC7; scenario: REST vs MCP'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: AIO-RESTART-001
+  description: "After restart an earlier analysis ID returns typed not-found; Kafka window refills without blocking readiness"
+  source: 'AC8; scenario: restart; D-003, D-007'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: AIO-CITE-001
+  description: "Every material claim cites evidence with ref, type, source, timestamp, retrieval status and trusted link"
+  source: 'Interfaces: REST analysis; D-006, D-009'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: AIO-BUSY-001
+  description: "Concurrency bounded to the model's capacity; excess analyses rejected with typed BUSY"
+  source: 'Interfaces: context budget; scenario: concurrent analyses; D-008'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: AIO-KAFKA-001
+  description: "Bounded evidence window: dedupe on eventId, poison records skipped and counted, lag and size metrics, Kafka outage does not fail readiness"
+  source: 'Interfaces: Kafka window; scenarios: poison, duplicate, Kafka unavailable; D-007'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: AIO-AUDIT-001
+  description: "Tool-call audit metadata complete and free of evidence content"
+  source: 'Interfaces: MCP surface; scenario: audit; D-004, D-012'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: AIO-EVAL-001
+  description: "Evaluation dataset scored across REST and MCP: citation coverage, unsupported assertions, role leaks, injection refusal, tool errors, p95"
+  source: 'Interfaces: evaluation; D-014'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: AIO-OPS-001
+  description: "Health endpoints, metrics, trace/log correlation, resource requests fitting the single node"
+  source: 'Finish-line; D-012'
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: []
+- id: AIO-RAG-001
+  description: "Runbook retrieval index with ACL and freshness"
+  source: 'Interfaces: retrieval (P1)'
+  status: superseded
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: ['Deferred by user decision 2026-11-06 (no persistent store); follow-up issue to file']
+- id: AIO-APPROVAL-001
+  description: "Remediation approval state machine PROPOSED→APPROVED→EXECUTED/REJECTED"
+  source: 'Interfaces: remediation'
+  status: superseded
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {}
+  limitations: ['Deferred by user decision 2026-11-06 (no persistent store); follow-up issue to file']
