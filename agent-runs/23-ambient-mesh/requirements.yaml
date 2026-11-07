@@ -11,10 +11,14 @@
   status: deployed
   evidence: [evidence/phase7-enroll-operations-console.md]
   deployment: {gitops_commit: ef49e762377ae93130f115cf7a9e3ee5e90375fc}
-  limitations: [1 of 7 namespaces enrolled; rollback not yet exercised]
+  limitations: [3 of 7 namespaces enrolled; rollback not yet exercised; enrolling a DB namespace resets some pooled connections for ~2 s]
 - id: MESH-MTLS-001
   description: mTLS negotiated and measurable (ztunnel metrics/logs mutual_tls, Kiali)
-  status: proposed
+  status: live_verified
+  commands: ["thanos istio_tcp_connections_opened_total{connection_security_policy=\"mutual_tls\"}", "ztunnel inbound access log src/dst.identity", "kiali graph securityPolicy appender"]
+  evidence: [evidence/phase7-enroll-order-inventory.md]
+  deployment: {gitops_commit: 5b596ce9d61e1036fd6f892ab6939f3db2c4102a}
+  limitations: [3 of 7 namespaces enrolled; pre-enrollment pooled DB connections bypass ztunnel until recycled]
 - id: MESH-KIALI-001
   description: Kiali GitOps-managed, OpenShift login required, limited to selected namespaces; TCP graph shows a real order
   status: deployed
