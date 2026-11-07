@@ -12,7 +12,7 @@ This is the **recommended sequence**, not a requirement that one agent execute e
 | 5 | Platform `02_observability_stack` | Order ID links logs, trace and metrics |
 | 6 | Service `09_scenario_controller` | Deterministic broker/ERP fault and recovery demo |
 | 7 | Services `05_telemetry` + `06_notification` | Sensor alerts and async notification path |
-| 8 | Platform `03_mesh_and_rollouts` | Canary/mTLS/fault injection validated |
+| 8 | Platform `03_mesh_and_rollouts` | Ambient mTLS, Kiali L4/L7 graphs and NetworkPolicy baseline validated |
 | 9 | Platform `04_trusted_delivery` | Negative supply-chain gate and digest proof |
 | 10 | Platform `06_ai_inference` + Service `10_ai_operations` | Read-only cited incident answer |
 
