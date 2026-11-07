@@ -1,0 +1,82 @@
+[
+  {
+    "label": "console served after Keycloak login",
+    "ok": true,
+    "detail": "http://localhost:18080/console/"
+  },
+  {
+    "label": "axe WCAG 2.1 AA: idle, 1440 px",
+    "ok": true,
+    "detail": "28 rules passed"
+  },
+  {
+    "label": "first Tab reaches the skip link with a visible focus ring",
+    "ok": true,
+    "detail": "{\"id\":\"A\",\"outline\":\"solid 2px\"}"
+  },
+  {
+    "label": "arrow keys select the chaos run kind",
+    "ok": true,
+    "detail": "CHAOS"
+  },
+  {
+    "label": "Arm button reachable and focus visible",
+    "ok": true,
+    "detail": "{\"id\":\"arm\",\"outline\":\"solid 2px\"}"
+  },
+  {
+    "label": "arming moves focus to the namespace confirmation",
+    "ok": true,
+    "detail": "confirm-ns"
+  },
+  {
+    "label": "Start stays disabled until the namespace is typed",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "label": "axe WCAG 2.1 AA: chaos run in progress, 1440 px",
+    "ok": true,
+    "detail": "29 rules passed"
+  },
+  {
+    "label": "stop-all dialog takes focus",
+    "ok": true,
+    "detail": "stop-confirm"
+  },
+  {
+    "label": "keyboard stop-all ended the run",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "label": "page shows UNKNOWN when the backend cannot confirm state",
+    "ok": true,
+    "detail": "admitted readout: unknown"
+  },
+  {
+    "label": "axe WCAG 2.1 AA: idle, 390 px",
+    "ok": true,
+    "detail": "29 rules passed"
+  },
+  {
+    "label": "no horizontal page overflow at 390 px",
+    "ok": true,
+    "detail": "0px"
+  },
+  {
+    "label": "page loads nothing from outside this service",
+    "ok": true,
+    "detail": "[]"
+  },
+  {
+    "label": "page works under its own CSP (state confirmed, no CSP violations)",
+    "ok": true,
+    "detail": "[]"
+  },
+  {
+    "label": "brand mark loads",
+    "ok": true,
+    "detail": "naturalWidth 400"
+  }
+]

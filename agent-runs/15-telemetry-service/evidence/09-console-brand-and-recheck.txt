@@ -1,0 +1,13 @@
+Console update and browser re-check, local, 2026-11-06 01:14-01:16 UTC (20:14-20:16 EST). asset-service 490a7e2.
+
+Changes: box1 cube mark (D-016) as header mark and favicon; Recent runs and Audit collapse by default; the chaos option
+is disabled with an explanation while the service's gate is closed (display only; the service still refuses chaos).
+
+Headless Firefox (scripts/console-check.mjs; the harness context uses bypassCSP only to inject axe-core):
+16/16 PASS. Includes: axe WCAG 2.1 AA clean at 1440 px idle, 1440 px with a chaos run, and 390 px; keyboard-only
+arm/confirm/start/stop-all; UNKNOWN when state calls fail; no horizontal overflow at 390 px; nothing loaded from outside
+the service; and, in a context WITHOUT bypassCSP, the page confirms state with no CSP violations and the brand mark
+loads (naturalWidth 400).
+Gate closed (scripts/gate-closed.mjs, ASSET_CHAOS_ENABLED=false): chaos radio disabled, explanation shown
+(screenshots/08-dev-chaos-off.png).
+CI-equivalent build at 490a7e2: mvn -B clean verify -DskipITs=false: 45 tests + 5 integration tests, 0 failures, SpotBugs 0.
