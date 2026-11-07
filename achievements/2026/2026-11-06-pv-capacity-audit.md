@@ -121,7 +121,12 @@ Whether those alerts route to anyone outside the console is **not verified**.
 
 **Rollback:** patch `overprovisionRatio` back to `1`. Volumes that are already bound are not affected. New claims are refused until total reservations fall below the pool size, and they currently exceed it (929 GiB reserved against 857.5 GiB).
 
-**Still Pending (unrelated to capacity):** `openshift-virtualization-os-images/fedora-3c9d3f5c2fac`. Its prime PVC is Bound, but importer pod `importer-prime-f163a15a-…` has been in `Init:ContainerStatusUnknown` for 34 h.
+**Fedora golden image (not a capacity problem): resolved 2026-11-07 00:18 EST.** `openshift-virtualization-os-images/fedora-3c9d3f5c2fac` had been stuck for 34 hours because its importer pod `importer-prime-f163a15a-…` was rejected with `OutOfpods`. At that time the node was at its 250-pod limit. The limit has since been raised to 400, and 306 pods were active at retry time.
+
+- **Fix:** deleted the stuck pod, and CDI recreated it.
+- **Result:** the DataVolume reached `Succeeded`, PVC `fedora-3c9d3f5c2fac` is Bound, and DataSource `fedora` is `Ready=True`. No PVCs remain Pending anywhere in the cluster.
+- **Capacity:** the 30 Gi volume was already reserved through the prime PVC, so it adds no new reservation.
+- **Observation:** about 350 `Succeeded` pods remain in `box1-ci`. Completed pods were probably a large part of reaching the old 250-pod limit, but this was **not established**.
 
 ## Follow-ups and options
 
