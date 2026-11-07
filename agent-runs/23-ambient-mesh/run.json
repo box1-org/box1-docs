@@ -2,11 +2,11 @@
   "issue": "box1-org/box1-docs#23",
   "profile": "frontier",
   "current_phase": 6,
-  "phase_state": "operators_installed_awaiting_mesh_cr_approval",
-  "updated_at": "2026-11-06T22:05:00-05:00",
+  "phase_state": "mesh_pr_open_awaiting_merge",
+  "updated_at": "2026-11-06T22:20:00-05:00",
   "open_decisions": [
-    "approve mesh CRs (Istio v1.31.1 ambient, IstioCNI, ZTunnel: privileged DaemonSets) + Kiali CR and its two permissions",
-    "approve Postgres NetworkPolicy changes and first namespace enrollment (operations-console-dev)"
+    "user merge instruction for box1-gitops#95 (mesh control plane + Kiali)",
+    "then: Postgres NetworkPolicy + first enrollment approval (operations-console-dev)"
   ],
   "repositories": {
     "box1-docs": {
@@ -18,7 +18,9 @@
       "main": "e07852a",
       "run_branch": null,
       "pr": null,
-      "prs": [],
+      "prs": [
+        95
+      ],
       "merged_prs": [
         {
           "pr": 93,
@@ -45,6 +47,14 @@
         "decision 001 local gateway mode",
         "decision 002 OSSM stable-3.5 and Kiali operators",
         "decision 003 Kiali permissions cluster-monitoring-view and box1-traces-read-dev"
+      ]
+    },
+    {
+      "date": "2026-11-06",
+      "by": "user (chat)",
+      "covers": [
+        "mesh CRs Istio/IstioCNI/ZTunnel",
+        "Kiali CR"
       ]
     }
   ],

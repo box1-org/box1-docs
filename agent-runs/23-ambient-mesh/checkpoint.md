@@ -1,6 +1,6 @@
 # Checkpoint — #23 ambient mesh and Kiali
 
-**Phase:** 6, prerequisites delivered; **stopped for approval of the mesh resources** (2026-11-06 22:05 EST).
+**Phase:** 6, prerequisites delivered; mesh and Kiali approved (user, 2026-11-06); **[box1-gitops#95](https://github.com/box1-org/box1-gitops/pull/95) open, waiting for the user's merge instruction** (22:20 EST).
 
 ## Done and verified
 - OVN local gateway mode: box1-gitops#93 `7acba8c`. See `evidence/phase6-network-after.md`.
@@ -25,4 +25,17 @@ GitOps PRs for:
 3. Workloads, in box1-workloads-dev: allow 15008 and the probe SNAT address on the `<service>-postgres` NetworkPolicies, then the ambient label on `operations-console-dev` first.
 
 ## Exact next action
-After the user approves the mesh resources: write PR 1, dry-run it server-side once the CRDs exist (they do now), open it, and wait for the user's merge instruction.
+PR 1 and PR 2 are combined in #95, which passed the server-side dry run. After the user says to merge, sync in this order:
+1. `service-mesh-control-plane`, then wait for `Istio` Ready and the CNI and ztunnel DaemonSets to be ready;
+2. `observability-tracing` (the NetworkPolicy);
+3. `service-mesh-kiali`.
+
+Then verify:
+- the ingress istiod and GatewayClass are unaffected;
+- ztunnel metrics reach Thanos;
+- Kiali requires a login and lists only labelled namespaces;
+- Kiali reaches Tempo;
+- the resource cost against the baseline;
+- the order probe still passes.
+
+After that, ask for approval of the PR 3 workloads change (Postgres NetworkPolicies, then `operations-console-dev` enrollment).
