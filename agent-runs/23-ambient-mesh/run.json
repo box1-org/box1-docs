@@ -2,11 +2,10 @@
   "issue": "box1-org/box1-docs#23",
   "profile": "frontier",
   "current_phase": 6,
-  "phase_state": "control_plane_and_kiali_live_awaiting_enrollment_approval",
-  "updated_at": "2026-11-06T22:25:00-05:00",
+  "phase_state": "enrollment_pr_open_awaiting_merge",
+  "updated_at": "2026-11-06T22:35:00-05:00",
   "open_decisions": [
-    "approve Postgres NetworkPolicy changes (HBONE 15008 + probe SNAT 169.254.7.127) and enrollment of operations-console-dev",
-    "follow-up: Argo retry/health for sailoperator.io so first sync does not race istiod webhook"
+    "user merge instruction for box1-workloads-dev#144 (Postgres 15008 + operations-console-dev ambient)"
   ],
   "repositories": {
     "box1-docs": {
@@ -37,8 +36,11 @@
     "box1-workloads-dev": {
       "role": "namespace labels, NetworkPolicies, waypoints, Telemetry",
       "main": "3c12637",
-      "run_branch": null,
-      "pr": null
+      "run_branch": "mesh-ambient-console",
+      "pr": null,
+      "prs": [
+        144
+      ]
     }
   },
   "approvals": [
@@ -57,6 +59,14 @@
       "covers": [
         "mesh CRs Istio/IstioCNI/ZTunnel",
         "Kiali CR"
+      ]
+    },
+    {
+      "date": "2026-11-06",
+      "by": "user (chat)",
+      "covers": [
+        "Postgres NetworkPolicy HBONE change",
+        "enroll operations-console-dev"
       ]
     }
   ],

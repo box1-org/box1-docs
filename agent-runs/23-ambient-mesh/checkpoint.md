@@ -1,6 +1,6 @@
 # Checkpoint — #23 ambient mesh and Kiali
 
-**Phase:** 6/7. The control plane and Kiali are live (2026-11-06 22:18 EST). **Stopped for approval of the first enrollment.**
+**Phase:** 6/7. The control plane and Kiali are live (2026-11-06 22:18 EST). First enrollment approved; **[box1-workloads-dev#144](https://github.com/box1-org/box1-workloads-dev/pull/144) is open and waiting for the user's merge instruction.** The probe SNAT rule was dropped, because Postgres probes are `exec`.
 
 ## Done and verified
 | Step | GitOps | Evidence |
