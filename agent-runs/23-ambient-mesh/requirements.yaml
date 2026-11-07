@@ -8,7 +8,10 @@
   limitations: [traffic interruption length during rollout not measured]
 - id: MESH-L4-001
   description: Order flow works before enrollment, under ambient L4 on all seven namespaces, and after rolling back one namespace
-  status: proposed
+  status: deployed
+  evidence: [evidence/phase7-enroll-operations-console.md]
+  deployment: {gitops_commit: ef49e762377ae93130f115cf7a9e3ee5e90375fc}
+  limitations: [1 of 7 namespaces enrolled; rollback not yet exercised]
 - id: MESH-MTLS-001
   description: mTLS negotiated and measurable (ztunnel metrics/logs mutual_tls, Kiali)
   status: proposed

@@ -1,11 +1,12 @@
 {
   "issue": "box1-org/box1-docs#23",
   "profile": "frontier",
-  "current_phase": 6,
-  "phase_state": "enrollment_pr_open_awaiting_merge",
+  "current_phase": 7,
+  "phase_state": "console_enrolled_kiali_fix_pr_open",
   "updated_at": "2026-11-06T22:35:00-05:00",
   "open_decisions": [
-    "user merge instruction for box1-workloads-dev#144 (Postgres 15008 + operations-console-dev ambient)"
+    "user merge instruction for box1-gitops#96 (Kiali explicit namespaces + control-plane sync retry)",
+    "approve enrolling order-service-dev and inventory-service-dev (first mTLS edge)"
   ],
   "repositories": {
     "box1-docs": {
@@ -17,7 +18,9 @@
       "main": "e07852a",
       "run_branch": null,
       "pr": null,
-      "prs": [],
+      "prs": [
+        96
+      ],
       "merged_prs": [
         {
           "pr": 93,
@@ -36,10 +39,14 @@
     "box1-workloads-dev": {
       "role": "namespace labels, NetworkPolicies, waypoints, Telemetry",
       "main": "3c12637",
-      "run_branch": "mesh-ambient-console",
+      "run_branch": null,
       "pr": null,
-      "prs": [
-        144
+      "prs": [],
+      "merged_prs": [
+        {
+          "pr": 144,
+          "merge_commit": "ef49e762377ae93130f115cf7a9e3ee5e90375fc"
+        }
       ]
     }
   },
