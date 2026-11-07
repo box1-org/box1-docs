@@ -62,7 +62,7 @@
   tests: []
   commands: []
   evidence: [evidence/phase6-metrics-alerts-dashboard.md]
-  limitations: [Alert path proven live (Box1OrdersStuck firing in Alertmanager); ERP-delay and MANUAL-backlog alert latency not yet measured (needs approved fault injection); adapter gauge includes NEEDS_ATTENTION rows]
+  limitations: [Alert path proven live (Box1OrdersStuck firing in Alertmanager); ERP-delay and MANUAL-backlog alert latency not yet measured (needs approved fault injection); adapter gauge NEEDS_ATTENTION exclusion fixed in fulfillment-adapter#6 (f1df453)]
 - id: OBS-DEPLOY-OVERLAY
   description: Deployment SHA/digest/time correlated with a simulated regression
   status: proposed

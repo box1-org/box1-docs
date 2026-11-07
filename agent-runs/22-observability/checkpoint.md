@@ -42,7 +42,7 @@ Updated 2026-11-06T15:53:13-05:00. Phase 7 is partial. **The first acceptance cr
 - Look at the dashboard in the console.
 - Decide what to do about the 2 stuck orders.
 
-**Follow-up:** fix the adapter gauge to exclude NEEDS_ATTENTION (adapter repo).
+**Done:** the adapter gauge now excludes NEEDS_ATTENTION. fulfillment-adapter#6 (`f1df453`) is released and live; see the metrics evidence.
 
 **Housekeeping:** close #126; two stranded Pending validate runs.
 

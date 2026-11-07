@@ -42,3 +42,25 @@ All 17 panel queries return series through the Thanos querier. Values at about 2
 ## Not yet established (criterion 2 stays open)
 - **Alert latency** of `Box1ErpAcknowledgementDelayed` from an ERP stall, and of `Box1ErpAwaitingOperator` from a MANUAL backlog, against the under-2-minute target. This needs an ERP stall or MANUAL mode, which is fault injection and needs approval.
 - **Adapter gauge bug:** `fulfillment_oldest_unacknowledged_seconds` includes NEEDS_ATTENTION rows (adapter `FulfillmentStore.java:490`).
+
+## Follow-up: adapter ERP-delay gauges exclude NEEDS_ATTENTION (2026-11-06)
+
+User approval in chat: "Yes, fix the gauge".
+
+**Fix:** box1-org/fulfillment-adapter#6, squash-merged as `f1df4534`. Both `fulfillment_oldest_unacknowledged_seconds` and `fulfillment_oldest_unacknowledged_upload_seconds` now filter `dispatch_state <> 'NEEDS_ATTENTION'`, matching `fulfillment_backlog`.
+
+**Test:** `ResultIngestionTest` backdates an unacknowledged request. The control checks it ages both gauges; the new check asserts it leaves both ages once it is NEEDS_ATTENTION.
+- **Red/green** (`-Pcontainers`, local Podman; Testcontainers pointed at the Podman machine socket with Ryuk disabled; no containers were left behind):
+  - Old SQL: the control passes, then the new check fails ("needs-attention request leaves the ERP-delay age … was: <false>").
+  - Fixed: 8/8 pass.
+- **Default `./mvnw verify`:** 111 tests pass. PR CI `fulfillment-adapter-validate` succeeded.
+
+**Delivery:** release `fulfillment-adapter-release-sr5pj` **Succeeded** end to end. Promotion box1-workloads-dev#141 auto-merged; no ConfigMap change, so no orphan. The pod `fulfillment-adapter-866bb78d8-pbfbv` runs source `f1df453`, `sha256:6a2f3be779e5`, ready with 0 restarts. The app is Synced/Healthy.
+
+**Live check:**
+- An order (`ord_1f05cdcb…`) reached SHIPPED in 8 s.
+- Gauges: oldest unacknowledged 0, oldest unacknowledged upload 0, backlog 0, needs attention 0, refresh age 13 s. `up{job="fulfillment-adapter"}` = 1.
+- 0 ERROR lines in the adapter log.
+- The only firing Box1 alert is the expected `Box1OrdersStuck`.
+
+The NEEDS_ATTENTION case itself was not exercised live; none exist.
