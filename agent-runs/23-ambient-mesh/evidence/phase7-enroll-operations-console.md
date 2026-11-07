@@ -26,3 +26,15 @@
 ## Not tested
 - A signed-in console session in a browser.
 - The console's Keycloak token calls after enrollment.
+
+## Fix delivered: Kiali namespaces (22:28–22:30 EST)
+- [box1-gitops#96](https://github.com/box1-org/box1-gitops/pull/96) was squash-merged at the user's instruction as `0009516`. `service-mesh-kiali` was synced at that revision (`Succeeded`/`Synced`).
+- `service-mesh-control-plane` now carries `syncPolicy.retry` (limit 5, 20 s backoff, max 3 m) and is `Synced`.
+- The Kiali operator reconciled at 22:29. Its status `discoverySelectorNamespaces` now lists the nine namespaces, and `kiali-viewer` RoleBinding `kiali` exists in `operations-console-dev`.
+- The Kiali pod was replaced during the reconcile. One `/api/namespaces` call during the rollover returned an empty body.
+- `/api/namespaces` then returned the nine namespaces: `istio-system`, `ztunnel` and the seven service namespaces.
+- **Kiali workload graph** for `operations-console-dev` (10 m):
+  - node `operations-console`;
+  - TCP edges `unknown → operations-console` (7.02) and `operations-console → unknown` (77.68);
+  - `isMTLS` unset.
+  - `unknown` is expected while the peers (order, inventory, the router) are outside the mesh.
