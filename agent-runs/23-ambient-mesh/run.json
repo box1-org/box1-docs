@@ -2,10 +2,13 @@
   "issue": "box1-org/box1-docs#23",
   "profile": "frontier",
   "current_phase": 7,
-  "phase_state": "rollback_test_pr_open_awaiting_merge",
-  "updated_at": "2026-11-06T22:52:00-05:00",
+  "phase_state": "waypoint_prs_open; rollback_test_deferred",
+  "updated_at": "2026-11-06T23:10:00-05:00",
   "open_decisions": [
-    "user merge instruction for box1-workloads-dev#150 (rollback test: console out of mesh); then restore PR"
+    "approve waypoints and merge box1-gitops#97 (Argo Gateway RBAC) then sync service-mesh-control-plane",
+    "then merge box1-workloads-dev#151 (waypoints, inactive)",
+    "then PR C: istio.io/use-waypoint labels on the 3 namespaces",
+    "rollback test #150 deferred by user ('Not now')"
   ],
   "repositories": {
     "box1-docs": {
@@ -17,7 +20,9 @@
       "main": "e07852a",
       "run_branch": null,
       "pr": null,
-      "prs": [],
+      "prs": [
+        97
+      ],
       "merged_prs": [
         {
           "pr": 93,
@@ -43,7 +48,8 @@
       "run_branch": null,
       "pr": null,
       "prs": [
-        150
+        150,
+        151
       ],
       "merged_prs": [
         {

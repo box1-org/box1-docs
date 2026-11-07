@@ -16,8 +16,17 @@
 ## Open
 - `gateways.networking.istio.io` stays with the ingress operator (install race; unused).
 
+## Status 2026-11-06 23:10 EST
+- The rollback test PR box1-workloads-dev#150 is open; the user deferred it ("Not now").
+- **Waypoints are drafted and need the user's approval and merges, in order:**
+  1. [box1-gitops#97](https://github.com/box1-org/box1-gitops/pull/97): Argo RBAC for `gateways.gateway.networking.k8s.io` in the three namespaces. Merge it, then sync `service-mesh-control-plane`.
+  2. [box1-workloads-dev#151](https://github.com/box1-org/box1-workloads-dev/pull/151): a waypoint Gateway, a Telemetry (box1-otel, 100%) and a PodMonitor per namespace, plus `use-waypoint: none` on the order and inventory Postgres Services. **Inactive:** no traffic moves. Verify `Programmed`, pods ready, metrics `up`.
+  3. PR C (not yet opened): `istio.io/use-waypoint: waypoint` on the three Namespaces. Then generate console → order/inventory calls carrying a `traceparent`, and compare the Kiali L4 graph, the L7 graph and the Tempo trace.
+- **Prerequisites checked:**
+  - the waypoint template is non-root, no privilege escalation, all capabilities dropped, and gets seccomp from `restricted-v2` (as the Postgres pods do);
+  - service ports are named `http`;
+  - Argo can create Telemetry and PodMonitors there but not Gateways (hence #97).
+- **Expected L7 scope:** only mesh-sourced HTTP to the waypointed services, that is console → order and console → inventory (and console → console via its own waypoint, if any). Router (Route) and Prometheus traffic come from outside the mesh and bypass waypoints unless `istio.io/ingress-use-waypoint` is set.
+
 ## Exact next action
-1. Done: #96 synced; Kiali shows nine namespaces.
-2. Done: order and inventory enrolled; mTLS proven.
-3. Done: all seven enrolled (#149).
-4. Next, each needing approval: the rollback exercise on one namespace, waypoints on console, order and inventory, and the NetworkPolicy baseline.
+Wait for the user's approval of the waypoints and their merge instruction for #97.
