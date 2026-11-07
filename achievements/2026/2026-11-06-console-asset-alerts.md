@@ -85,8 +85,4 @@ Follow-ups:
   - add alerts to incident evidence.
 - [#79](https://github.com/box1-org/box1-docs/issues/79): confidential console client, the permanent fix. Revisit the asset-service mapping then.
 - [#63](https://github.com/box1-org/box1-docs/issues/63): restarting asset-service ends asset telemetry console sessions. This was seen again when the chaos-gate rollout restarted the pod.
-- **Unfinished, not published:** the order Evidence "Trace" link to the new OpenShift distributed-tracing view (Tempo `box1-observability/box1`, tenant `dev`).
-  - A local edit exists on branch `trace-link` of operations-console, in this workstation's `run23-operations-console` worktree. It is uncommitted.
-  - It makes the trace link a configurable `console.trace-url-template` (`CONSOLE_TRACE_URL_TEMPLATE`).
-  - Its tests were not completed, and the link target was not opened, because it needs OpenShift sign-in.
-  - It is not tracked in an issue yet.
+- **Related, delivered separately:** the order Evidence "Trace" link now opens the OpenShift distributed-tracing view (Tempo `box1-observability/box1`, tenant `dev`). It was merged in [box1-org/operations-console#10](https://github.com/box1-org/operations-console/pull/10) (`023a711`, merge `e5dc0ec`) and uses `console.trace-url-template`. This log does not cover its deployment or verification.
