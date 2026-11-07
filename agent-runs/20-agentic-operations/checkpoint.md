@@ -2,7 +2,7 @@
 
 ## Current phase
 
-Phases 0 (discovery) and 1 (design) are complete as of 2026-11-06 22:30 EST. **The run is stopped at an approval boundary.** Phase 3 needs the repository, and onboarding it is approval-required (Q-1).
+Phase 3 (implementation) started at 2026-11-06 22:40 EST. The user onboarded the service (Q-1). MCP 2.0.4 is proven on Quarkus 3.40.1.1 (Q-2, `evidence/03`). The template scaffold is live (`evidence/02`).
 
 ## Completed
 
@@ -22,7 +22,8 @@ Phases 0 (discovery) and 1 (design) are complete as of 2026-11-06 22:30 EST. **T
 ## Branches and worktrees
 
 - box1-docs `agent-run/20-agentic-operations`, worktree `/Users/mike/Documents/ChatGPT/box1/run20-docs`.
-- No other repository has been touched.
+- agentic-operations `issue-20-agentic-operations` at `f6a072b` (MCP probe), pushed, no PR. Clone `/Users/mike/Documents/ChatGPT/box1/run20-agentic-operations`.
+- No other repository has been touched by this run. Onboarding PRs #146 and #147 came from Developer Hub.
 
 ## Open risks
 
@@ -32,9 +33,15 @@ Phases 0 (discovery) and 1 (design) are complete as of 2026-11-06 22:30 EST. **T
 
 ## Exact next action
 
-The user answers `open-decisions.md`, at minimum Q-1. After onboarding:
+Implement D-002 to D-012 on `issue-20-agentic-operations`, in this order:
 
-1. clone `box1-org/agentic-operations` to `run20-agentic-operations`;
-2. branch `issue-20-agentic-operations`;
-3. add `quarkus-mcp-server-http` and `-oidc` 2.0.4 and run `./mvnw -B -ntp verify` to settle Q-2;
-4. then implement following D-002 to D-012.
+1. evidence clients and `EvidenceService` with `@RolesAllowed`;
+2. the Kafka window;
+3. the model client and a mock;
+4. `AnalysisService` and the REST resource;
+5. replace the probe with the MCP tool catalog;
+6. the evaluation fixtures.
+
+Then run `./mvnw -B -ntp verify`.
+
+Still open: Q-3 (vLLM endpoint use), Q-4 (operator-only), Q-5 (Keycloak PR), Q-6 (deferred RBAC) and Q-7 (contracts PR).

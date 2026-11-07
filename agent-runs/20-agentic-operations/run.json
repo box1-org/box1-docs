@@ -4,17 +4,53 @@
   "profile": "frontier",
   "prompt": "box1_operations_agent_prompts/01-services/10_ai_operations.md@12f0b11 (PR #96 merged)",
   "started": "2026-11-06T21:50-05:00",
-  "current_phase": "1 complete; stopped for approvals (open-decisions.md)",
+  "current_phase": "3 in progress (onboarded; MCP 2.0.4 compatibility proven)",
   "repositories": [
-    {"name": "box1-org/agentic-operations", "role": "target", "state": "not created; onboarding awaits Q-1"},
-    {"name": "box1-org/box1-docs", "role": "run state", "branch": "agent-run/20-agentic-operations"},
-    {"name": "box1-org/box1-ops-contracts", "role": "TOPICS.md consumer group", "base": "bb381b0", "state": "not started (Q-7)"},
-    {"name": "box1-org/box1-gitops", "role": "Keycloak clients", "base": "b71a407", "state": "not started (Q-5)"},
-    {"name": "box1-org/box1-workloads-dev", "role": "deployment manifests", "base": "932b1ba", "state": "not started"}
+    {
+      "name": "box1-org/agentic-operations",
+      "role": "target",
+      "base": "61bcb8c38e4b5e6777c95d77b7398ea299b1ca5e",
+      "branch": "issue-20-agentic-operations",
+      "commit": "f6a072b"
+    },
+    {
+      "name": "box1-org/box1-docs",
+      "role": "run state",
+      "branch": "agent-run/20-agentic-operations"
+    },
+    {
+      "name": "box1-org/box1-ops-contracts",
+      "role": "TOPICS.md consumer group",
+      "base": "bb381b0",
+      "state": "not started (Q-7)"
+    },
+    {
+      "name": "box1-org/box1-gitops",
+      "role": "Keycloak clients",
+      "base": "b71a407",
+      "state": "not started (Q-5)"
+    },
+    {
+      "name": "box1-org/box1-workloads-dev",
+      "role": "deployment manifests",
+      "base": "932b1ba",
+      "state": "not started"
+    }
   ],
-  "worktrees": ["/Users/mike/Documents/ChatGPT/box1/run20-docs"],
+  "worktrees": [
+    "/Users/mike/Documents/ChatGPT/box1/run20-docs",
+    "/Users/mike/Documents/ChatGPT/box1/run20-agentic-operations (clone)"
+  ],
   "containers_prefix": "run20-",
   "image_digest": null,
   "gitops_commit": null,
-  "review_passes_completed": []
+  "review_passes_completed": [],
+  "onboarding": {
+    "workloads_prs": [
+      "box1-workloads-dev#146 fe383c6",
+      "box1-workloads-dev#147"
+    ],
+    "argo_revision": "b108126",
+    "scaffold_digest": "sha256:eb145100ffbb6a6bcb8d6f338d8ccfdcc135174ecf66aef31fb853da67f2dbd1"
+  }
 }
