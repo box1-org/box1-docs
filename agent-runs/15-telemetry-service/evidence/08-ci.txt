@@ -1,0 +1,8 @@
+CI for asset-service#1 (Pipelines as Code, task box1-quarkus-maven: mvn -B verify -DskipITs=false; no container runtime).
+- asset-service-validate-zr7tn at 11fa5a1055439eb4ce01018c836d5f5d4c28b848: Succeeded. 45 tests, 0 failures; packaged-jar
+  GreetingResourceIT 5 tests, 0 failures; SpotBugs 0; Checkstyle pass. GitHub check: pass (4m5s).
+- Earlier runs vbn5d (5fdfe89), 4bshg (3c40e8c), sgdmz (7cdc138), plw2f (742f9d7): Failed or superseded; cause in evidence/07.
+- CI covers the container-free tests only: unit tests, SecurityTest, HttpsRedirectTest, ContractTest and OpenApiContractTest
+  (pinned contracts), GreetingResource tests. The PostgreSQL/Kafka suite and the end-to-end scenarios are local only.
+box1-workloads-dev#64: box1-gitops-validate pass, box1-phase1-smoke pass. box1-gitops#62, #63: onboarding-plugin-guard and
+phase1-smoke pass. box1-ops-contracts#7: no CI configured; npm test and validate run locally.

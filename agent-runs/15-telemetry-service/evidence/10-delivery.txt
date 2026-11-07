@@ -1,0 +1,50 @@
+Phase 6 delivery, with the user's approval ("I created the secret. Do the needful", 2026-11-05 ~20:50 EST), in the
+order the user was given: DLQ topic merge and its selective sync, Keycloak client, workloads, contracts, service.
+
+- Secret asset-service-postgres: created by the user. Checked by name and key names only (POSTGRESQL_DATABASE,
+  POSTGRESQL_PASSWORD, POSTGRESQL_USER); no value read.
+- box1-gitops#62 merged as 169dda0c. Argo refresh of box1-kafka: only KafkaTopic box1.telemetry.dlq.v1 OutOfSync.
+  Selective sync of that one resource at 169dda0c with prune=false (Application operation field): Succeeded.
+  Topic Ready=True, 3 partitions, retention 1209600000 ms.
+- box1-gitops#63 merged as 39e2e8fe. Application keycloak Synced/Healthy at 39e2e8fe (automated). KeycloakClient
+  asset-service: phase "reconciling", ready=true (same steady state as the existing clients).
+  Functional check (unauthenticated authorize requests, no credential): client asset-service with the https
+  /console/callback redirect shows the login form; the http redirect is refused "Invalid parameter: redirect_uri";
+  an unknown client gives "Client not found". Client roles are not visible without admin credentials (not checked).
+- box1-workloads-dev#64 merged as 5ec7bf5d. Argo asset-service Synced/Healthy at 5ec7bf5d. asset-service-postgres 1/1,
+  PVC asset-service-postgres-data Bound 5Gi lvms-vg1; asset-service rolled with the new env on the scaffold image, 1/1, 0 restarts.
+- box1-ops-contracts#7: main had moved (PRs #6 and #8 by other runs); merge conflicts in TOPICS.md and OWNERSHIP.md
+  were additive and both sides kept; npm test 76 pass, validate pass. Merged as d57a4efb. The service's pinned
+  contracts commit 2fe191d is an ancestor of main (no repin needed).
+- asset-service#1 merged as 1706dd0b at 01:53:52Z. Release PipelineRun asset-service-release-rmcdq.
+- Release asset-service-release-rmcdq: Succeeded 01:54:05Z -> 01:57:41Z (no retries).
+  build: digest sha256:6d8e8c172b2885f35a551eb34c53429e1ac85a1771263ba841795c683fbde944
+  security (enforcement=gate): SBOM uploaded to RHTPA (urn:uuid:01a1ae92-7fe9-7481-9c67-a16c055ffe9b), RHACS scan-exit=0, policy=pass
+  promote: box1-workloads-dev#72, gitops revision 7a90162e4ed31aba2fa9e98e07bc765d321c30d9, promoted=true
+  smoke: Succeeded (shared box1-quarkus-smoke: Argo Synced+Healthy, digest, source revision, anonymous smoke paths)
+
+Live state, read-only checks 2026-11-06 ~01:59Z (20:59 EST):
+- Argo asset-service Synced Healthy at 7a90162e. Deployment image box1-ci/asset-service@sha256:6d8e8c17...; source-revision
+  annotation 1706dd0b; pod asset-service-d4c857b5d-jwqmd ready, 0 restarts, imageID ends with sha256:6d8e8c17...
+- https://asset-service-dev.apps.ocp.box1.org/api/info: gitRef 1706dd0b0123cbddd510d1fb6bf9d44cc020fee5, javaVersion 21.
+- /q/health/ready UP: database, messaging, projection (retryingSeconds 0).
+- Anonymous: GET /api/v1/alerts 401, GET /api/v1/assets/asset_x/readings 401, POST /api/v1/telemetry/readings 401,
+  GET /api/v1/control/state (X-Requested-With) 499, GET /console/ 302 to keycloak .../auth/realms/box1 with
+  redirect_uri=https%3A%2F%2Fasset-service-dev... ; X-Frame-Options DENY, HSTS, CSP frame-ancestors 'none'.
+- /q/openapi: 16 paths including the v1 telemetry and control API.
+- Pod log: Flyway "Successfully applied 1 migration ... now at version v1"; consumer group asset-service;
+  "chaos gate: CHAOS_DISABLED"; started in 4.773 s. Warnings: OpenTelemetry VertxTracer "delegate not set" per request
+  (exporter off until box1-docs#22; log noise, follow-up) and the expected per-pod session key notice.
+- The user-driven console load run (Phase 7) has not happened yet. Chaos is deferred (D-015).
+
+Second release (CORS fix, asset-service#2 merged by the user as 828065e1), 2026-11-06 ~02:40 UTC:
+- asset-service-release-qr6nl Succeeded: digest sha256:4d8623986033b87bea25bed9461f0731e6616f47de00cc1bf21132dbbf0675d0,
+  promotion box1-workloads-dev#74, gitops revision aa0b4b04. Argo asset-service Synced/Healthy at aa0b4b04; pod imageID matches;
+  /api/info gitRef 828065e16c67ddbe980f591dc8c3beac8df1e300.
+- On the Route: POST /api/v1/control/stop-all anonymous with Origin https://asset-service-dev.apps.ocp.box1.org -> 499
+  (reaches authentication; was 403 CORS for the user's browser before); with Origin https://evil.example -> 403.
+- Client roles chaos-operator, telemetry-writer, telemetry-reader: present on the client. CORRECTION: an earlier version
+  of this line said the user created them by hand because the operator had skipped spec.roles. That was wrong. The user
+  rechecked and found them present, and had not created them. The operator created them; the first look most likely
+  came before they appeared (not established). The user's login with chaos-operator reached the control API on the
+  cluster (observed as the CORS 403, i.e. after authentication, before the fix).

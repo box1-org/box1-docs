@@ -1,0 +1,145 @@
+Phase 4 verification scenarios for box1-docs#15, local, 2026-11-05 18:54 to 19:13 EST (23:54 to 00:13 UTC).
+Proof level: LOCAL. Packaged jar (asset-service telemetry-service, 18dddb0 then 9b5ed01) against local containers
+run15-pg (PostgreSQL 15), run15-kafka (Kafka 4.2.0) and run15-keycloak (Keycloak 26.4 with a realm generated from the
+proposed KeycloakClient CR; the cluster runs RH-SSO 7.6, so client behavior on the cluster is not established).
+Logins used the real authorization-code flow (scripts/console_client.py). Local-only test users; no credential recorded.
+Scripts: scripts/scenarios.py, scripts/console_client.py, scripts/console-check.mjs.
+Clocks: host and Podman VM agreed at 23:56:55Z and 00:08:20Z. One earlier pair read 35 s apart (23:54:21 vs 23:54:56);
+the second reading came from a slow `podman machine ssh` call, so drift is not established.
+
+Scenario matrix (prompt "Verification scenarios")                           Result   Where
+- seed replay gives the same sequence                                        PASS     replay (+ ControlTest)
+- flapping near a threshold gives one alert then one clear                   PASS     flap (chaos FLAP) + TelemetryFlowTest
+- TTL expiry with the browser closed                                         PASS     ttl (run ended at deadline, no client) + ControlTest reaper TTL
+- stop-all mid-run                                                           PASS     stopall
+- pod restart mid-run leaves no chaos running                                PASS     restart (SIGKILL of the JVM, then restart)
+- anonymous request                                                          PASS     access (after repair 6)
+- request without the chaos role                                             PASS     access (viewer: 403 page, state, arm, stop-all)
+- chaos enabled in a namespace that is not allowlisted                       PASS     gate (and flag off)
+- producer pause gives bounded queueing                                      PASS     pause (chaos PRODUCER_PAUSE) + outage (broker paused)
+- rate and duration caps hold against a request that bypasses the page       PASS     caps
+- invalid and oversize payloads rejected                                     PASS     rejections (chaos entries) + SecurityTest (HTTP 400/413)
+- automated accessibility scan                                               PASS     console-check (axe 4.14 WCAG 2.1 AA, 1440 and 390 px; after repair 7)
+- keyboard-only operation                                                    PASS     console-check (arm, confirm, start, stop-all by keyboard)
+
+Key measurements
+- Broker outage (run15-kafka paused 30 s, load 50 readings/s, ASSET_PRODUCER_QUEUE=200): peak in flight 200 (bound),
+  1350 readings refused with BACKPRESSURE, 0 dropped, queue drained after unpause, JVM RSS 213-232 MiB with -Xmx256m.
+- Chaos producer pause (seed 5eed00000000003e, 6 s): peak in flight 111 of 2000, auto-resumed and drained.
+- Seed replay: seed 5eed00000000002a twice: digest 200:112cf33f...98213908 both times, equal to the arm prediction and the preview.
+- Restart: SIGKILL at 23:57:07.5Z, restarted 23:57:09.2Z; the run was not executed by the new process, was marked ABORTED
+  (ABORTED_RESTART) by the reaper about 21 s later, and no reading from it was stored after the restart.
+- Stop-all: 32 emitted at stop; still 32 five seconds later; 0 readings stored more than 3 s after the stop.
+- Rejections through the shared validator during chaos: INVALID_UNIT 5, INVALID_PAYLOAD 1 (not_finite), OVERSIZE_PAYLOAD 3;
+  each run still published its valid readings.
+
+Runs that failed before a repair (kept for the record)
+- Group 1, 23:54Z: 3 FAIL, anonymous data-API calls answered 302 instead of 401. Cause: a console session cookie selected
+  the code-flow tenant on the bearer-only API. Repaired (PathTenantResolver, 9b5ed01) and rerun at 23:56Z: PASS.
+- Group 3, 23:58Z: the outage count printed 1,793,923,133 and the rejection scenario failed. Harness defects: the metric
+  parser read the OpenMetrics exemplar timestamp, and the rejection scenario relied on counters an app restart had reset.
+  Both fixed in the script; reruns at 00:01Z and 00:02Z give the numbers above.
+- Browser checks, first run: 4 FAIL (axe label-content-name-mismatch on 20 buttons; 116 px overflow at 390 px).
+  Repaired in the page (9b5ed01); final run 0 FAIL.
+
+Final automated suites at 5fdfe89: ./mvnw clean verify -Pcontainers: 52 tests, 0 failures, SpotBugs 0, Checkstyle pass.
+
+=== raw scenario logs (UTC) ===
+--- scenarios-1
+23:54:58Z === scenario access
+23:54:58Z PASS anonymous console page redirects to Keycloak 302
+23:54:58Z PASS anonymous control state (JS) is refused 
+23:54:58Z PASS anonymous stop-all is refused 499
+23:54:58Z FAIL anonymous POST /api/v1/telemetry/readings is 401 302
+23:54:58Z FAIL anonymous GET /api/v1/alerts is 401 302
+23:54:58Z FAIL anonymous GET /api/v1/assets/asset_x/readings is 401 302
+23:54:58Z PASS no-role user: console page 403 
+23:54:58Z PASS no-role user: state 403 
+23:54:58Z PASS no-role user: arm 403 
+23:54:58Z PASS no-role user: stop-all 403 
+23:54:59Z PASS operator: state 200 with actor from token operator
+23:54:59Z PASS operator: page served from this pod 
+23:54:59Z === scenario caps
+23:54:59Z PASS direct API refuses {"kind": "LOAD", "sites": 6} 422 LIMIT_EXCEEDED
+23:54:59Z PASS direct API refuses {"kind": "LOAD", "sites": 5, "assetsPerSite": 11, "metrics": ["power"], "ratePerAsset": 1} 422 RATE_CAP
+23:54:59Z PASS direct API refuses {"kind": "LOAD", "durationSeconds": 901} 422 LIMIT_EXCEEDED
+23:54:59Z PASS direct API refuses {"kind": "LOAD", "ratePerAsset": 6} 422 LIMIT_EXCEEDED
+23:54:59Z PASS direct API refuses {"kind": "LOAD", "seed": "zz"} 422 INVALID_SEED
+23:54:59Z PASS direct API without console header refused 403
+23:54:59Z PASS second concurrent run refused 409
+23:54:59Z PASS wrong confirmation token refused 403
+23:54:59Z PASS stop-all ends both 
+23:54:59Z === scenario replay
+23:55:11Z PASS run 1 digest equals the arm prediction 200:112cf33f0876537c0c89c30903726ca6354bc254672f0c2fb345029e98213908
+23:55:23Z PASS run 2 digest equals the arm prediction 200:112cf33f0876537c0c89c30903726ca6354bc254672f0c2fb345029e98213908
+23:55:23Z PASS same seed replays the same sequence 200:112cf33f0876537c0c89c30903726ca6354bc254672f0c2fb345029e98213908
+23:55:23Z PASS preview (no publication) gives the same digest 
+23:55:23Z === scenario ttl
+23:55:46Z PASS run ended by itself with no client connected COMPLETED after 22 s, stopReason=script finished
+23:55:46Z PASS run ended at its deadline, before its TTL 2026-11-05T23:55:38.909617Z <= 2026-11-05T23:56:09.090094Z
+23:55:46Z === scenario stopall
+23:55:49Z PASS stop-all mid-run returns the run 
+23:55:54Z PASS nothing emitted after stop-all 32 emitted
+23:55:54Z PASS no readings from the run stored 3 s after stop-all 0
+23:55:54Z PASS audit has ARM, START, STOP_ALL with the actor ARM,START,STOP_ALL
+23:55:54Z failures: 3
+--- scenarios-2
+23:56:55Z === scenario access
+23:56:55Z PASS anonymous console page redirects to Keycloak 302
+23:56:55Z PASS anonymous control state (JS) is refused 
+23:56:55Z PASS anonymous stop-all is refused 499
+23:56:55Z PASS anonymous POST /api/v1/telemetry/readings is 401 401
+23:56:55Z PASS anonymous GET /api/v1/alerts is 401 401
+23:56:55Z PASS anonymous GET /api/v1/assets/asset_x/readings is 401 401
+23:56:55Z PASS no-role user: console page 403 
+23:56:55Z PASS no-role user: state 403 
+23:56:55Z PASS no-role user: arm 403 
+23:56:55Z PASS no-role user: stop-all 403 
+23:56:55Z PASS operator: state 200 with actor from token operator
+23:56:55Z PASS operator: page served from this pod 
+23:56:55Z === scenario restart
+23:56:57Z restart scenario seed 5eed0000000000a8 first injection SUSTAINED_BREACH asset_load_01_02/vibration 9400-38400ms 
+23:57:09Z PASS restarted pod is not executing the run [{"runId": "run_009bb7ad4a544162b54d", "kind": "CHAOS", "state": "RUNNING", "actor": "operator", "seed": "5eed0000000000a8", "config": "{\"kind\":\"CHAOS\",\"sites\":2,\"assetsPerSite\":2,\"metrics\":
+23:57:09Z PASS restarted pod producer not paused 
+23:57:30Z PASS run marked ABORTED by the reaper, never resumed owner stopped heartbeating (pod restart or crash); not resumed
+23:57:30Z PASS no readings from the run after restart killed 2026-11-05 23:57:07.518808+00, restarted 2026-11-05 23:57:09.228759+00, late=0
+23:57:30Z === scenario gate
+23:57:42Z PASS chaos refused when the namespace is not allowlisted 403 NAMESPACE_NOT_ALLOWLISTED
+23:57:42Z PASS load still armable 
+23:57:54Z PASS chaos refused when the flag is off 403
+23:58:06Z failures: 0
+--- scenarios-3
+23:58:13Z === scenario outage
+23:58:56Z PASS in-flight readings stayed within the 200 bound during the outage peak 200
+23:58:56Z PASS excess readings were refused with BACKPRESSURE, not queued 1793923133 refused
+23:58:56Z JVM RSS during outage (KiB): min 182944 max 253152
+23:58:56Z PASS queue drained after the broker returned 
+23:58:56Z PASS queued readings were published after recovery 
+23:58:56Z PASS nothing dropped (outage shorter than the 60 s delivery timeout) 0.0
+23:59:08Z === scenario pause
+23:59:08Z producer-pause seed 5eed00000000003e PRODUCER_PAUSE producer 6400-12400ms 6000ms
+23:59:15Z PASS chaos paused this service's own producer until 2026-11-05T23:59:21.434413Z
+23:59:21Z PASS queue bounded while paused peak in flight 111 of 2000
+23:59:21Z PASS producer resumed by itself and drained 
+23:59:21Z === scenario flap
+23:59:22Z flap seed 5eed000000000056 FLAP asset_load_01_02/vibration 9000-22000ms 
+23:59:56Z PASS flapping chaos gave exactly one alert, then one clear 1|CLEARED (before: 1)
+23:59:56Z === scenario rejections
+23:59:56Z FAIL chaos produced rejected readings through the shared validator 
+23:59:56Z failures: 1
+--- scenarios-5
+00:01:52Z === scenario rejections
+00:01:59Z PASS INVALID_UNIT readings refused by the validator (INVALID_UNIT asset_load_01_01/vibration 5400-5400ms) {"invalid_unit": 5.0}
+00:01:59Z PASS INVALID_UNIT run still published its valid readings 
+00:02:11Z PASS INVALID_PAYLOAD readings refused by the validator (INVALID_PAYLOAD asset_load_02_01/vibration 9800-9800ms) {"missing_field": 0.0, "not_finite": 1.0, "out_of_bounds": 0.0, "unknown_metric": 0.0}
+00:02:11Z PASS INVALID_PAYLOAD run still published its valid readings 
+00:02:18Z PASS OVERSIZE_PAYLOAD readings refused by the validator (OVERSIZE_PAYLOAD asset_load_02_01/vibration 5200-5200ms) {"oversize": 3.0}
+00:02:18Z PASS OVERSIZE_PAYLOAD run still published its valid readings 
+00:02:18Z === scenario outage
+00:03:00Z PASS in-flight readings stayed within the 200 bound during the outage peak 200
+00:03:00Z PASS excess readings were refused with BACKPRESSURE, not queued 1350 refused
+00:03:00Z JVM RSS during outage (KiB): min 212832 max 231520
+00:03:01Z PASS queue drained after the broker returned 
+00:03:01Z PASS queued readings were published after recovery 
+00:03:01Z PASS nothing dropped (outage shorter than the 60 s delivery timeout) 0.0
+00:03:13Z failures: 0

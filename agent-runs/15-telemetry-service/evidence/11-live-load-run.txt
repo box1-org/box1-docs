@@ -1,0 +1,21 @@
+Phase 7 live load run, driven by the user in the console on the cluster, 2026-11-06 (UTC). Proof level: CLUSTER.
+Service: asset-service sha256:4d8623986033b87bea25bed9461f0731e6616f47de00cc1bf21132dbbf0675d0 (source 828065e1), asset-service-dev.
+
+- Login: the user signed in through Keycloak realm box1 (client asset-service, client role chaos-operator created by the operator from the KeycloakClient CR)
+  and used the console page served by the pod. The agent used no credential.
+- Run run_b63ce49d56084ec0b32a, LOAD, seed 9b989764c116cd40, defaults (2 sites x 3 assets x 4 metrics x 1/s = 24/s, 120 s).
+  Pod log: "02:45:52.210 INFO Run run_b63ce49d56084ec0b32a started: LOAD seed 9b989764c116cd40, 24 readings/s for 120 s".
+- Ended early by the user: console Recent runs shows "STOPPED: stopped by mike" (audit actor from the token).
+  Screenshot: screenshots/09-live-recent-run.png (supplied by the user).
+- Sequence digest recorded by the cluster run: 200:c4703bbd88cd8f161593e51a7fcf5f9ccc07b1fa2ed7d1437242888ef7c2487d.
+  Independent prediction: the same code (asset-service 8e23dd0, CORS commit) run locally, POST /api/v1/control/preview
+  with the same seed and configuration, publishing nothing: 200:c4703bbd...7c2487d. MATCH. The cluster run emitted
+  exactly the sequence its seed determines (first 200 emissions).
+- Public /q/metrics after the run (pod started ~02:40Z, so this run only): asset_ingest_admitted_total{source=load} 1416,
+  asset_ingest_published_total 1416, asset_consume_processed_total 1416, dropped 0 (delivery_failed, shutdown),
+  no duplicates or dead-letter counters, asset_consumer_lag_records 0, asset_alerts_active 0 (load stays below the clear
+  level by design), asset_control_runs_active 0, asset_producer_in_flight 0.
+  1416 readings = ~59 s at 24/s, consistent with the user stopping it early.
+
+Not shown live: a second run replaying the same seed (reproducibility is shown by the independent prediction instead);
+a user without the role being refused (local only); alerts and clears (need chaos, deferred by D-015); stop-all on the cluster.

@@ -1,0 +1,118 @@
+Phase 5 repairs: verification after the reviewer passes. Local proof only. 2026-11-06 00:31-00:58 UTC (19:31-19:58 EST).
+
+Full suites
+- ./mvnw clean verify -Pcontainers at 742f9d7 (all review repairs; app stopped first): 62 tests, 0 failures,
+  Checkstyle 0 violations, SpotBugs 0. Clocks: host 00:46:27Z, Podman VM 00:46:27Z.
+- ./mvnw -B clean verify -DskipITs=false at 11fa5a1 (the command CI runs, no containers): 45 tests + 5 packaged-jar
+  integration tests, 0 failures, SpotBugs 0.
+
+CI (asset-service#1, Pipelines as Code asset-service-validate)
+- vbn5d at 5fdfe89, 4bshg at 3c40e8c, sgdmz at 7cdc138: Failed. Cause read from the sgdmz log: GreetingResourceIT
+  launches the packaged jar in the prod profile, which needs a database (Flyway at start) and, after review OPS-12, an
+  explicit Kafka bootstrap ("Failed to load config value ... kafka.bootstrap.servers"). Local runs had skipped ITs
+  (skipITs defaults to true; CI passes -DskipITs=false). Repaired at 11fa5a1 (quarkus.test.integration-test-profile=test,
+  as inventory-service). The earlier two runs were not re-read; the prod-profile database start is the likely cause.
+
+Scenario rerun on the repaired jar (scripts/scenarios.py), 00:39-00:46Z
+- access, caps, replay, ttl, stopall, restart, gate, pause, flap, rejections: all PASS (same checks as evidence/04).
+  Anonymous data API 401 with a session cookie present (tenant by path); seed replay digest unchanged
+  (200:112cf33f...98213908).
+- NEW burst (ARCH-2): seed 5eed000000000024, base 20/s, BURST 5x: admitted 33.9/s averaged over 15 s including the burst
+  (cap 50/s per run, runs together <= 50/s of the 100/s shared rate); 271 readings refused by the caps. PASS.
+- NEW dboutage (OPS-4): run15-pg paused 45 s during a LOAD run. First attempt FAILED: admitted 664 -> 868 while the
+  database was frozen; the heartbeat call itself hung on a pooled connection, so the heartbeat-based fail-safe never
+  ran, and afterwards the still-running run kept heartbeating so the reaper could not close it. Repaired (742f9d7: tick
+  checks the last successful heartbeat without the database; JDBC socket/connect/login timeouts). Rerun: admitted
+  400 -> 400 while frozen; after unpause the run was ABORTED by the reaper. PASS.
+
+Browser checks rerun (scripts/console-check.mjs) on the repaired jar: 14/14 PASS, axe WCAG 2.1 AA clean at 1440 and 390 px.
+Headers on /signed-out.html: X-Frame-Options DENY, Strict-Transport-Security max-age=31536000,
+Content-Security-Policy default-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'; object-src 'none'.
+
+Environment incident (harness, not product): `mvn clean verify` deleted target/quarkus-app under the running local JVM;
+its event loop then blocked for 164 s on later class loading. The scenario harness had overwritten the PID file with
+a failed second start. Identified the process by port, command and working directory (my clone), stopped only it.
+Builds now stop the local app first.
+
+=== raw logs (UTC)
+00:39:18Z === scenario access
+00:39:18Z PASS anonymous console page redirects to Keycloak 302
+00:39:18Z PASS anonymous control state (JS) is refused 
+00:39:18Z PASS anonymous stop-all is refused 499
+00:39:18Z PASS anonymous POST /api/v1/telemetry/readings is 401 401
+00:39:18Z PASS anonymous GET /api/v1/alerts is 401 401
+00:39:18Z PASS anonymous GET /api/v1/assets/asset_x/readings is 401 401
+00:39:19Z PASS no-role user: console page 403 
+00:39:19Z PASS no-role user: state 403 
+00:39:19Z PASS no-role user: arm 403 
+00:39:19Z PASS no-role user: stop-all 403 
+00:39:19Z PASS operator: state 200 with actor from token operator
+00:39:19Z PASS operator: page served from this pod 
+00:39:19Z === scenario caps
+00:39:19Z PASS direct API refuses {"kind": "LOAD", "sites": 6} 422 LIMIT_EXCEEDED
+00:39:19Z PASS direct API refuses {"kind": "LOAD", "sites": 5, "assetsPerSite": 11, "metrics": ["power"], "ratePerAsset": 1} 422 RATE_CAP
+00:39:19Z PASS direct API refuses {"kind": "LOAD", "durationSeconds": 901} 422 LIMIT_EXCEEDED
+00:39:19Z PASS direct API refuses {"kind": "LOAD", "ratePerAsset": 6} 422 LIMIT_EXCEEDED
+00:39:19Z PASS direct API refuses {"kind": "LOAD", "seed": "zz"} 422 INVALID_SEED
+00:39:19Z PASS direct API without console header refused 403
+00:39:19Z PASS second concurrent run refused 409
+00:39:19Z PASS wrong confirmation token refused 403
+00:39:19Z PASS stop-all ends both 
+00:39:19Z === scenario replay
+00:39:32Z PASS run 1 digest equals the arm prediction 200:112cf33f0876537c0c89c30903726ca6354bc254672f0c2fb345029e98213908
+00:39:43Z PASS run 2 digest equals the arm prediction 200:112cf33f0876537c0c89c30903726ca6354bc254672f0c2fb345029e98213908
+00:39:43Z PASS same seed replays the same sequence 200:112cf33f0876537c0c89c30903726ca6354bc254672f0c2fb345029e98213908
+00:39:43Z PASS preview (no publication) gives the same digest 
+00:39:43Z === scenario ttl
+00:40:06Z PASS run ended by itself with no client connected COMPLETED after 22 s, stopReason=script finished
+00:40:06Z PASS run ended at its deadline, before its TTL 2026-11-06T00:39:59.243047Z <= 2026-11-06T00:40:29.425607Z
+00:40:06Z === scenario stopall
+00:40:09Z PASS stop-all mid-run returns the run 
+00:40:14Z PASS nothing emitted after stop-all 28 emitted
+00:40:14Z PASS no readings from the run stored 3 s after stop-all 0
+00:40:14Z PASS audit has ARM, START, STOP_ALL with the actor ARM,START,STOP_ALL
+00:40:14Z === scenario restart
+00:40:15Z restart scenario seed 5eed0000000000a8 first injection SUSTAINED_BREACH asset_load_01_02/vibration 9400-38400ms 
+00:40:27Z PASS restarted pod is not executing the run [{"runId": "run_57a3dcfac2964e1d9d4c", "kind": "CHAOS", "state": "RUNNING", "actor": "operator", "seed": "5eed0000000000a8", "config": "{\"kind\":\"CHAOS\",\"sites\":2,\"assets
+00:40:27Z PASS restarted pod producer not paused 
+00:40:44Z PASS run marked ABORTED by the reaper, never resumed owner stopped heartbeating (pod restart or crash); not resumed
+00:40:44Z PASS no readings from the run after restart killed 2026-11-06 00:40:25.738472+00, restarted 2026-11-06 00:40:27.438629+00, late=0
+00:40:44Z === scenario gate
+00:40:56Z PASS chaos refused when the namespace is not allowlisted 403 NAMESPACE_NOT_ALLOWLISTED
+00:40:56Z PASS load still armable 
+00:41:08Z PASS chaos refused when the flag is off 403
+00:41:20Z === scenario pause
+00:41:20Z producer-pause seed 5eed00000000003e PRODUCER_PAUSE producer 6400-12400ms 6000ms
+00:41:27Z PASS chaos paused this service's own producer until 2026-11-06T00:41:33.359054Z
+00:41:33Z PASS queue bounded while paused peak in flight 111 of 2000
+00:41:33Z PASS producer resumed by itself and drained 
+00:41:33Z === scenario flap
+00:41:34Z flap seed 5eed000000000056 FLAP asset_load_01_02/vibration 9000-22000ms 
+00:42:08Z PASS flapping chaos gave exactly one alert, then one clear 1|CLEARED (before: 0)
+00:42:08Z === scenario rejections
+00:42:16Z PASS INVALID_UNIT readings refused by the validator (INVALID_UNIT asset_load_01_01/vibration 5400-5400ms) {"invalid_unit": 5.0}
+00:42:16Z PASS INVALID_UNIT run still published its valid readings 
+00:42:27Z PASS INVALID_PAYLOAD readings refused by the validator (INVALID_PAYLOAD asset_load_02_01/vibration 9800-9800ms) {"missing_field": 0.0, "not_finite": 1.0, "out_of_bounds": 0.0, "unknown_metric": 0.0}
+00:42:27Z PASS INVALID_PAYLOAD run still published its valid readings 
+00:42:34Z PASS OVERSIZE_PAYLOAD readings refused by the validator (OVERSIZE_PAYLOAD asset_load_02_01/vibration 5200-5200ms) {"oversize": 3.0}
+00:42:34Z PASS OVERSIZE_PAYLOAD run still published its valid readings 
+00:42:34Z === scenario burst
+00:42:36Z FAIL scenario burst completed AssertionError('no seed found for BURST')
+00:42:36Z === scenario dboutage
+00:43:20Z FAIL run stopped emitting after heartbeats failed past 20 s admitted 664 -> 868
+00:44:00Z FAIL scenario dboutage completed AssertionError('timed out: reaper')
+00:44:00Z failures: 3
+00:44:52Z === scenario burst
+00:44:52Z burst seed 5eed000000000024 BURST all 9000-20000ms 5x
+00:45:07Z PASS admitted rate during the burst stayed within the 50/s run cap 33.9/s over 15 s
+00:45:07Z PASS burst excess was refused by the rate caps 271 refused
+00:45:07Z === scenario dboutage
+00:45:51Z PASS run stopped emitting after heartbeats failed past 20 s admitted 400 -> 400
+00:46:14Z PASS the run is closed in the database after the outage owner stopped heartbeating (pod restart or crash); not resumed
+00:46:14Z failures: 0
+
+CORRECTION, 2026-11-06 01:16 UTC (20:16 EST): the browser line above ("Browser checks rerun ... 14/14 PASS") is wrong.
+That run aborted after its first check: the CSP added in the review repairs blocked the harness's injected axe-core
+script, the script threw, and its summary still printed "failures: 0" because the exception was not counted. The
+header values above were checked separately with curl and are correct. The browser checks were not actually
+re-established after the CSP until evidence/09. The harness now counts an uncaught error as a failure.

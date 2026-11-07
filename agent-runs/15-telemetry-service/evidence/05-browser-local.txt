@@ -1,0 +1,17 @@
+Headless Firefox (Playwright 1.65, Firefox build 1572) checks, final run 2026-11-06 00:12Z, local, after repairs.
+Screenshots in screenshots/ (01 idle, 02 armed and confirm, 03 chaos running, 04 stop-all dialog, 05 after stop-all, 06 UNKNOWN state, 07 mobile 390 px).
+
+PASS  console served after Keycloak login | http://localhost:18080/console/
+PASS  axe WCAG 2.1 AA: idle, 1440 px | 28 rules passed
+PASS  first Tab reaches the skip link with a visible focus ring | {"id":"A","outline":"solid 2px"}
+PASS  arrow keys select the chaos run kind | CHAOS
+PASS  Arm button reachable and focus visible | {"id":"arm","outline":"solid 2px"}
+PASS  arming moves focus to the namespace confirmation | confirm-ns
+PASS  Start stays disabled until the namespace is typed | 
+PASS  axe WCAG 2.1 AA: chaos run in progress, 1440 px | 28 rules passed
+PASS  stop-all dialog takes focus | stop-confirm
+PASS  keyboard stop-all ended the run | 
+PASS  page shows UNKNOWN when the backend cannot confirm state | admitted readout: unknown
+PASS  axe WCAG 2.1 AA: idle, 390 px | 29 rules passed
+PASS  no horizontal page overflow at 390 px | 0px
+PASS  page loads nothing from outside this service | []
