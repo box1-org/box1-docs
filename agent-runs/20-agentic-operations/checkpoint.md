@@ -4,8 +4,8 @@
 
 Phase 4 is complete locally (2026-11-06 23:10 EST).
 
-- Service PR [agentic-operations#1](https://github.com/box1-org/agentic-operations/pull/1) is open at `bed8e44`. CI `agentic-operations-validate-9wksz` was running at this checkpoint.
-- Ledger: 14 requirements `locally_tested`, 2 `superseded`.
+- Service PR [agentic-operations#1](https://github.com/box1-org/agentic-operations/pull/1) is open at `bed8e44`. CI `agentic-operations-validate-9wksz` **Succeeded** (58 tests and 5 ITs, `evidence/06`).
+- Ledger: 14 requirements `ci_verified`, 2 `superseded`.
 - Evidence: `evidence/04` (58 tests and the evaluation report) and `evidence/05` (production-profile jar and live model probe).
 
 ## Completed
@@ -40,12 +40,11 @@ Phase 4 is complete locally (2026-11-06 23:10 EST).
 
 ## Exact next action
 
-1. Confirm that CI on agentic-operations#1 passes. Record the result in `evidence/06-ci.md`, and move ledger entries to `ci_verified` if it does.
-2. Phase 5: run the reviewer passes (architecture, messaging, security, operations, release) in fresh subagents, using the diff `61bcb8c..issue-20-agentic-operations`, the prompt and the contracts. Persistence is not applicable because there is no database. Record each pass in `review-findings/`, repair what they find, and rerun `./mvnw -B -ntp verify`.
-3. Open three PRs. Each needs the user's approval before merge:
+1. Phase 5: run the reviewer passes (architecture, messaging, security, operations, release) in fresh subagents, using the diff `61bcb8c..issue-20-agentic-operations`, the prompt and the contracts. Persistence is not applicable because there is no database. Record each pass in `review-findings/`, repair what they find, and rerun `./mvnw -B -ntp verify`.
+2. Open three PRs. Each needs the user's approval before merge:
    - box1-ops-contracts: the `TOPICS.md` group change (Q-7);
    - box1-gitops: the `agentic-operations` and `agentic-operations-cli` KeycloakClients (Q-5);
    - box1-workloads-dev: runtime env, resources, replicas 1, ServiceMonitor and PrometheusRule.
-4. Raise the anonymous public vLLM route on #26, after the user agrees.
+3. Raise the anonymous public vLLM route on #26, after the user agrees.
 
 Still open: Q-5 (Keycloak PR), Q-6 (deferred RBAC) and Q-7 (contracts PR).
