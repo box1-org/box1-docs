@@ -9,24 +9,24 @@
 - id: MESH-L4-001
   description: Order flow works before enrollment, under ambient L4 on all seven namespaces, and after rolling back one namespace
   status: deployed
-  evidence: [evidence/phase7-enroll-operations-console.md]
-  deployment: {gitops_commit: ef49e762377ae93130f115cf7a9e3ee5e90375fc}
-  limitations: [3 of 7 namespaces enrolled; rollback not yet exercised; enrolling a DB namespace resets some pooled connections for ~2 s]
+  evidence: [evidence/phase7-enroll-operations-console.md, evidence/phase7-enroll-order-inventory.md, evidence/phase7-enroll-remaining.md]
+  deployment: {gitops_commit: cb603b2b5a4cb53bd1bb87bcd62be48f956e893f}
+  limitations: [all 7 enrolled and order flow verified; rollback of one namespace not yet exercised; enrollment resets open DB, SFTP and Kafka connections for ~1-20 s, self-recovered]
 - id: MESH-MTLS-001
   description: mTLS negotiated and measurable (ztunnel metrics/logs mutual_tls, Kiali)
   status: live_verified
   commands: ["thanos istio_tcp_connections_opened_total{connection_security_policy=\"mutual_tls\"}", "ztunnel inbound access log src/dst.identity", "kiali graph securityPolicy appender"]
   evidence: [evidence/phase7-enroll-order-inventory.md]
   deployment: {gitops_commit: 5b596ce9d61e1036fd6f892ab6939f3db2c4102a}
-  limitations: [3 of 7 namespaces enrolled; pre-enrollment pooled DB connections bypass ztunnel until recycled]
+  limitations: [pre-enrollment pooled DB connections that survived capture bypass ztunnel until recycled]
 - id: MESH-KIALI-001
   description: Kiali GitOps-managed, OpenShift login required, limited to selected namespaces; TCP graph shows a real order
-  status: deployed
+  status: live_verified
   implementation: [box1-gitops platform/service-mesh/kiali/]
   commands: ["curl $KIALI/api/namespaces (anon 401)", "curl -H 'Authorization: Bearer' $KIALI/api/namespaces", "$KIALI/api/istio/status"]
-  evidence: [evidence/phase6-control-plane-kiali.md]
+  evidence: [evidence/phase6-control-plane-kiali.md, evidence/phase7-enroll-remaining.md]
   deployment: {gitops_commit: b71a407f2fe1578b0a3f647a6796e76a7e4f7f54}
-  limitations: [graph shows console only - peers not enrolled yet; browser login not verified]
+  limitations: [browser login not verified]
 - id: MESH-L7-001
   description: Waypoints on operations-console, order and inventory give an L7 graph; L4/L7/Tempo compared for one orderId; recommendation recorded
   status: proposed

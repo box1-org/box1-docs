@@ -2,10 +2,12 @@
   "issue": "box1-org/box1-docs#23",
   "profile": "frontier",
   "current_phase": 7,
-  "phase_state": "remaining_four_pr_open_awaiting_merge",
+  "phase_state": "all_seven_enrolled_awaiting_next_approval",
   "updated_at": "2026-11-06T22:55:00-05:00",
   "open_decisions": [
-    "user merge instruction for box1-workloads-dev#149 (enroll adapter, notification, asset, scenario-controller)"
+    "approve rollback exercise on one namespace (criterion 1)",
+    "approve waypoints on operations-console, order, inventory",
+    "approve NetworkPolicy baseline (incremental egress allow-lists; default-deny separately)"
   ],
   "repositories": {
     "box1-docs": {
@@ -42,9 +44,7 @@
       "main": "3c12637",
       "run_branch": null,
       "pr": null,
-      "prs": [
-        149
-      ],
+      "prs": [],
       "merged_prs": [
         {
           "pr": 144,
@@ -53,6 +53,10 @@
         {
           "pr": 148,
           "merge_commit": "5b596ce9d61e1036fd6f892ab6939f3db2c4102a"
+        },
+        {
+          "pr": 149,
+          "merge_commit": "cb603b2b5a4cb53bd1bb87bcd62be48f956e893f"
         }
       ]
     }
