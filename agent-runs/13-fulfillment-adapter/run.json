@@ -1,0 +1,59 @@
+{
+  "issue": "box1-org/box1-docs#13",
+  "profile": "frontier",
+  "current_phase": 7,
+  "phase_state": "deployed_stopped_awaiting_live_input_and_vm",
+  "updated_at": "2026-11-05T21:15:00-05:00",
+  "open_decisions": [
+    
+    "D-007 SFTP credential",
+    "D-015 live input"
+  ],
+  "repositories": {
+    "box1-docs": {
+      "branch": "agent-run/13-fulfillment-adapter",
+      "base": "fe81297",
+      "worktree": "run13-docs"
+    },
+    "fulfillment-adapter": {
+      "role": "implementation target",
+      "main": "0a44cc6ecd2d852b170bcdf725d946e6901faf32",
+      "run_branch": "fulfillment-adapter-v1",
+      "clone": "run13-fulfillment-adapter",
+      "commit": "11778f8c1e6d2e3bd4f41a8db78c67f43f334095",
+      "pr": 1
+    },
+    "box1-ops-contracts": {
+      "role": "ERP1 consumed unchanged; adapter-owned contracts only",
+      "pinned": "eef13ead19aa2ed4b6bae071f26e14dd1676f8f1",
+      "worktree": "run13-contracts",
+      "run_branch": "fulfillment-dlq-v1",
+      "pr": 8
+    },
+    "box1-workloads-dev": {
+      "role": "service workloads",
+      "main": "b8332b7",
+      "run_branch": "fulfillment-adapter-database",
+      "commit": "1b7dd834919d7d91dbd233499b02296d89cc503c",
+      "pr": 65,
+      "worktree": "run13-workloads"
+    },
+    "box1-gitops": {
+      "role": "shared infrastructure (DLQ, Keycloak client)",
+      "main": "b8054eb",
+      "run_branch": "fulfillment-dlq-topic",
+      "pr": 64,
+      "worktree": "run13-gitops"
+    },
+    "box1-ops-erp-simulator": {
+      "role": "ERP test partner (read-only)",
+      "commit": "c84c910",
+      "clone": "run13-erp-src"
+    }
+  },
+  "deployment": {
+    "image_digest": "sha256:9247f98fee515d8fad98d9c4665e84c9464dc2be94a02215958b9cc54ec6a931",
+    "gitops_commit": "3668f3b2400ae49d25dab0ae5e79944e70675720",
+    "release_pipelinerun": "box1-ci/fulfillment-adapter-release-kz42z"
+  }
+}

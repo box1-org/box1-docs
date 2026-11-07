@@ -1,0 +1,132 @@
+# Phase 5 rerun after reviewer repairs
+captured 2026-11-05 20:09-20:16 EST; fulfillment-adapter@11778f8 (working tree identical to the commit); ERP box1-ops-erp-simulator@c84c910; contracts eef13ea
+
+## Full suite: ./mvnw verify -DskipITs=false -Pcontainers
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.600 s -- in org.box1.GreetingResourceTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.008 s -- in org.box1.fulfillment.OpenApiTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 5.627 s -- in org.box1.fulfillment.AcceptanceScenariosTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 17.29 s -- in org.box1.fulfillment.KafkaInputTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 10.43 s -- in org.box1.fulfillment.ResultIngestionTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in org.box1.GreetingServiceTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.017 s -- in org.box1.fulfillment.ArchitectureTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in org.box1.fulfillment.backend.HiddenFileSweeperTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in org.box1.fulfillment.backend.TransportErrorsTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.008 s -- in org.box1.fulfillment.erp1.Erp1EdgeTest
+[INFO] Tests run: 84, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.432 s -- in org.box1.fulfillment.erp1.Erp1FixturesTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.021 s -- in org.box1.fulfillment.messaging.EventParserTest
+[INFO] Tests run: 123, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 5.118 s -- in org.box1.GreetingResourceIT
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0
+[INFO] You have 0 Checkstyle violations.
+[INFO] BugInstance size is 0
+[INFO] BUILD SUCCESS
+
+## Scenarios (scripts/scenarios.py), 50 checks
+clocks: host 01:09:32 podman-vm 01:09:32  run=200932
+== held
+PASS  held: REST accepted 202 with Location
+PASS  held: ERP acknowledged revision 1 PENDING
+PASS  held: HELD applied (revision 2)
+PASS  held: waiting is not a transport failure  -- dispatch=UPLOADED resends=1
+PASS  held: slow probe is an equivalent resend the ERP answers by republishing (duplicate)  -- probes=1 duplicate receipts=1
+PASS  held: released back to PENDING (revision 3)
+PASS  held: manual ship applied as SHIPPED (revision 4)
+PASS  held: exactly one shipment.confirmed.v1 with the ERP shipmentId  -- shp_33146a8f40fa95d4abb1e4b85d5e2734
+PASS  held: ERP ledger agrees
+== reject
+PASS  reject: REJECTED applied
+PASS  reject: shipment.failed.v1 retryable:false with reasonCode, no reason text
+PASS  reject: status API shows code, no text
+== kafka
+PASS  kafka: AUTO ship from a Kafka event
+PASS  kafka: one request, origin EVENT, REST repeat equivalent  -- rest=200
+PASS  kafka: ERP holds exactly one shipment  -- 1
+PASS  kafka: one confirmed event; trace carried through ERP1
+== sftp
+PASS  sftp-down: accepted durably while SFTP is down
+PASS  sftp-down: bounded retries recorded, not a business outcome  -- attempts=2 lastError=CONNECTION_CLOSED
+PASS  sftp-down: recovered and acknowledged after SFTP returns
+== hostkey
+PASS  host-key: changed host key refuses the connection; nothing uploaded  -- lastError=HOST_KEY_REJECTED
+PASS  host-key: unknown host key also refused (no accept-new)  -- lastError=HOST_KEY_REJECTED
+PASS  host-key: uploads resume once the new key is trusted
+== lostupload
+PASS  lost-upload: ack timeout leads to an equivalent resend that the ERP acknowledges
+PASS  lost-upload: resend used a new nonce  -- ['FIRST|UPLOADED', 'NO_ACK|UPLOADED']
+== lostresult
+PASS  lost-result: slow probe recovers the lost SHIPPED result
+PASS  lost-result: shipment matches the ERP
+== crash
+PASS  crash: both accepted (202) with SFTP unavailable
+PASS  crash: accepted work survives kill -9 and is dispatched after restart
+== interrupted
+PASS  interrupted: an upload in flight at a crash is retried under a new nonce after the lease  -- ['FIRST|STARTED', 'FIRST|UPLOADED']
+PASS  interrupted: ERP never imported a partial file  -- . ..
+== attention
+PASS  exhaustion: no acknowledgement after the bound moves to needs-attention, not a failure
+PASS  exhaustion: anonymous operator call refused
+PASS  exhaustion: operator reconcile requeues; late acknowledgement applies
+PASS  exhaustion: reconcile audited with the token subject  -- RECONCILE_REQUEUED|run13-operator
+PASS  exhaustion: upload failures stop at the bound with UPLOAD_EXHAUSTED
+PASS  exhaustion: bulk reconcile after the outage requeues and the request is acknowledged  -- {"reason":"UPLOAD_EXHAUSTED","requeued":5,"fulfillmentRequestIds":["ful_hk200932","ful_lup200932","ful_crb200932","ful_s
+PASS  exhaustion: bulk reconcile refuses CONFLICTING_REUSE
+== conflict
+PASS  conflict: real ERP CONFLICTING_REUSE moves the request to needs-attention
+PASS  conflict: the other writer's earlier result was quarantined as UNKNOWN_REQUEST; no resend after the ERR  -- outcome=AWAITING_ERP q=UNKNOWN_REQUEST
+== unexpected
+PASS  unexpected: quarantined on the adapter side and moved to consumed/  -- UNEXPECTED_NAME
+PASS  unexpected: a hidden non-.tmp name is quarantined and moved too
+== storage
+PASS  storage: acceptance refused with 503 while PostgreSQL is down  -- post=503 body={"type":"about:blank","title":"Storage unavailable","status":503,"detail":"The request was not accepted; retry later"}
+PASS  storage: readiness reports DOWN
+PASS  storage: operator call during the outage is a problem document with no echoed headers or stack trace  -- 503 {"type":"about:blank","title":"Storage unavailable","status":503,"detail":"Retry
+PASS  storage: nothing was accepted while down
+PASS  storage: accepted after recovery
+== logs
+PASS  redelivery: re-emitted and redelivered SHIPPED results are duplicates; no new event  -- duplicate receipts=2
+PASS  logs: request, upload, ERP result and outcome event correlate by fulfillmentRequestId  -- 11 lines
+PASS  logs: no SKU, quantity or reason text in any log line
+PASS  metrics: backlog, oldest pending age, retries/resends, quarantined, needs-attention exposed
+fulfillment_outbox_oldest_seconds 0.0
+fulfillment_held 0.0
+fulfillment_oldest_unacknowledged_upload_seconds 44.810367
+fulfillment_queued 0.0
+fulfillment_oldest_unacknowledged_seconds 45.849463
+fulfillment_backlog 0.0
+fulfillment_needs_attention 2.0
+fulfillment_erp_errors_total{code="CONFLICTING_REUSE"} 1.0
+fulfillment_resends_total{reason="PROBE"} 25.0
+fulfillment_accepted_total{origin="API",result="CREATED"} 2.0 # {span_id="3488fbd9343bd7bc",trace_id="4d72a6a0e616399b03ae7f8914614c4f"} 1.0 1793927658.997
+fulfillment_awaiting_operator 9.0
+fulfillment_uploads_total{reason="PROBE",result="uploaded"} 25.0
+fulfillment_uploads_total{reason="FIRST",result="uploaded"} 2.0
+fulfillment_outbox_publish_lag_seconds_max 0.0
+fulfillment_outbox_publish_lag_seconds_count 0.0
+fulfillment_outbox_publish_lag_seconds_sum 0.0
+fulfillment_quarantined_files 18.0
+fulfillment_outbox_pending 0.0
+fulfillment_quarantined_total{reason="UNKNOWN_REQUEST"} 1.0
+fulfillment_quarantined_total{reason="UNEXPECTED_NAME"} 2.0
+fulfillment_needs_attention_entries_total{reason="CONFLICTING_REUSE"} 1.0
+fulfillment_metrics_refresh_age_seconds 0.329
+fulfillment_results_total{outcome="DUPLICATE"} 27.0
+fulfillment_results_total{outcome="QUARANTINE"} 1.0
+fulfillment_results_total{outcome="APPLY"} 1.0
+clocks after: host 01:14:48 podman-vm 01:14:48
+== 50/50 checks passed
+
+## Real TUI keystrokes (scripts/tui_ship.py)
+PASS  tui: REST accepted
+PASS  tui: ERP imported and acknowledged (PENDING)
+PASS  tui: operator keystrokes shipped the request in the TUI  -- Shipped ful_tui201448 as shp_df8ea43c7efcb73855f0a92e4e84eafe
+PASS  tui: ERP audit records the console actor and TUI label  -- console|run13-tui
+PASS  tui: adapter applied SHIPPED from the ERP result
+PASS  tui: one shipment.confirmed.v1 carrying the TUI shipmentId  -- shp_df8ea43c7efcb73855f0a92e4e84eafe
+== 6/6 checks passed
+
+## Release smoke script (fulfillment-api-smoke from .tekton/release.yaml) against the local adapter
+fulfillment API smoke passed
+
+## Earlier runs in this phase
+- full suite: startup failed once (muteExceptions is not a platform-http option); rerun passed.
+- scenarios run 4a: adapter failed to start (includeHiddenFiles is not an sftp option), 2 cascaded failures; run 4b 49/50 (hidden names not listed by the SFTP consumer), fixed by outbound-hidden-sweep.
