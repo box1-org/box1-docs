@@ -1,0 +1,8 @@
+== 2026-11-06T22:47:57-0500 in-mesh baseline
+labels: dataplane-mode=ambient istio-discovery=enabled
+pod operations-console-55c87cb654-sgzl9 redirection=enabled ready=true restarts=0
+200 200 200 200 200 200  <- console->order/inventory x3
+ztunnel inbound to order/inventory from console (last 30s):
+   6 src.identity="spiffe://cluster.local/ns/operations-console-dev/sa/operations-console"
+   6 src.workload="operations-console-55c87cb654-sgzl9"
+route: 200

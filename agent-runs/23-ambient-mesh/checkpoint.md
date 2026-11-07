@@ -1,6 +1,6 @@
 # Checkpoint — #23 ambient mesh and Kiali
 
-**Phase:** 7 live enrollment. **`operations-console-dev` is enrolled** (box1-workloads-dev#144 `ef49e76`, 22:24 EST). The Kiali namespace fix is live (box1-gitops#96 `0009516`); Kiali lists the nine namespaces and graphs the console. **Console, order and inventory are enrolled** (#148 `5b596ce`, 22:39). mTLS is verified on console → order/inventory and service → Postgres. **All seven namespaces are enrolled** (#149 `cb603b2`, 22:44). mTLS is on every enrolled-to-enrolled edge, and the order flow through the ERP VM is verified. **Stopped for approval of the next steps.**
+**Phase:** 7 live enrollment. **`operations-console-dev` is enrolled** (box1-workloads-dev#144 `ef49e76`, 22:24 EST). The Kiali namespace fix is live (box1-gitops#96 `0009516`); Kiali lists the nine namespaces and graphs the console. **Console, order and inventory are enrolled** (#148 `5b596ce`, 22:39). mTLS is verified on console → order/inventory and service → Postgres. **All seven namespaces are enrolled** (#149 `cb603b2`, 22:44). mTLS is on every enrolled-to-enrolled edge, and the order flow through the ERP VM is verified. Rollback test approved; **box1-workloads-dev#150 (remove the console's mesh labels) is open and waiting for the user's merge instruction.** The in-mesh baseline was recorded at 22:47: 6/6 calls 200 with the console SPIFFE identity. After it merges, run `console-state.sh`-style checks, then open the restore PR, which re-adds both labels.
 
 ## Done and verified
 | Step | GitOps | Evidence |
