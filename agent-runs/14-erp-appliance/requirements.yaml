@@ -1,0 +1,246 @@
+# Requirement ledger for box1-docs#14. Status is the highest level actually observed.
+# The prompt's VM-01..VM-05 tags are not defined on box1-docs main, so IDs derive from the prompt's
+# behavior, its acceptance evidence list (AC-n, in issue order) and its verification scenarios.
+# Repositories: C = box1-ops-contracts, E = box1-ops-erp-simulator (local only until D-001 is approved).
+- id: ERP-PROTO
+  description: Versioned ERP1 protocol specification and golden fixtures in box1-ops-contracts legacy/erp-file/v1
+  status: locally_tested
+  implementation: [C:legacy/erp-file/v1/SPEC.md, C:legacy/erp-file/v1/fixtures/manifest.json]
+  tests: [C:test/erp-file.test.mjs]
+  commands: ["npm test", "npm run validate"]
+  evidence: [evidence/02-contracts.txt, review-findings/00-contract-protocol.md]
+  deployment: {contracts_pr: "box1-ops-contracts#6", commit: 13fcfd2, merged: true, merge_commit: eef13ea}
+  limitations: ["Merged by the user (eef13ea). No CI in box1-ops-contracts, so ci_verified is unreachable there."]
+- id: ERP-FIXTURES-PY
+  description: "AC-13 (Python half): protocol fixtures pass in the Python ERP"
+  status: ci_verified
+  implementation: [E:src/box1_erp/protocol.py]
+  tests: [E:tests/test_protocol_fixtures.py]
+  commands: ['box1-ops-erp-simulator-release-5dgjm (pytest in-cluster, 154 passed)', "ERP1_CONTRACTS_DIR=../run14-contracts .venv/bin/pytest tests/test_protocol_fixtures.py"]
+  evidence: [evidence/06-release.txt, evidence/02-contracts.txt, review-findings/00-contract-protocol.md]
+  limitations: ['CI covers the pytest part only; harness and VM parts stay at their stated level.', "contracts.lock repinned to main eef13ea; also passed in UBI 10 python-312-minimal (arm64)."]
+- id: ERP-FIXTURES-CAMEL
+  description: 'AC-13 (adapter half): protocol fixtures pass in the Camel adapter'
+  status: blocked
+  limitations: ['Owned by #13; that run starts after ERP-PROTO merges.']
+- id: ERP-AC01-BOOT-TUI
+  description: 'AC-1: the VM boots directly into the operational TUI'
+  status: implemented
+  implementation: [E:systemd/box1-erp-tui@.service, E:docs/VM-INTEGRATION.md]
+  commands: ['harness/run-scenarios.sh <work-dir>']
+  evidence: [evidence/04-harness.txt]
+  limitations: ['Unit verified by systemd-analyze verify only; TTYPath on /dev/ttyS0, boot target and console are #25. Not ticked.']
+- id: ERP-AC02-ADAPTER-IN
+  description: 'AC-2: a request submitted through #13 appears in the ledger'
+  status: locally_tested
+  implementation: [E:src/box1_erp/worker.py]
+  tests: [E:harness/run-scenarios.sh]
+  commands: ['harness/run-scenarios.sh <work-dir>']
+  evidence: [evidence/05-after-review.txt, evidence/04-harness.txt]
+  limitations: ['Proven with an adapter-style SFTP upload (temp name then rename) in the harness, not through #13. Not ticked.']
+- id: ERP-AC03-MANUAL
+  description: 'AC-3: MANUAL mode imports requests without automatically shipping them'
+  status: ci_verified
+  implementation: [E:src/box1_erp/worker.py, E:src/box1_erp/domain.py]
+  tests: [E:tests/test_worker.py::test_manual_mode_imports_publishes_and_does_not_ship]
+  commands: ['box1-ops-erp-simulator-release-5dgjm (pytest in-cluster, 154 passed)', 'ERP1_CONTRACTS_DIR=../run14-contracts .venv/bin/pytest', 'harness/run-scenarios.sh <work-dir>']
+  evidence: [evidence/06-release.txt, evidence/05-after-review.txt, evidence/04-local-tests.txt, evidence/04-harness.txt]
+  limitations: ['CI covers the pytest part only; harness and VM parts stay at their stated level.', 'Local and container harness only; ERP repository not yet created (D-001), so no CI (D-002).']
+- id: ERP-AC04-ACTIONS
+  description: 'AC-4: hold, release, ship and reject operate on real persisted records'
+  status: ci_verified
+  implementation: [E:src/box1_erp/domain.py, E:src/box1_erp/tui.py]
+  tests: [E:tests/test_domain.py, E:tests/test_tui.py::test_hold_release_reject_and_mode_from_the_keyboard]
+  commands: ['box1-ops-erp-simulator-release-5dgjm (pytest in-cluster, 154 passed)', 'ERP1_CONTRACTS_DIR=../run14-contracts .venv/bin/pytest']
+  evidence: [evidence/06-release.txt, evidence/05-after-review.txt, evidence/04-local-tests.txt]
+  limitations: ['CI covers the pytest part only; harness and VM parts stay at their stated level.', 'Local and container harness only; ERP repository not yet created (D-001), so no CI (D-002).']
+- id: ERP-AC05-SHARED-DOMAIN
+  description: 'AC-5: manual and automatic processing use the same domain logic'
+  status: ci_verified
+  implementation: [E:src/box1_erp/domain.py (ship), E:src/box1_erp/worker.py (auto_process), E:src/box1_erp/tui.py (action)]
+  tests: [E:tests/test_worker.py::test_auto_mode_ships_with_the_same_domain_path]
+  commands: ['box1-ops-erp-simulator-release-5dgjm (pytest in-cluster, 154 passed)', 'ERP1_CONTRACTS_DIR=../run14-contracts .venv/bin/pytest']
+  evidence: [evidence/06-release.txt, evidence/05-after-review.txt, evidence/04-local-tests.txt]
+  limitations: ['CI covers the pytest part only; harness and VM parts stay at their stated level.', 'Structural: both call domain.ship(); confirmed by review in Phase 5.']
+- id: ERP-AC06-ONE-SHIPMENT
+  description: 'AC-6: concurrent or repeated actions produce at most one shipment per request'
+  status: ci_verified
+  implementation: [E:src/box1_erp/domain.py, E:src/box1_erp/db.py (UNIQUE)]
+  tests: [E:tests/test_domain.py::test_manual_ship_racing_automatic_ship_yields_one_shipment, E:tests/test_domain.py::test_database_backstop_rejects_a_second_shipment]
+  commands: ['box1-ops-erp-simulator-release-5dgjm (pytest in-cluster, 154 passed)', 'ERP1_CONTRACTS_DIR=../run14-contracts .venv/bin/pytest']
+  evidence: [evidence/06-release.txt, evidence/05-after-review.txt, evidence/04-local-tests.txt]
+  limitations: ['CI covers the pytest part only; harness and VM parts stay at their stated level.', 'Race between two processes on one SQLite file; 50 extra rounds: worker won 31, console 19, always one shipment.']
+- id: ERP-AC07-ADAPTER-OUT
+  description: 'AC-7: manual completion generates a result consumed by the adapter'
+  status: locally_tested
+  implementation: [E:src/box1_erp/worker.py (publish)]
+  tests: [E:harness/run-scenarios.sh]
+  commands: ['harness/run-scenarios.sh <work-dir>']
+  evidence: [evidence/05-after-review.txt, evidence/04-harness.txt]
+  limitations: ['Result produced and moved to consumed/ over SFTP by the harness acting as the adapter; consumption by #13 not shown. Not ticked.']
+- id: ERP-AC08-REEMIT
+  description: 'AC-8: re-emitting a result does not create a new shipment'
+  status: ci_verified
+  implementation: [E:src/box1_erp/domain.py (reemit)]
+  tests: [E:tests/test_worker.py::test_reemission_republishes_identical_bytes_without_a_new_shipment]
+  commands: ['box1-ops-erp-simulator-release-5dgjm (pytest in-cluster, 154 passed)', 'ERP1_CONTRACTS_DIR=../run14-contracts .venv/bin/pytest']
+  evidence: [evidence/06-release.txt, evidence/05-after-review.txt, evidence/04-local-tests.txt]
+  limitations: ['CI covers the pytest part only; harness and VM parts stay at their stated level.', 'Local and container harness only; ERP repository not yet created (D-001), so no CI (D-002).']
+- id: ERP-AC09-CRASH
+  description: 'AC-9: a crash after commit recovers the original shipment and its response'
+  status: ci_verified
+  implementation: [E:src/box1_erp/worker.py, E:src/box1_erp/domain.py (consume_crash_fault)]
+  tests: [E:tests/test_worker.py::test_crash_after_commit_then_restart_recovers_original_shipment, E:harness/run-scenarios.sh]
+  commands: ['box1-ops-erp-simulator-release-5dgjm (pytest in-cluster, 154 passed)', 'ERP1_CONTRACTS_DIR=../run14-contracts .venv/bin/pytest', 'harness/run-scenarios.sh <work-dir>']
+  evidence: [evidence/06-release.txt, evidence/05-after-review.txt, evidence/04-local-tests.txt, evidence/04-harness.txt]
+  limitations: ['CI covers the pytest part only; harness and VM parts stay at their stated level.', 'Harness: systemd restarted the worker after exit 70 (NRestarts=1); in the VM not shown.']
+- id: ERP-AC10-TUI-INDEPENDENT
+  description: 'AC-10: TUI disconnect or restart does not interrupt background processing'
+  status: ci_verified
+  implementation: [E:systemd/, E:src/box1_erp/tui.py]
+  tests: [E:tests/test_tui.py::test_tui_restart_does_not_interrupt_the_worker]
+  commands: ['box1-ops-erp-simulator-release-5dgjm (pytest in-cluster, 154 passed)', 'ERP1_CONTRACTS_DIR=../run14-contracts .venv/bin/pytest']
+  evidence: [evidence/06-release.txt, evidence/05-after-review.txt, evidence/04-local-tests.txt]
+  limitations: ['CI covers the pytest part only; harness and VM parts stay at their stated level.', 'Separate processes on the host; VM console disconnect is #25. Not ticked.']
+- id: ERP-AC11-WORKER-VISIBLE
+  description: 'AC-11: worker failure is visible without taking down the TUI'
+  status: ci_verified
+  implementation: [E:src/box1_erp/status.py, E:src/box1_erp/tui.py]
+  tests: [E:tests/test_tui.py::test_worker_stopped_is_visible_and_the_console_stays_usable]
+  commands: ['box1-ops-erp-simulator-release-5dgjm (pytest in-cluster, 154 passed)', 'ERP1_CONTRACTS_DIR=../run14-contracts .venv/bin/pytest']
+  evidence: [evidence/06-release.txt, evidence/05-after-review.txt, evidence/04-local-tests.txt]
+  limitations: ['CI covers the pytest part only; harness and VM parts stay at their stated level.', 'Stopped and killed (unresponsive) both shown; VM half is #25. Not ticked.']
+- id: ERP-AC12-REBOOT
+  description: 'AC-12: reboots preserve ledger, audit history and processing mode'
+  status: ci_verified
+  implementation: [E:src/box1_erp/db.py]
+  tests: [E:tests/test_worker.py::test_mode_and_ledger_persist_across_worker_restart, E:tests/test_domain.py::test_mode_persists_across_connections]
+  commands: ['box1-ops-erp-simulator-release-5dgjm (pytest in-cluster, 154 passed)', 'ERP1_CONTRACTS_DIR=../run14-contracts .venv/bin/pytest']
+  evidence: [evidence/06-release.txt, evidence/05-after-review.txt, evidence/04-local-tests.txt]
+  limitations: ['CI covers the pytest part only; harness and VM parts stay at their stated level.', 'Process restart only; no reboot. Reboot is #25. Not ticked.']
+- id: ERP-AC14-BACKUP
+  description: 'AC-14: backup and restore with application-consistent data'
+  status: ci_verified
+  implementation: [E:src/box1_erp/backup.py]
+  tests: [E:tests/test_backup.py, E:harness/run-scenarios.sh]
+  commands: ['box1-ops-erp-simulator-release-5dgjm (pytest in-cluster, 154 passed)', 'ERP1_CONTRACTS_DIR=../run14-contracts .venv/bin/pytest', 'harness/run-scenarios.sh <work-dir>']
+  evidence: [evidence/06-release.txt, evidence/05-after-review.txt, evidence/04-local-tests.txt, evidence/04-harness.txt]
+  limitations: ['CI covers the pytest part only; harness and VM parts stay at their stated level.', 'Online backup API while the worker runs; restore refused while running; records match. Off-VM storage is #25. Not ticked.']
+- id: ERP-QUARANTINE
+  description: 'Malformed, truncated, unexpected-name and conflicting files quarantined with reasons; ERR files; controlled replay keeps deduplication'
+  status: ci_verified
+  implementation: [E:src/box1_erp/worker.py, E:src/box1_erp/domain.py]
+  tests: [E:tests/test_worker.py, E:tests/test_tui.py::test_quarantine_screen_and_replay]
+  commands: ['box1-ops-erp-simulator-release-5dgjm (pytest in-cluster, 154 passed)', 'ERP1_CONTRACTS_DIR=../run14-contracts .venv/bin/pytest']
+  evidence: [evidence/06-release.txt, evidence/05-after-review.txt, evidence/04-local-tests.txt]
+  limitations: ['CI covers the pytest part only; harness and VM parts stay at their stated level.', 'Local and container harness only; ERP repository not yet created (D-001), so no CI (D-002).']
+- id: ERP-FAULTS
+  description: 'Demo faults: delay AUTO, pause publication, one-shot crash; enabled in root-owned config; audited; no HTTP or sudo'
+  status: ci_verified
+  implementation: [E:src/box1_erp/domain.py, E:src/box1_erp/worker.py, E:src/box1_erp/tui.py]
+  tests: [E:tests/test_worker.py, E:tests/test_tui.py::test_demo_fault_screen_arms_and_shows_faults]
+  commands: ['box1-ops-erp-simulator-release-5dgjm (pytest in-cluster, 154 passed)', 'ERP1_CONTRACTS_DIR=../run14-contracts .venv/bin/pytest']
+  evidence: [evidence/06-release.txt, evidence/05-after-review.txt, evidence/04-local-tests.txt]
+  limitations: ['CI covers the pytest part only; harness and VM parts stay at their stated level.', 'Local and container harness only; ERP repository not yet created (D-001), so no CI (D-002).']
+- id: ERP-AUDIT
+  description: 'Every mutation audited with time, request, action, previous and new state, actor type, label and reason'
+  status: ci_verified
+  implementation: [E:src/box1_erp/domain.py]
+  tests: [E:tests/test_domain.py::test_hold_release_ship_with_revisions_and_audit]
+  commands: ['box1-ops-erp-simulator-release-5dgjm (pytest in-cluster, 154 passed)', 'ERP1_CONTRACTS_DIR=../run14-contracts .venv/bin/pytest']
+  evidence: [evidence/06-release.txt, evidence/05-after-review.txt, evidence/04-local-tests.txt]
+  limitations: ['CI covers the pytest part only; harness and VM parts stay at their stated level.', 'Local and container harness only; ERP repository not yet created (D-001), so no CI (D-002).']
+- id: ERP-TUI-TERMINAL
+  description: 'Console: keyboard only, 80x24, resize-safe, ASCII-safe, monochrome, no exit or shell escape'
+  status: ci_verified
+  implementation: [E:src/box1_erp/tui.py]
+  tests: [E:tests/test_tui.py]
+  commands: ['box1-ops-erp-simulator-release-5dgjm (pytest in-cluster, 154 passed)', 'ERP1_CONTRACTS_DIR=../run14-contracts .venv/bin/pytest']
+  evidence: [evidence/06-release.txt, evidence/05-after-review.txt, evidence/04-local-tests.txt]
+  limitations: ['CI covers the pytest part only; harness and VM parts stay at their stated level.', 'pyte vt100 emulation under a pty; serial console behaviour is #25.']
+- id: ERP-DURABLE-PUBLISH
+  description: 'Temp name, fsync, rename, directory fsync; republish after crash; stale temp cleaned'
+  status: ci_verified
+  implementation: [E:src/box1_erp/fileops.py, E:src/box1_erp/worker.py]
+  tests: [E:tests/test_worker.py::test_stale_temp_files_from_a_crash_are_cleaned_and_republished]
+  commands: ['box1-ops-erp-simulator-release-5dgjm (pytest in-cluster, 154 passed)', 'ERP1_CONTRACTS_DIR=../run14-contracts .venv/bin/pytest']
+  evidence: [evidence/06-release.txt, evidence/05-after-review.txt, evidence/04-local-tests.txt]
+  limitations: ['CI covers the pytest part only; harness and VM parts stay at their stated level.', 'Power-loss durability not testable here; fsync calls present and reviewed.']
+- id: ERP-MISSING-VOLUME
+  description: 'Missing ledger or data directories: worker exits 2, never creates a ledger, systemd does not restart'
+  status: ci_verified
+  implementation: [E:src/box1_erp/db.py, E:src/box1_erp/worker.py, E:systemd/box1-erp-worker.service]
+  tests: [E:tests/test_worker.py::test_worker_refuses_to_start_without_its_ledger, E:harness/run-scenarios.sh]
+  commands: ['box1-ops-erp-simulator-release-5dgjm (pytest in-cluster, 154 passed)', 'ERP1_CONTRACTS_DIR=../run14-contracts .venv/bin/pytest', 'harness/run-scenarios.sh <work-dir>']
+  evidence: [evidence/06-release.txt, evidence/05-after-review.txt, evidence/04-local-tests.txt, evidence/04-harness.txt]
+  limitations: ['CI covers the pytest part only; harness and VM parts stay at their stated level.', 'Unmounted volume in the VM is #25.']
+- id: ERP-SFTP-NO-DB
+  description: 'SFTP account chrooted, key-only, no shell, cannot reach the database'
+  status: locally_tested
+  implementation: [E:packaging/sshd-box1-erp-sftp.conf.example, E:packaging/tmpfiles-box1-erp.conf, E:packaging/sysusers-box1-erp.conf]
+  tests: [E:harness/run-scenarios.sh]
+  commands: ['harness/run-scenarios.sh <work-dir>']
+  evidence: [evidence/05-after-review.txt, evidence/04-harness.txt]
+  limitations: ['sshd is owned by #25; SELinux not enforced in the harness.']
+- id: ERP-SYSTEMD-UNITS
+  description: 'box1-erp-worker.service and box1-erp-tui@.service: separate, unprivileged, hardened, restart-limited, journald logs'
+  status: locally_tested
+  implementation: [E:systemd/]
+  tests: [E:harness/run-scenarios.sh]
+  commands: ['harness/run-scenarios.sh <work-dir>']
+  evidence: [evidence/05-after-review.txt, evidence/04-harness.txt]
+  limitations: ['Seccomp-based directives could not run in rootless podman (harness drop-in); shipped units score 1.1/1.3 offline. TUI unit not started (no serial TTY). #25 verifies both.']
+- id: ERP-ARTIFACT
+  description: 'Pinned artifact published through a reviewed path, consumable by #25'
+  status: ci_verified
+  implementation: [E:.tekton/release.yaml, E:scripts/make-oci-layout.py, E:docs/VM-INTEGRATION.md]
+  commands: ['box1-ops-erp-simulator-release-5dgjm']
+  evidence: [evidence/06-release.txt]
+  deployment: {image_digest: 'sha256:34053e1b1b6ac8aeb7d8f497c7d21f63ef89ad9f2a9693c1acb420d127b01aab', image: 'box1-ci/box1-ops-erp-simulator', source: c84c910, wheel_sha256: faa0fd2106b11f4337421db437f395dc5979f1bcacc1e1bc81b2b7d4e7201760, security_gates: 'observe; scan-exit=0; policy=pass; SBOM in TPA'}
+  limitations: ['Published, not deployed: no VM consumes it yet (#25).']
+
+- id: ERP-CI
+  description: 'Tests, lint and build run in CI'
+  status: ci_verified
+  implementation: [E:.tekton/pull-request.yaml, E:.tekton/release.yaml, box1-gitops:platform/pipelines/ci/box1-ops-erp-simulator.yaml]
+  commands: ['box1-ops-erp-simulator-release-5dgjm']
+  evidence: [evidence/06-release.txt]
+  limitations: ['The first green run is a release; no PR run has passed yet, because PaC uses main definitions and every PR run so far predates the fix. The harness is not run in CI (no container runtime).']
+
+- id: ERP-DOCS
+  description: 'README, design, runbook and VM integration contract'
+  status: implemented
+  implementation: [E:README.md, E:docs/]
+  limitations: ['Reviewed in Phase 5.']
+- id: ERP-EXCHANGE-HOSTILE
+  description: 'The SFTP account cannot damage the ledger or block processing: no link following, no predictable temp names, application-owned copies, unreadable entries quarantined (UNREADABLE), bounded memory, per-entry backoff'
+  status: ci_verified
+  implementation: [E:src/box1_erp/fileops.py, E:src/box1_erp/worker.py]
+  tests: [E:tests/test_review_regressions.py, E:harness/run-scenarios.sh]
+  commands: ['box1-ops-erp-simulator-release-5dgjm (pytest in-cluster, 154 passed)', 'ERP1_CONTRACTS_DIR=../run14-contracts .venv/bin/pytest', 'harness/run-scenarios.sh <work-dir>']
+  evidence: [evidence/06-release.txt, evidence/05-after-review.txt, review-findings/04-security.md, review-findings/03-messaging.md]
+  limitations: ['CI covers the pytest part only; harness and VM parts stay at their stated level.', 'Added from the security review (S1 critical). SELinux not enforced in the harness.']
+- id: ERP-RESTORE-SAFETY
+  description: 'Restore refuses while anything has the ledger open and when it would roll back past newer results or shipments; keeps the previous ledger and spool; starts in MANUAL'
+  status: ci_verified
+  implementation: [E:src/box1_erp/backup.py, E:src/box1_erp/db.py (LedgerLock)]
+  tests: [E:tests/test_backup.py, E:harness/run-scenarios.sh]
+  commands: ['box1-ops-erp-simulator-release-5dgjm (pytest in-cluster, 154 passed)', 'ERP1_CONTRACTS_DIR=../run14-contracts .venv/bin/pytest tests/test_backup.py', 'harness/run-scenarios.sh <work-dir>']
+  evidence: [evidence/06-release.txt, evidence/05-after-review.txt, review-findings/02-persistence.md]
+  limitations: ['CI covers the pytest part only; harness and VM parts stay at their stated level.', 'When the ledger itself is lost there is nothing to compare; the runbook covers reconciliation.']
+- id: ERP-UPGRADE
+  description: 'Schema version checked on open; migrate under the exclusive lock; fixed user and group IDs so a rebuilt guest owns the kept data'
+  status: ci_verified
+  implementation: [E:src/box1_erp/db.py, E:src/box1_erp/cli.py, E:packaging/sysusers-box1-erp.conf]
+  tests: [E:tests/test_review_regressions.py::test_O6_P7_schema_version_is_checked, E:harness/run-scenarios.sh]
+  commands: ['box1-ops-erp-simulator-release-5dgjm (pytest in-cluster, 154 passed)', 'ERP1_CONTRACTS_DIR=../run14-contracts .venv/bin/pytest', 'harness/run-scenarios.sh <work-dir>']
+  evidence: [evidence/06-release.txt, evidence/05-after-review.txt, review-findings/05-operations.md]
+  limitations: ['CI covers the pytest part only; harness and VM parts stay at their stated level.', 'No real schema migration exists yet (v1). Guest rebuild with a kept volume is #25.']
+- id: ERP-MONITORING
+  description: 'status --check exit codes and lag ages; watchdog restarts a hung worker; restart backoff instead of hard stops; correlation IDs on every log line'
+  status: ci_verified
+  implementation: [E:src/box1_erp/status.py, E:src/box1_erp/worker.py, E:systemd/]
+  tests: [E:tests/test_review_regressions.py::test_O4_status_check_exit_codes_and_ages, E:harness/run-scenarios.sh]
+  commands: ['box1-ops-erp-simulator-release-5dgjm (pytest in-cluster, 154 passed)', 'ERP1_CONTRACTS_DIR=../run14-contracts .venv/bin/pytest', 'harness/run-scenarios.sh <work-dir>']
+  evidence: [evidence/06-release.txt, evidence/05-after-review.txt, review-findings/05-operations.md]
+  limitations: ['CI covers the pytest part only; harness and VM parts stay at their stated level.', 'Harness used WatchdogSec=10; shipped value 60. Who watches status --check is #25.']

@@ -1,0 +1,37 @@
+# Phase 6: first successful release, read-only from box1-ci at 2026-11-05 19:27 EST
+
+## PipelineRuns for box1-ops-erp-simulator (oc get pipelinerun -n box1-ci)
+NAME                                   SUCCEEDED   REASON      STARTTIME   COMPLETIONTIME
+box1-ops-erp-simulator-release-9jvng   False       Failed      23m         23m
+box1-ops-erp-simulator-pr-d8bmw        False       Failed      19m         19m
+box1-ops-erp-simulator-pr-gtxst        False       Failed      15m         15m
+box1-ops-erp-simulator-release-5dgjm   True        Succeeded   14m         13m
+
+Failed runs 9jvng (bfc262f, merge of #1), d8bmw (PR #2 diagnostics head) and gtxst (PR #2 fix head, run with main's old definition): fetch step, PermissionError: [Errno 13] Permission denied: 'source/.gitignore'. Cause and fix: box1-ops-erp-simulator#2.
+
+## Release box1-ops-erp-simulator-release-5dgjm
+source sha c84c910d033e05d0e811ffdb5ab389bedb08ead3
+start 2026-11-06T00:12:45Z end 2026-11-06T00:13:47Z
+task package: Succeeded
+  wheel-sha256 = faa0fd2106b11f4337421db437f395dc5979f1bcacc1e1bc81b2b7d4e7201760
+  image-digest = sha256:34053e1b1b6ac8aeb7d8f497c7d21f63ef89ad9f2a9693c1acb420d127b01aab
+  image-url = image-registry.openshift-image-registry.svc:5000/box1-ci/box1-ops-erp-simulator
+task security: Succeeded
+  rhtpa-sbom-url = https://tpa.apps.ocp.box1.org/sboms/urn:uuid:01a1ae34-4539-7377-81d8-a247c6f5f11b
+  sbom-id = urn:uuid:01a1ae34-4539-7377-81d8-a247c6f5f11b
+  findings = scan-exit=0
+  policy = pass
+  rhacs-url = https://acs.apps.ocp.box1.org/main/vulnerabilities/all-images/images/b0663a3c-aa4e-542f-b95b-34e463f70057?vulnerabilityState=OBSERVED&detailsTab=Vulnerabilities
+
+## step-test-and-build (tail)
+All checks passed!
+154 passed in 35.16s
+
+## step-push (tail)
+Published image-registry.openshift-image-registry.svc:5000/box1-ci/box1-ops-erp-simulator@sha256:34053e1b1b6ac8aeb7d8f497c7d21f63ef89ad9f2a9693c1acb420d127b01aab
+
+## ImageStreamTag
+NAME                                                                 IMAGE REFERENCE                                                                                                                                              UPDATED
+box1-ops-erp-simulator:c84c910d033e05d0e811ffdb5ab389bedb08ead3      image-registry.openshift-image-registry.svc:5000/box1-ci/box1-ops-erp-simulator@sha256:34053e1b1b6ac8aeb7d8f497c7d21f63ef89ad9f2a9693c1acb420d127b01aab      13 minutes ago
+
+The push used ServiceAccount ci-erp-release with Role ci-erp-release-push (imagestreams/layers get,update on box1-ops-erp-simulator only), from box1-gitops#61. Security gates ran in observe mode.

@@ -1,0 +1,30 @@
+# Phase 2 contracts evidence, 2026-11-05 17:45 EST
+box1-ops-contracts branch legacy-erp-file-v1 commit b6e6731b7ba09590d3d6f702f411042dafc030a9, PR https://github.com/box1-org/box1-ops-contracts/pull/6
+
+$ npm test
+ℹ tests 60
+ℹ suites 0
+ℹ pass 60
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 55.35375
+
+$ npm run validate
+PASS 9 event fixtures, 10 schemas and 13 OpenAPI examples
+
+Mutation check (manifest edited, then restored from backup): quantity-zero expected FIELD_LENGTH and equivalence[0] flipped -> 'pass 58, fail 2', both named failures; after restore 'pass 60, fail 0'.
+
+$ ERP1_CONTRACTS_DIR=../run14-contracts .venv/bin/pytest -q tests/test_protocol_fixtures.py   (Python 3.12.12, SQLite 3.50.4)
+56 passed in 0.02s
+
+## After review repairs, 2026-11-05 17:52 EST, commit b20694c8971169025e345a3bcf0843e260096bc3
+$ npm test
+ℹ tests 75
+ℹ pass 75
+ℹ fail 0
+$ npm run validate
+PASS 9 event fixtures, 10 schemas and 13 OpenAPI examples
+$ pytest tests/test_protocol_fixtures.py (Python 3.12.12)
+70 passed in 0.02s

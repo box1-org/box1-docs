@@ -1,7 +1,7 @@
 # Legacy ERP appliance: file protocol, application and pinned release under the frontier profile
 
 **Date:** 2026-11-05 (America/New_York)
-**Status:** Built, reviewed, released through CI and published by digest. **Not yet running in a VM**: boot-to-console, reboot and the adapter round trip belong to [#25](https://github.com/box1-org/box1-docs/issues/25) and [#13](https://github.com/box1-org/box1-docs/issues/13), so [box1-docs#14](https://github.com/box1-org/box1-docs/issues/14) stays open with every checkbox unticked. Full run state, decisions, evidence and review findings are on branch [`agent-run/14-erp-appliance`](https://github.com/box1-org/box1-docs/tree/agent-run/14-erp-appliance/agent-runs/14-erp-appliance).
+**Status:** Built, reviewed, released through CI and published by digest. **Not yet running in a VM**: boot-to-console, reboot and the adapter round trip belong to [#25](https://github.com/box1-org/box1-docs/issues/25) and [#13](https://github.com/box1-org/box1-docs/issues/13), so [box1-docs#14](https://github.com/box1-org/box1-docs/issues/14) stays open with every checkbox unticked. Full run state, decisions, evidence and review findings are in [`agent-runs/14-erp-appliance/`](../../agent-runs/14-erp-appliance/).
 
 ## Outcome
 
