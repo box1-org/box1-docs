@@ -1,0 +1,30 @@
+2026-11-06T21:51:33-0500
+ovnkube-control-plane-758df87dd7-cv455 2/2 Running 13 (15d
+ovnkube-node-rsqlx 8/8 Running 48 15d
+network   5.0.0-rc.7   True   False   False   15d   
+ingress   5.0.0-rc.7   True   False   False   15d   
+agent-sandbox-system                               agent-sandbox-controller-54c8bdd7fc-cfdwc                         0/1   ContainerStatusUnknown        4 (14d ago)       14d
+box1-build                                         agent-workspace-2-build                                           0/1   Error                         0                 12d
+box1-build                                         agent-workspace-3-build                                           0/1   Error                         0                 12d
+box1-build                                         agent-workspace-4-build                                           0/1   Error                         0                 12d
+box1-ci                                            asset-service-release-llr82-promote-pod                           0/1   Error                         0                 6h30m
+box1-ci                                            asset-service-validate-4bshg-validate-pod                         0/2   Error                         0                 26h
+box1-ci                                            asset-service-validate-plw2f-validate-pod                         0/2   Error                         0                 26h
+box1-ci                                            asset-service-validate-sgdmz-validate-pod                         0/2   Error                         0                 26h
+box1-ci                                            asset-service-validate-ttmqs-validate-pod                         0/2   Error                         0                 5h43m
+box1-ci                                            box1-gitops-auth-mmhqg-verify-gitops-access-pod                   0/1   ContainerStatusUnknown        0                 4h56m
+box1-ci                                            box1-ops-erp-simulator-pr-gtxst-check-pod                         0/2   Error                         0                 26h
+box1-ci                                            box1-ops-erp-simulator-pr-gtxst-check-pod-retry1                  0/2   Error                         0                 26h
+box1-ci                                            fulfillment-adapter-release-l6t6v-promote-pod                     0/1   Error                         0                 6h30m
+box1-ci                                            fulfillment-adapter-release-l769j-promote-pod                     0/1   Error                         0                 6h5m
+box1-ci                                            legacy-erp-release-7shqj-deploy-pod                               0/1   Error                         0                 22h
+box1-ci                                            legacy-erp-release-8q7lz-build-pod                                0/2   Error                         0                 21h
+box1-ci                                            legacy-erp-release-nrbhc-deploy-pod                               0/1   Error                         0                 22h
+box1-ci                                            legacy-erp-release-z2hfj-promote-pod                              0/1   Error                         0                 22h
+box1-ci                                            legacy-erp-validate-c4n87-validate-pod                            0/2   Error                         0                 21h
+box1-ci                                            notification-service-release-6x952-promote-pod                    0/1   Error                         0                 6h30m
+notready:        0
+legacy-erp-dev        legacy-erp        23h   Running   10.128.1.104   quark.host.box1.org   True
+vm-golden-check-dev   vm-golden-check   25h   Running   10.128.0.51    quark.host.box1.org   True
+operations-console-dev.apps.ocp.box1.org 200 0.016551
+order-service-dev.apps.ocp.box1.org 200 0.014952
