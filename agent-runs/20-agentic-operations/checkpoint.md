@@ -2,7 +2,11 @@
 
 ## Current phase
 
-Phase 3 (implementation) started at 2026-11-06 22:40 EST. The user onboarded the service (Q-1). MCP 2.0.4 is proven on Quarkus 3.40.1.1 (Q-2, `evidence/03`). The template scaffold is live (`evidence/02`).
+Phase 4 is complete locally (2026-11-06 23:10 EST).
+
+- Service PR [agentic-operations#1](https://github.com/box1-org/agentic-operations/pull/1) is open at `bed8e44`. CI `agentic-operations-validate-9wksz` was running at this checkpoint.
+- Ledger: 14 requirements `locally_tested`, 2 `superseded`.
+- Evidence: `evidence/04` (58 tests and the evaluation report) and `evidence/05` (production-profile jar and live model probe).
 
 ## Completed
 
@@ -12,6 +16,9 @@ Phase 3 (implementation) started at 2026-11-06 22:40 EST. The user onboarded the
 - Ledger: 16 entries in `requirements.yaml`. 14 are `proposed`; RAG and the approval workflow are `superseded` by user decision.
 
 ## Key findings
+
+- **Live probe bug, fixed:** vLLM answers HTTP 400 when the JDK client offers an h2c upgrade. Both clients are now pinned to HTTP/1.1 (`evidence/05`).
+- **Tokens in logs, fixed:** Quarkus OIDC logs raw bearer tokens at WARN when verification fails. That logger is now set to ERROR, and introspection fallback is off (`evidence/05`).
 
 - The vLLM public route `route-purple-bass-vllm.apps.ocp.box1.org` answered an anonymous `GET /v1/models` with **200** (Q-3, #26).
 - The MCP extension's stable 2.0.4 is built on Quarkus 3.33.3.1, while services use 3.40.1.1. 2.1.0.Beta1 matches 3.40.1 (Q-2).
@@ -33,15 +40,12 @@ Phase 3 (implementation) started at 2026-11-06 22:40 EST. The user onboarded the
 
 ## Exact next action
 
-Implement D-002 to D-012 on `issue-20-agentic-operations`, in this order:
+1. Confirm that CI on agentic-operations#1 passes. Record the result in `evidence/06-ci.md`, and move ledger entries to `ci_verified` if it does.
+2. Phase 5: run the reviewer passes (architecture, messaging, security, operations, release) in fresh subagents, using the diff `61bcb8c..issue-20-agentic-operations`, the prompt and the contracts. Persistence is not applicable because there is no database. Record each pass in `review-findings/`, repair what they find, and rerun `./mvnw -B -ntp verify`.
+3. Open three PRs. Each needs the user's approval before merge:
+   - box1-ops-contracts: the `TOPICS.md` group change (Q-7);
+   - box1-gitops: the `agentic-operations` and `agentic-operations-cli` KeycloakClients (Q-5);
+   - box1-workloads-dev: runtime env, resources, replicas 1, ServiceMonitor and PrometheusRule.
+4. Raise the anonymous public vLLM route on #26, after the user agrees.
 
-1. evidence clients and `EvidenceService` with `@RolesAllowed`;
-2. the Kafka window;
-3. the model client and a mock;
-4. `AnalysisService` and the REST resource;
-5. replace the probe with the MCP tool catalog;
-6. the evaluation fixtures.
-
-Then run `./mvnw -B -ntp verify`.
-
-Still open: Q-3 (vLLM endpoint use), Q-4 (operator-only), Q-5 (Keycloak PR), Q-6 (deferred RBAC) and Q-7 (contracts PR).
+Still open: Q-5 (Keycloak PR), Q-6 (deferred RBAC) and Q-7 (contracts PR).
