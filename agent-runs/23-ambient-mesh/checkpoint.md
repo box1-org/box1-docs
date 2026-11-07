@@ -29,12 +29,10 @@
 - **Expected L7 scope:** only mesh-sourced HTTP to the waypointed services, that is console → order and console → inventory (and console → console via its own waypoint, if any). Router (Route) and Prometheus traffic come from outside the mesh and bypass waypoints unless `istio.io/ingress-use-waypoint` is set.
 
 ## Exact next action
-#151 is merged (`599b241`): the waypoints are Programmed, ready and scraped, with no traffic yet (`evidence/phase7-waypoints.md`). **PR C [#152](https://github.com/box1-org/box1-workloads-dev/pull/152) is open, waiting for the user's merge instruction.** After it merges:
-- check that console → order/inventory calls return 200;
-- check `istio_requests_total` from the waypoints;
-- read the Kiali HTTP graph;
-- send a console-pod request carrying a `traceparent` and find the waypoint span in Tempo;
-- run an order probe;
-- then write the L4/L7/Tempo comparison and the waypoint recommendation.
-
-PR #150 will need a rebase after #152.
+- **L7 is on** (#152 `d4acbcf`): HTTP metrics and Kiali HTTP edges are verified (`evidence/phase7-waypoints.md`).
+- **Waypoint tracing is broken:** istiod cannot resolve `box1-collector` because `box1-observability` is outside the discovery selectors. The fix is [box1-gitops#98](https://github.com/box1-org/box1-gitops/pull/98), waiting for the user's merge instruction. After it merges:
+  1. sync `observability-tracing`;
+  2. confirm the istiod warning is gone and the waypoint `config_dump` has a tracing block;
+  3. send a new console-pod request with a `traceparent` and confirm the waypoint spans appear in Tempo;
+  4. finish the L4/L7/trace comparison and the waypoint recommendation for the other four namespaces.
+- The rollback test #150 now conflicts with #152 (same `namespace.yaml`); rebase it when the user resumes it.

@@ -29,7 +29,11 @@
   limitations: [browser login not verified]
 - id: MESH-L7-001
   description: Waypoints on operations-console, order and inventory give an L7 graph; L4/L7/Tempo compared for one orderId; recommendation recorded
-  status: proposed
+  status: deployed
+  implementation: [box1-workloads-dev workloads/{operations-console,order-service,inventory-service}/waypoint.yaml, namespace.yaml use-waypoint]
+  evidence: [evidence/phase7-waypoints.md]
+  deployment: {gitops_commit: d4acbcffcc567b1d3d6d8313bac943a414654c4e}
+  limitations: [waypoint spans missing until box1-gitops#98 (collector discovery); recommendation not yet written]
 - id: MESH-NP-001
   description: NetworkPolicy baseline on DB, Kafka and ERP paths works under ambient; a blocked flow is refused; DNS and monitoring unaffected
   status: proposed
