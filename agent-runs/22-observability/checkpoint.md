@@ -29,7 +29,7 @@ Updated 2026-11-06T15:53:13-05:00. Phase 7 is partial. **The first acceptance cr
 7. Pending: box1-gitops#83 (tidy-up; syncing it restarts the collector).
 
 ## Achievement log
-`achievements/2026/2026-11-06-observability-tracing-metrics.md` is in box1-docs#94. It is **not merged**: the merge needs explicit user approval. Status comments were posted on #22, #61 and #64.
+`achievements/2026/2026-11-06-observability-tracing-metrics.md` is published: box1-docs#94, merged as `62ded77` with user approval. Status comments were posted on #22, #61 and #64.
 
 ## Exact next action (updated 2026-11-06T17:39:19-05:00)
 **Metrics, alerts and dashboard are live:** box1-workloads-dev#138 (`210c25f`) and box1-gitops#90 (`6988746`); evidence `evidence/phase6-metrics-alerts-dashboard.md`.
