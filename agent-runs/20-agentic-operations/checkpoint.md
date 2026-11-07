@@ -2,6 +2,8 @@
 
 ## Current phase
 
+**Phase 7 is partly done** (2026-11-07 00:50 EST, `evidence/10-live-acceptance.md`). Live REST and MCP analysis of a real order: cited evidence, identical evidence through REST and MCP, trace across 4 services, clean audit logs. The token came from a device login approved by `mike`. Ledger: 5 `live_verified`, 9 `deployed`, 2 `superseded`. The seeded ERP slowdown waits for the user's approval.
+
 **Phase 6 is complete** (2026-11-07 00:35 EST). See `evidence/09-delivery.md`.
 
 - **Merged:** all four PRs. The service is live at `9d2d3e3`.
@@ -51,18 +53,12 @@ Phase 5 is complete (2026-11-06 23:45 EST).
 
 ## Exact next action
 
-Phase 7 needs a user token. The user:
-1. assigns `aiops-analyst` (or `aiops-viewer`) on client `agentic-operations` to a test user, as was done with the `claude` login for #16;
-2. approves the live acceptance.
-
-Then:
-- Get a CLI token (PKCE or device grant). Confirm the claims `aud`, `azp` and `resource_access.agentic-operations.roles`.
-- Run `erp-delayed-processing` through the scenario controller (approval, demo namespace).
-- Analyze the incident through REST and through an MCP client. Check the cited evidence, the model behaviour and the trace linkage in Tempo.
-- Check a viewer gets 403 on analyze.
-- Check that after a restart the analysis ID returns 404 and the window refills.
-
-Follow-ups to propose to the user:
-- the `SCAN_OUTPUT` false failure, on #42;
-- per-service release smoke checks (R-2);
-- the anonymous public vLLM route, on #26.
+1. With the user's approval, run `erp-delayed-processing` through the scenario controller in its allowlisted demo namespace (see 09_scenario_controller.md). Analyze the resulting `AWAITING_ERP_TOO_LONG` incident through REST and MCP, then stop or reset the scenario. Record this in `evidence/11`, then move AIO-ERP-001 and AIO-MODEL-related entries up if they are proven.
+2. Optional, needs approval: a pod restart, to observe the analysis 404 and the window refill live.
+3. Follow-ups to propose to the user:
+   - the `SCAN_OUTPUT` false failure (on #42);
+   - per-service release smoke checks (R-2);
+   - the anonymous public vLLM route (on #26);
+   - MCP requests have no server span;
+   - RAG and persistent state are #97.
+4. Handoff (`05_HANDOFF_TEMPLATE.md`), then the achievement log when the user asks.

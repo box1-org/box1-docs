@@ -4,7 +4,7 @@
   "profile": "frontier",
   "prompt": "box1_operations_agent_prompts/01-services/10_ai_operations.md@12f0b11 (PR #96 merged)",
   "started": "2026-11-06T21:50-05:00",
-  "current_phase": "6 complete (deployed); phase 7 live acceptance needs a user token",
+  "current_phase": "7 partial: live REST/MCP verified; ERP scenario awaits approval",
   "repositories": [
     {
       "name": "box1-org/agentic-operations",
