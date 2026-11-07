@@ -19,7 +19,7 @@
 ## Status 2026-11-06 23:10 EST
 - The rollback test PR box1-workloads-dev#150 is open; the user deferred it ("Not now").
 - **Waypoints are drafted and need the user's approval and merges, in order:**
-  1. [box1-gitops#97](https://github.com/box1-org/box1-gitops/pull/97): Argo RBAC for `gateways.gateway.networking.k8s.io` in the three namespaces. Merge it, then sync `service-mesh-control-plane`.
+  1. [box1-gitops#97](https://github.com/box1-org/box1-gitops/pull/97): Argo RBAC for `gateways.gateway.networking.k8s.io` in the three namespaces. **Done:** merged as `fc4621a` and synced; Argo can now create Gateways in the three namespaces only.
   2. [box1-workloads-dev#151](https://github.com/box1-org/box1-workloads-dev/pull/151): a waypoint Gateway, a Telemetry (box1-otel, 100%) and a PodMonitor per namespace, plus `use-waypoint: none` on the order and inventory Postgres Services. **Inactive:** no traffic moves. Verify `Programmed`, pods ready, metrics `up`.
   3. PR C (not yet opened): `istio.io/use-waypoint: waypoint` on the three Namespaces. Then generate console → order/inventory calls carrying a `traceparent`, and compare the Kiali L4 graph, the L7 graph and the Tempo trace.
 - **Prerequisites checked:**
@@ -29,4 +29,4 @@
 - **Expected L7 scope:** only mesh-sourced HTTP to the waypointed services, that is console → order and console → inventory (and console → console via its own waypoint, if any). Router (Route) and Prometheus traffic come from outside the mesh and bypass waypoints unless `istio.io/ingress-use-waypoint` is set.
 
 ## Exact next action
-Wait for the user's approval of the waypoints and their merge instruction for #97.
+Waypoints are approved (user, 2026-11-06). Wait for the user's merge instruction for box1-workloads-dev#151, then verify the Gateways are `Programmed`, the waypoint pods are ready, and the PodMonitors are `up`.
