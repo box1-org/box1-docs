@@ -14,7 +14,12 @@
   status: proposed
 - id: MESH-KIALI-001
   description: Kiali GitOps-managed, OpenShift login required, limited to selected namespaces; TCP graph shows a real order
-  status: proposed
+  status: deployed
+  implementation: [box1-gitops platform/service-mesh/kiali/]
+  commands: ["curl $KIALI/api/namespaces (anon 401)", "curl -H 'Authorization: Bearer' $KIALI/api/namespaces", "$KIALI/api/istio/status"]
+  evidence: [evidence/phase6-control-plane-kiali.md]
+  deployment: {gitops_commit: b71a407f2fe1578b0a3f647a6796e76a7e4f7f54}
+  limitations: [TCP graph not yet possible - no namespace enrolled; browser login not verified]
 - id: MESH-L7-001
   description: Waypoints on operations-console, order and inventory give an L7 graph; L4/L7/Tempo compared for one orderId; recommendation recorded
   status: proposed
