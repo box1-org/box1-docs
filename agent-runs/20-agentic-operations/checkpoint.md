@@ -2,6 +2,10 @@
 
 ## Current phase
 
+**Phase 6 is in progress** (2026-11-07 00:10 EST). All four PRs are open, with checks green, and are waiting for the user's merge approval (`evidence/08-platform-prs.md`).
+
+Phase 5 summary follows.
+
 Phase 5 is complete (2026-11-06 23:45 EST).
 
 - **Reviews:** five reviewer passes ran in fresh subagents: architecture, messaging, security, operations and release. Persistence is not applicable. They found no high-severity issues.
@@ -41,15 +45,16 @@ Phase 5 is complete (2026-11-06 23:45 EST).
 
 ## Exact next action
 
-1. Phase 6: open three PRs. Each needs the user's approval before merge:
-   - **box1-ops-contracts:** in `TOPICS.md`, rename `ai-operations` to `agentic-operations` on telemetry and add it to the order, inventory, fulfillment and notification rows (Q-7).
-   - **box1-gitops:** KeycloakClients `agentic-operations` (confidential, roles `aiops-viewer` and `aiops-analyst`, no upstream grants in v1) and `agentic-operations-cli` (public, PKCE, audience mapper and role scope mapping), following `scenario-controller-client.yaml` and `scenario-controller-cli-client.yaml` (Q-5).
-   - **box1-workloads-dev:** `strategy: Recreate`, `replicas: 1`, and Deployment `env` for the runtime URLs, `AIOPS_ALLOWED_AZP`, `AIOPS_CONSUMER_GROUP` and the OTel attributes. Also a ServiceMonitor and a PrometheusRule (model unavailable, window not refilling, pod down), copied from notification-service.
-2. Link the three PRs from agentic-operations#1.
-3. After the user merges them in order, merge #1, then watch the release, promotion, digest and Argo.
+1. The user approves the merges, in this order, with about 10 seconds between them:
+   1. box1-ops-contracts#13
+   2. box1-gitops#99
+   3. box1-workloads-dev#153
+   4. agentic-operations#1
+2. After #99 syncs, check the clients, roles and scope mapping in Keycloak, and the token claims. The user assigns the `aiops-*` roles.
+3. After #1 merges, watch the release PipelineRun and the promotion PR. Then confirm the digest in box1-workloads-dev, Argo Synced/Healthy and the running pod's imageID. Also check that `/api/info` `gitRef` equals the merge commit.
 4. Phase 7, live acceptance, after approval:
+   - anonymous 401 on `/api/v1/ai/*` and `/mcp`;
    - `erp-delayed-processing` through the scenario controller, analyzed through REST and through an MCP client;
-   - the anonymous 401 checks, the trace linkage, the window refill time, and `oc adm top` during the replay.
+   - trace linkage in Tempo;
+   - window refill time and `oc adm top` during the replay.
 5. File a follow-up for per-service release smoke checks (R-2). Raise the anonymous vLLM route on #26, once the user agrees.
-
-Still open: Q-5 and Q-7 (PR approvals) and Q-6 (deferred RBAC).

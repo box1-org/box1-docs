@@ -4,7 +4,7 @@
   "profile": "frontier",
   "prompt": "box1_operations_agent_prompts/01-services/10_ai_operations.md@12f0b11 (PR #96 merged)",
   "started": "2026-11-06T21:50-05:00",
-  "current_phase": "5 complete (repairs CI-green); phase 6 PRs next",
+  "current_phase": "6 in progress: all PRs open, awaiting merge approval",
   "repositories": [
     {
       "name": "box1-org/agentic-operations",
@@ -24,24 +24,33 @@
       "name": "box1-org/box1-ops-contracts",
       "role": "TOPICS.md consumer group",
       "base": "bb381b0",
-      "state": "not started (Q-7)"
+      "state": "open",
+      "branch": "run20-agentic-operations-group",
+      "pr": "https://github.com/box1-org/box1-ops-contracts/pull/13"
     },
     {
       "name": "box1-org/box1-gitops",
       "role": "Keycloak clients",
       "base": "b71a407",
-      "state": "not started (Q-5)"
+      "state": "open",
+      "branch": "run20-agentic-operations-keycloak",
+      "pr": "https://github.com/box1-org/box1-gitops/pull/99"
     },
     {
       "name": "box1-org/box1-workloads-dev",
       "role": "deployment manifests",
       "base": "932b1ba",
-      "state": "not started"
+      "state": "open",
+      "branch": "run20-agentic-operations-runtime",
+      "pr": "https://github.com/box1-org/box1-workloads-dev/pull/153"
     }
   ],
   "worktrees": [
     "/Users/mike/Documents/ChatGPT/box1/run20-docs",
-    "/Users/mike/Documents/ChatGPT/box1/run20-agentic-operations (clone)"
+    "/Users/mike/Documents/ChatGPT/box1/run20-agentic-operations (clone)",
+    "/Users/mike/Documents/ChatGPT/box1/run20-contracts (clone)",
+    "/Users/mike/Documents/ChatGPT/box1/run20-gitops (clone)",
+    "/Users/mike/Documents/ChatGPT/box1/run20-workloads (clone)"
   ],
   "containers_prefix": "run20-",
   "image_digest": null,
