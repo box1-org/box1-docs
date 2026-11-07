@@ -1,0 +1,20 @@
+# Phase 3/4 test suite (local)
+captured 2026-11-05 19:41-19:43 EST; fulfillment-adapter@ae98f59 working tree before the pipeline-only commit 8f576d5
+command: ./mvnw -B -ntp verify -DskipITs=false -Pcontainers (DOCKER_HOST=podman socket, TESTCONTAINERS_RYUK_DISABLED=true)
+
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.814 s -- in org.box1.GreetingResourceTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.011 s -- in org.box1.fulfillment.OpenApiTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 7.682 s -- in org.box1.fulfillment.AcceptanceScenariosTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 18.22 s -- in org.box1.fulfillment.KafkaInputTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 10.86 s -- in org.box1.fulfillment.ResultIngestionTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.007 s -- in org.box1.GreetingServiceTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 s -- in org.box1.fulfillment.TransportErrorsTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.034 s -- in org.box1.fulfillment.erp1.Erp1EdgeTest
+[INFO] Tests run: 84, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.408 s -- in org.box1.fulfillment.erp1.Erp1FixturesTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.030 s -- in org.box1.fulfillment.messaging.EventParserTest
+[INFO] Tests run: 119, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.023 s -- in org.box1.GreetingResourceIT
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0
+[INFO] You have 0 Checkstyle violations.
+[INFO] BugInstance size is 0
+[INFO] BUILD SUCCESS

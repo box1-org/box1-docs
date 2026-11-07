@@ -1,0 +1,11 @@
+# CI on fulfillment-adapter#1
+captured 2026-11-05 19:48 EST
+
+- PipelineRun box1-ci/fulfillment-adapter-validate-cvgl9, head 8f576d5012c6e689857f3b6c6b829d000006cf25, Succeeded (started 00:43:50Z, 1m57s).
+- Task box1-quarkus-maven runs `mvn -B -ntp verify -DskipITs=false` with no container runtime: ERP1 fixtures (fetched at contracts eef13ea), unit and HTTP tests, Checkstyle and SpotBugs/FindSecBugs. Container-tagged tests are excluded in CI by design.
+
+## After review repairs (captured 2026-11-05 20:18 EST)
+- fulfillment-adapter#1 head 11778f8c1e6d2e3bd4f41a8db78c67f43f334095: PipelineRun box1-ci/fulfillment-adapter-validate-lqzbx Succeeded (1m56s).
+- box1-workloads-dev#65 head 1b7dd834919d7d91dbd233499b02296d89cc503c: box1-gitops-validate-jrgqt Succeeded, box1-phase1-smoke-5gl56 Succeeded.
+- box1-gitops#64: box1-onboarding-plugin-guard and box1-phase1-smoke passed.
+- box1-ops-contracts#8: no checks are configured on that repository; `npm test` run locally (75 pass).

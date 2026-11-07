@@ -1,0 +1,265 @@
+# Requirement ledger for box1-docs#13. Status is the highest level actually observed.
+# IDs come from the issue's acceptance criteria (FUL-ACnn) and the prompt's interface rules.
+# Paths are in box1-org/fulfillment-adapter unless noted.
+
+- id: FUL-AC01
+  description: REST acceptance is durable before HTTP 202
+  status: live_verified
+  implementation: ['camel/RestHandlers.java', 'AcceptanceService.java', 'store/FulfillmentStore.java']
+  tests: ['AcceptanceScenariosTest.acceptedIsCommittedBeforeTheResponse']
+  commands: ['./mvnw verify -DskipITs=false -Pcontainers']
+  evidence: ['evidence/03-test-suite.txt', 'evidence/05-after-review.txt', 'evidence/07-release-live.txt']
+  deployment: {image_digest: "sha256:9247f98fee515d8fad98d9c4665e84c9464dc2be94a02215958b9cc54ec6a931", gitops_commit: "3668f3b2400ae49d25dab0ae5e79944e70675720"}
+  limitations: []
+- id: FUL-AC02
+  description: REST-to-flat-file translation runs through Camel
+  status: deployed
+  implementation: ['camel/FulfillmentRoutes.java', 'camel/Erp1DataFormat.java', 'erp1/Erp1Writer.java']
+  tests: ['Erp1FixturesTest.mapping', 'scenarios.py held']
+  commands: ['./mvnw verify -DskipITs=false -Pcontainers', 'WORK=<scratch> REPO=<clone> python3 -I evidence/scripts/scenarios.py']
+  evidence: ['evidence/03-test-suite.txt', 'evidence/04-scenarios-erp-harness.txt', 'evidence/05-after-review.txt', 'evidence/07-release-live.txt']
+  deployment: {image_digest: "sha256:9247f98fee515d8fad98d9c4665e84c9464dc2be94a02215958b9cc54ec6a931", gitops_commit: "3668f3b2400ae49d25dab0ae5e79944e70675720"}
+  limitations: []
+- id: FUL-AC03
+  description: The complete round trip works against the ERP VM
+  status: blocked
+  implementation: []
+  tests: []
+  commands: []
+  evidence: ['evidence/04-scenarios-erp-harness.txt']
+  deployment: {}
+  limitations: ['ERP VM (#25) does not exist. The round trip passes against the #14 container harness (CentOS Stream 10, OpenSSH chroot) only.']
+- id: FUL-AC04
+  description: Manual TUI shipment produces the expected modern completion
+  status: blocked
+  implementation: []
+  tests: ['scripts/tui_ship.py']
+  commands: ['python3 -I evidence/scripts/tui_ship.py']
+  evidence: ['evidence/04-scenarios-erp-harness.txt']
+  deployment: {}
+  limitations: ['Real TUI keystrokes in the #14 container harness produced shipment.confirmed.v1 with the TUI shipmentId; the VM and its serial console (#25) do not exist.']
+- id: FUL-AC05
+  description: Duplicate REST requests and file redelivery create no duplicate shipment
+  status: deployed
+  implementation: ['AcceptanceService.java', 'ResultService.java', 'erp1/Erp1ResultRules.java']
+  tests: ['AcceptanceScenariosTest.equivalentRepeatResolvesToTheSameResource', 'KafkaInputTest', 'ResultIngestionTest.shippedEmitsOneConfirmedEventAndRedeliveryEmitsNoMore', 'scenarios.py kafka, logs(redelivery)']
+  commands: ['./mvnw verify -DskipITs=false -Pcontainers', 'WORK=<scratch> REPO=<clone> python3 -I evidence/scripts/scenarios.py']
+  evidence: ['evidence/03-test-suite.txt', 'evidence/04-scenarios-erp-harness.txt', 'evidence/05-after-review.txt', 'evidence/07-release-live.txt']
+  deployment: {image_digest: "sha256:9247f98fee515d8fad98d9c4665e84c9464dc2be94a02215958b9cc54ec6a931", gitops_commit: "3668f3b2400ae49d25dab0ae5e79944e70675720"}
+  limitations: []
+- id: FUL-AC06
+  description: Pending/held requests are not mistaken for transport failures
+  status: deployed
+  implementation: ['ReconcileService.java', 'store/FulfillmentStore.java']
+  tests: ['scenarios.py held']
+  commands: ['WORK=<scratch> REPO=<clone> python3 -I evidence/scripts/scenarios.py']
+  evidence: ['evidence/04-scenarios-erp-harness.txt', 'evidence/05-after-review.txt', 'evidence/07-release-live.txt']
+  deployment: {image_digest: "sha256:9247f98fee515d8fad98d9c4665e84c9464dc2be94a02215958b9cc54ec6a931", gitops_commit: "3668f3b2400ae49d25dab0ae5e79944e70675720"}
+  limitations: []
+- id: FUL-AC07
+  description: Adapter restart preserves accepted work and reconciliation state
+  status: deployed
+  implementation: ['store/FulfillmentStore.java']
+  tests: ['scenarios.py crash, interrupted, lostresult']
+  commands: ['WORK=<scratch> REPO=<clone> python3 -I evidence/scripts/scenarios.py']
+  evidence: ['evidence/04-scenarios-erp-harness.txt', 'evidence/05-after-review.txt', 'evidence/07-release-live.txt']
+  deployment: {image_digest: "sha256:9247f98fee515d8fad98d9c4665e84c9464dc2be94a02215958b9cc54ec6a931", gitops_commit: "3668f3b2400ae49d25dab0ae5e79944e70675720"}
+  limitations: []
+- id: FUL-AC08
+  description: ERP outage does not lose accepted requests
+  status: deployed
+  implementation: ['DispatchService.java']
+  tests: ['scenarios.py sftp, crash, attention']
+  commands: ['WORK=<scratch> REPO=<clone> python3 -I evidence/scripts/scenarios.py']
+  evidence: ['evidence/04-scenarios-erp-harness.txt', 'evidence/05-after-review.txt', 'evidence/07-release-live.txt']
+  deployment: {image_digest: "sha256:9247f98fee515d8fad98d9c4665e84c9464dc2be94a02215958b9cc54ec6a931", gitops_commit: "3668f3b2400ae49d25dab0ae5e79944e70675720"}
+  limitations: []
+- id: FUL-AC09
+  description: Late/out-of-order results reconcile without regressing state
+  status: deployed
+  implementation: ['erp1/Erp1ResultRules.java', 'ResultService.java']
+  tests: ['ResultIngestionTest.everyFixtureSequenceThroughThePersistentConsumer', 'Erp1FixturesTest.sequences']
+  commands: ['./mvnw verify -DskipITs=false -Pcontainers']
+  evidence: ['evidence/03-test-suite.txt', 'evidence/05-after-review.txt', 'evidence/07-release-live.txt']
+  deployment: {image_digest: "sha256:9247f98fee515d8fad98d9c4665e84c9464dc2be94a02215958b9cc54ec6a931", gitops_commit: "3668f3b2400ae49d25dab0ae5e79944e70675720"}
+  limitations: []
+- id: FUL-AC10
+  description: Host-key verification is enabled and tested
+  status: deployed
+  implementation: ['camel/FulfillmentRoutes.java', 'TransportErrors.java']
+  tests: ['scenarios.py hostkey']
+  commands: ['WORK=<scratch> REPO=<clone> python3 -I evidence/scripts/scenarios.py']
+  evidence: ['evidence/04-scenarios-erp-harness.txt', 'evidence/05-after-review.txt', 'evidence/07-release-live.txt']
+  deployment: {image_digest: "sha256:9247f98fee515d8fad98d9c4665e84c9464dc2be94a02215958b9cc54ec6a931", gitops_commit: "3668f3b2400ae49d25dab0ae5e79944e70675720"}
+  limitations: ['Rotation with the VM (#25) not exercised.']
+- id: FUL-AC11
+  description: Logs correlate REST request, dispatch, ERP result and domain event
+  status: deployed
+  implementation: ['DispatchService.java', 'ResultService.java', 'camel/RestHandlers.java']
+  tests: ['scenarios.py logs']
+  commands: ['WORK=<scratch> REPO=<clone> python3 -I evidence/scripts/scenarios.py']
+  evidence: ['evidence/04-scenarios-erp-harness.txt', 'evidence/05-after-review.txt', 'evidence/07-release-live.txt']
+  deployment: {image_digest: "sha256:9247f98fee515d8fad98d9c4665e84c9464dc2be94a02215958b9cc54ec6a931", gitops_commit: "3668f3b2400ae49d25dab0ae5e79944e70675720"}
+  limitations: ['Trace export is off (no collector, box1-docs#22); traceparent propagation shown in events.']
+- id: FUL-AC12
+  description: Metrics expose backlog, oldest pending age, retries and quarantined results
+  status: live_verified
+  implementation: ['FulfillmentMetrics.java']
+  tests: ['ResultIngestionTest.errFilesAreActedOnByCodeAndRecordedOnce', 'scenarios.py logs']
+  commands: ['./mvnw verify -DskipITs=false -Pcontainers', 'WORK=<scratch> REPO=<clone> python3 -I evidence/scripts/scenarios.py']
+  evidence: ['evidence/03-test-suite.txt', 'evidence/04-scenarios-erp-harness.txt', 'evidence/05-after-review.txt', 'evidence/07-release-live.txt']
+  deployment: {image_digest: "sha256:9247f98fee515d8fad98d9c4665e84c9464dc2be94a02215958b9cc54ec6a931", gitops_commit: "3668f3b2400ae49d25dab0ae5e79944e70675720"}
+  limitations: ['Live with one request; behavior under load proven locally only.']
+- id: FUL-AC13
+  description: Adapter passes every ERP1 fixture and result sequence at its pinned commit
+  status: deployed
+  implementation: ['erp1/*']
+  tests: ['Erp1FixturesTest', 'ResultIngestionTest']
+  commands: ['./mvnw verify -DskipITs=false']
+  evidence: ['evidence/03-test-suite.txt', 'evidence/02-contracts.md', 'evidence/06-ci.txt', 'evidence/05-after-review.txt', 'evidence/07-release-live.txt']
+  deployment: {image_digest: "sha256:9247f98fee515d8fad98d9c4665e84c9464dc2be94a02215958b9cc54ec6a931", gitops_commit: "3668f3b2400ae49d25dab0ae5e79944e70675720"}
+  limitations: []
+- id: FUL-AC14
+  description: A lost upload or an ERR file is resolved by equivalent resend or needs-attention, never dropped
+  status: deployed
+  implementation: ['ReconcileService.java', 'ResultService.java']
+  tests: ['scenarios.py lostupload, attention, conflict', 'ResultIngestionTest.errFilesAreActedOnByCodeAndRecordedOnce']
+  commands: ['./mvnw verify -DskipITs=false -Pcontainers', 'WORK=<scratch> REPO=<clone> python3 -I evidence/scripts/scenarios.py']
+  evidence: ['evidence/03-test-suite.txt', 'evidence/04-scenarios-erp-harness.txt', 'evidence/05-after-review.txt', 'evidence/07-release-live.txt']
+  deployment: {image_digest: "sha256:9247f98fee515d8fad98d9c4665e84c9464dc2be94a02215958b9cc54ec6a931", gitops_commit: "3668f3b2400ae49d25dab0ae5e79944e70675720"}
+  limitations: ['Repeated transport ERRs are bounded (ERR_RESENDS_EXHAUSTED) since review finding P1. Format ERR codes cannot be provoked from the real ERP because the adapter self-validates every file; they were fed as ERP-format ERR files to ResultService. CONFLICTING_REUSE was produced by the real ERP.']
+- id: FUL-AC15
+  description: Anonymous requests cannot create fulfillments through the Route
+  status: live_verified
+  implementation: ['application.properties (HTTP permissions)', 'api/ClientRoleAugmentor.java']
+  tests: ['AcceptanceScenariosTest.anonymousWrongRoleAudienceIssuerOrKeyCannotCreate', '.tekton/release.yaml fulfillment-api-smoke']
+  commands: ['./mvnw verify -DskipITs=false -Pcontainers']
+  evidence: ['evidence/03-test-suite.txt', 'evidence/05-after-review.txt', 'evidence/07-release-live.txt']
+  deployment: {image_digest: "sha256:9247f98fee515d8fad98d9c4665e84c9464dc2be94a02215958b9cc54ec6a931", gitops_commit: "3668f3b2400ae49d25dab0ae5e79944e70675720"}
+  limitations: []
+- id: FUL-IN01
+  description: Kafka fulfillment.requested.v1 (group fulfillment) and REST share one durable acceptance path
+  status: deployed
+  implementation: ['messaging/FulfillmentRequestedConsumer.java', 'camel/FulfillmentRoutes.java']
+  tests: ['KafkaInputTest', 'scenarios.py kafka']
+  commands: ['./mvnw verify -DskipITs=false -Pcontainers', 'WORK=<scratch> REPO=<clone> python3 -I evidence/scripts/scenarios.py']
+  evidence: ['evidence/03-test-suite.txt', 'evidence/04-scenarios-erp-harness.txt', 'evidence/05-after-review.txt', 'evidence/07-release-live.txt']
+  deployment: {image_digest: "sha256:9247f98fee515d8fad98d9c4665e84c9464dc2be94a02215958b9cc54ec6a931", gitops_commit: "3668f3b2400ae49d25dab0ae5e79944e70675720"}
+  limitations: []
+- id: FUL-IN02
+  description: Equivalent repeats resolve to the same resource; conflicting reuse returns 409
+  status: deployed
+  implementation: ['AcceptanceService.java']
+  tests: ['AcceptanceScenariosTest', 'KafkaInputTest']
+  commands: ['./mvnw verify -DskipITs=false -Pcontainers']
+  evidence: ['evidence/03-test-suite.txt', 'evidence/05-after-review.txt', 'evidence/07-release-live.txt']
+  deployment: {image_digest: "sha256:9247f98fee515d8fad98d9c4665e84c9464dc2be94a02215958b9cc54ec6a931", gitops_commit: "3668f3b2400ae49d25dab0ae5e79944e70675720"}
+  limitations: []
+- id: FUL-IN03
+  description: Acceptance rejected when durable storage is unavailable
+  status: deployed
+  implementation: ['camel/RestHandlers.java', 'DatabaseReadinessCheck.java']
+  tests: ['scenarios.py storage']
+  commands: ['WORK=<scratch> REPO=<clone> python3 -I evidence/scripts/scenarios.py']
+  evidence: ['evidence/04-scenarios-erp-harness.txt', 'evidence/05-after-review.txt', 'evidence/07-release-live.txt']
+  deployment: {image_digest: "sha256:9247f98fee515d8fad98d9c4665e84c9464dc2be94a02215958b9cc54ec6a931", gitops_commit: "3668f3b2400ae49d25dab0ae5e79944e70675720"}
+  limitations: []
+- id: FUL-MAP01
+  description: fulfillment.requested.v1 mapped per ERP1 section 8; values ERP1 cannot carry rejected explicitly
+  status: deployed
+  implementation: ['backend/LegacyErp1Backend.java', 'domain/CommandValidator.java']
+  tests: ['Erp1FixturesTest.mapping', 'EventParserTest', 'AcceptanceScenariosTest.valuesErp1CannotCarryAreRejectedNotTruncated']
+  commands: ['./mvnw verify -DskipITs=false -Pcontainers']
+  evidence: ['evidence/03-test-suite.txt', 'evidence/05-after-review.txt', 'evidence/07-release-live.txt']
+  deployment: {image_digest: "sha256:9247f98fee515d8fad98d9c4665e84c9464dc2be94a02215958b9cc54ec6a931", gitops_commit: "3668f3b2400ae49d25dab0ae5e79944e70675720"}
+  limitations: []
+- id: FUL-FILE01
+  description: Upload as .<name>.tmp then rename; generated names only
+  status: deployed
+  implementation: ['camel/FulfillmentRoutes.java', 'erp1/Erp1Names.java']
+  tests: ['Erp1EdgeTest', 'scenarios.py interrupted']
+  commands: ['WORK=<scratch> REPO=<clone> python3 -I evidence/scripts/scenarios.py']
+  evidence: ['evidence/04-scenarios-erp-harness.txt', 'evidence/05-after-review.txt', 'evidence/07-release-live.txt']
+  deployment: {image_digest: "sha256:9247f98fee515d8fad98d9c4665e84c9464dc2be94a02215958b9cc54ec6a931", gitops_commit: "3668f3b2400ae49d25dab0ae5e79944e70675720"}
+  limitations: ['A partial byte stream was not injected; a crash during a hung transfer was. ERP ignoring .tmp names is covered by the shared names fixtures.']
+- id: FUL-FILE02
+  description: Result committed (or quarantined) before rename to consumed/<name>.<nonce>; unexpected names quarantined
+  status: deployed
+  implementation: ['camel/FulfillmentRoutes.java', 'ResultService.java']
+  tests: ['ResultIngestionTest', 'scenarios.py unexpected, logs(redelivery)']
+  commands: ['./mvnw verify -DskipITs=false -Pcontainers', 'WORK=<scratch> REPO=<clone> python3 -I evidence/scripts/scenarios.py']
+  evidence: ['evidence/03-test-suite.txt', 'evidence/04-scenarios-erp-harness.txt', 'evidence/05-after-review.txt', 'evidence/07-release-live.txt']
+  deployment: {image_digest: "sha256:9247f98fee515d8fad98d9c4665e84c9464dc2be94a02215958b9cc54ec6a931", gitops_commit: "3668f3b2400ae49d25dab0ae5e79944e70675720"}
+  limitations: ['A crash exactly between commit and rename was simulated by redelivering the same file, which is its only observable effect.']
+- id: FUL-OUT01
+  description: SHIPPED emits shipment.confirmed.v1; REJECTED emits shipment.failed.v1 retryable:false with reasonCode, no reasonText
+  status: deployed
+  implementation: ['messaging/EventFactory.java']
+  tests: ['ResultIngestionTest.rejectedEmitsNonRetryableFailureWithCodeAndNoReasonText', 'scenarios.py reject, held']
+  commands: ['./mvnw verify -DskipITs=false -Pcontainers', 'WORK=<scratch> REPO=<clone> python3 -I evidence/scripts/scenarios.py']
+  evidence: ['evidence/03-test-suite.txt', 'evidence/04-scenarios-erp-harness.txt', 'evidence/05-after-review.txt', 'evidence/07-release-live.txt']
+  deployment: {image_digest: "sha256:9247f98fee515d8fad98d9c4665e84c9464dc2be94a02215958b9cc54ec6a931", gitops_commit: "3668f3b2400ae49d25dab0ae5e79944e70675720"}
+  limitations: []
+- id: FUL-STRAT01
+  description: Backend strategy boundary; legacy-file backend persisted at acceptance
+  status: implemented
+  implementation: ['backend/BackendSelector.java', 'backend/LegacyErp1Backend.java']
+  tests: ['AcceptanceScenariosTest.acceptedIsCommittedBeforeTheResponse (backend stored)']
+  commands: ['./mvnw verify -DskipITs=false -Pcontainers']
+  evidence: ['evidence/03-test-suite.txt']
+  deployment: {}
+  limitations: ['Only one backend exists, so routing changes are not exercised.']
+- id: FUL-STATUS01
+  description: Status reports acceptance, upload, ERP acknowledgement and outcome separately
+  status: live_verified
+  implementation: ['domain/FulfillmentView.java']
+  tests: ['AcceptanceScenariosTest.readsNeedATokenUnderTheDefaultPolicy', 'scenarios.py']
+  commands: ['./mvnw verify -DskipITs=false -Pcontainers', 'WORK=<scratch> REPO=<clone> python3 -I evidence/scripts/scenarios.py']
+  evidence: ['evidence/03-test-suite.txt', 'evidence/04-scenarios-erp-harness.txt', 'evidence/05-after-review.txt', 'evidence/07-release-live.txt']
+  deployment: {image_digest: "sha256:9247f98fee515d8fad98d9c4665e84c9464dc2be94a02215958b9cc54ec6a931", gitops_commit: "3668f3b2400ae49d25dab0ae5e79944e70675720"}
+  limitations: []
+- id: FUL-DLQ01
+  description: Poison events go to a bounded DLQ path and a durable record
+  status: deployed
+  implementation: ['messaging/FulfillmentRequestedConsumer.java', 'store/RejectedCommandStore.java']
+  tests: ['KafkaInputTest']
+  commands: ['./mvnw verify -DskipITs=false -Pcontainers']
+  evidence: ['evidence/03-test-suite.txt', 'evidence/05-after-review.txt', 'evidence/07-release-live.txt']
+  deployment: {image_digest: "sha256:9247f98fee515d8fad98d9c4665e84c9464dc2be94a02215958b9cc54ec6a931", gitops_commit: "3668f3b2400ae49d25dab0ae5e79944e70675720"}
+  limitations: ['Cluster topic box1.fulfillment.dlq.v1 does not exist (D-009).']
+- id: FUL-CI
+  description: CI checks pass on the service PR
+  status: ci_verified
+  implementation: []
+  tests: []
+  commands: ['PR pipeline on fulfillment-adapter#1']
+  evidence: ['evidence/06-ci.txt', 'evidence/05-after-review.txt']
+  deployment: {}
+  limitations: []
+- id: FUL-GATE
+  description: Release security gates pass
+  status: ci_verified
+  implementation: ['.tekton/release.yaml']
+  tests: []
+  commands: []
+  evidence: ['evidence/07-release-live.txt']
+  deployment: {}
+  limitations: []
+- id: FUL-DEPLOY
+  description: Immutable digest deployed through the GitOps promotion and Argo
+  status: live_verified
+  implementation: []
+  tests: []
+  commands: []
+  evidence: ['evidence/07-release-live.txt']
+  deployment: {image_digest: "sha256:9247f98fee515d8fad98d9c4665e84c9464dc2be94a02215958b9cc54ec6a931", gitops_commit: "3668f3b2400ae49d25dab0ae5e79944e70675720"}
+  limitations: ['Rollback not exercised.']
+- id: FUL-REVIEW
+  description: Six reviewer passes completed; findings fixed or recorded; full suite rerun after repairs
+  status: locally_tested
+  implementation: ['review-findings/*.md']
+  tests: ['full suite', 'scenarios.py', 'tui_ship.py']
+  commands: ['./mvnw verify -DskipITs=false -Pcontainers', 'python3 -I evidence/scripts/scenarios.py']
+  evidence: ['evidence/05-after-review.txt']
+  deployment: {}
+  limitations: ['Same-model review; does not replace human PR review.']

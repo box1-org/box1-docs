@@ -4,7 +4,7 @@
 
 **Status:** Delivered and live in `fulfillment-adapter-dev`. Acceptance is partial: the ERP VM does not exist yet ([#25](https://github.com/box1-org/box1-docs/issues/25)), so SFTP dispatch is off on the cluster. [box1-docs#13](https://github.com/box1-org/box1-docs/issues/13) stays open with 13 of 15 boxes ticked, each with its proof level stated in an issue comment.
 
-This was a `frontier` profile run. Its run state, decisions, evidence, review findings and pilot log are on branch [`agent-run/13-fulfillment-adapter`](https://github.com/box1-org/box1-docs/tree/agent-run/13-fulfillment-adapter/agent-runs/13-fulfillment-adapter). That branch is not merged.
+This was a `frontier` profile run. Its run state, decisions, evidence, review findings and pilot log are in [`agent-runs/13-fulfillment-adapter/`](../../agent-runs/13-fulfillment-adapter/).
 
 ## Outcome
 

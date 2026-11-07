@@ -1,0 +1,55 @@
+# Phase 6 delivery and Phase 7 live checks
+captured 2026-11-05 20:49-21:15 EST (read-only cluster commands and public Route requests)
+
+## Approvals used (user, 2026-11-05 ~20:47 EST)
+- "do the merges", which covers the four run PRs; the user created the database Secret themselves before 20:50 EST.
+- Explicit answer approving a box1-kafka sync of the single KafkaTopic box1.fulfillment.dlq.v1 (prune off), then the merge of fulfillment-adapter#1.
+
+## Merges and sync
+- box1-ops-contracts#8 merged: d21d91fabf7dbffd856786fe6515b6cc00b429a9
+- box1-gitops#64 merged: 0f5ff2d3e42f8b0c7bc3a0c68e5c6c1faa0ed58b
+- Secret fulfillment-adapter-postgres present (created 01:49:38Z by the user; key names only checked: POSTGRESQL_DATABASE, POSTGRESQL_PASSWORD, POSTGRESQL_USER, QUARKUS_DATASOURCE_PASSWORD)
+- box1-workloads-dev#65 merged: ff2595bcf89e6e2f44a2c15aa6248246777b2d55. Argo fulfillment-adapter Synced/Healthy at 5ec7bf5 (contains ff2595b; that commit added only asset-service files from run 15). PostgreSQL Ready, PVC Bound 5Gi.
+- box1-kafka sync (operation field, resources=[KafkaTopic box1-kafka/box1.fulfillment.dlq.v1], prune false, revision 0f5ff2d): Succeeded. The only OutOfSync resource beforehand was that topic. KafkaTopic Ready=True, 3 partitions, retention 1209600000. box1-kafka Synced/Healthy afterwards.
+- fulfillment-adapter#1 merged: 0a44cc6ecd2d852b170bcdf725d946e6901faf32 (21:09 EST)
+
+## Release pipeline box1-ci/fulfillment-adapter-release-kz42z (sha 0a44cc6): Succeeded
+build Succeeded; security (box1-security-gates, enforcement gate) Succeeded; promote Succeeded; smoke Succeeded; fulfillment-api-smoke Succeeded
+results: image-digest=sha256:9247f98fee515d8fad98d9c4665e84c9464dc2be94a02215958b9cc54ec6a931
+         gitops-pr=https://github.com/box1-org/box1-workloads-dev/pull/73  (merged: MERGED 2026-11-06T02:12:34Z 3668f3b2400ae49d25dab0ae5e79944e70675720)
+         gitops-revision=3668f3b2400ae49d25dab0ae5e79944e70675720
+
+## Argo and pod
+- Application fulfillment-adapter: Synced/Healthy at 3668f3b2400ae49d25dab0ae5e79944e70675720
+- Pod fulfillment-adapter-8687b98fcb-hfrgr Running, 0 restarts, imageID ...fulfillment-adapter@sha256:9247f98fee515d8fad98d9c4665e84c9464dc2be94a02215958b9cc54ec6a931 (matches the pipeline digest)
+- oc adm top: adapter 11m CPU / 214Mi; postgres 4m / 33Mi (idle, no load)
+
+## Public Route https://fulfillment-adapter-dev.apps.ocp.box1.org
+- GET /api/info -> gitRef 0a44cc6ecd2d852b170bcdf725d946e6901faf32, javaVersion 21
+- GET /q/health/ready -> 200
+- anonymous POST /api/fulfillments -> 401 (also asserted by the pipeline's fulfillment-api-smoke)
+- anonymous POST /internal/fulfillments/ful_x/reconcile -> 401
+- GET /api/fulfillments/ful_does_not_exist -> 404 problem+json (read policy permit, D-016)
+- /q/metrics: fulfillment_backlog 0, fulfillment_queued 0, fulfillment_needs_attention 0, fulfillment_metrics_refresh_age_seconds 4.3
+- fulfillment_events_consumed_total{outcome="ignored_other_type"} 2: the new group read the two retained order.placed.v1 events from earliest and ignored them; no dead letters, no fulfillment.requested.v1 present (consistent with D-010)
+
+## Logs (pod, summarised)
+Flyway applied V1 (PostgreSQL 15.19); "SFTP is disabled: accepted requests stay queued"; no ERROR lines.
+
+## Not done (needs approval or #25)
+- No live fulfillment created: REST needs a Keycloak client (D-002); Kafka needs a live order or event (D-015).
+- No SFTP dispatch: VM (#25) and credential (D-007) do not exist.
+
+## Keycloak client (captured 2026-11-05 21:30 EST)
+- box1-gitops#69 merged as 60cf7038a6cab5857c13a21319dcedab34f58f4c with the user's approval ("do the merge"); checks: onboarding-plugin-guard and phase1-smoke passed.
+- Argo keycloak Synced/Healthy at 60cf703; KeycloakClient keycloak/fulfillment-adapter ready=true. Realm discovery returns 200.
+- Not verified: the fulfillment-writer client role exists (needs the admin console or admin credentials, which this run does not use).
+
+## First live REST fulfillment (captured 2026-11-05 21:43 EST)
+- The user granted fulfillment-writer to `mike` in the admin console and confirmed the token claims (iss box1, aud fulfillment-adapter, role fulfillment-writer). The user ran a PKCE login and the POST themselves; this run never held the token.
+- POST /api/fulfillments ful_demo1 (ord_demo1, res_demo1, site_nyc, SKU-42, 1) -> 202 (reported by the user), accepted 02:42:30Z.
+- GET /api/fulfillments/ful_demo1 (read policy permit): acceptance ACCEPTED, origin API, backend legacy-erp1, dispatch QUEUED, uploads 0, erpAcknowledgement NONE, outcome AWAITING_ERP (SFTP disabled, as configured).
+- The same POST with no token -> 401.
+- /q/metrics: fulfillment_backlog 1, fulfillment_queued 1, fulfillment_accepted_total{origin="API",result="CREATED"} 1 (exemplar trace 169619a3...), fulfillment_needs_attention 0, oldest_unacknowledged_seconds 15.7.
+- Pod log, JSON: "Fulfillment request created: origin=API backend=legacy-erp1" with MDC fulfillmentRequestId=ful_demo1, orderId=ord_demo1, traceId=169619a399c612416085f87c5df11a46.
+- Note: ful_demo1 stays queued and will be uploaded to the ERP as soon as SFTP is enabled. It can serve as the first VM round-trip request.
