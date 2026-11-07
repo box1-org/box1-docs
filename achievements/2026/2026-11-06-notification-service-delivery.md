@@ -4,7 +4,7 @@
 
 **Status:** Delivered and live in `notification-service-dev`. Acceptance is partial. [box1-docs#16](https://github.com/box1-org/box1-docs/issues/16) stays open: 3 of 8 boxes are ticked with cluster proof, and the proof level of every criterion is stated in an issue comment. The other five are proven by local tests against real PostgreSQL and Kafka, or in CI, but not on the cluster.
 
-This was a `frontier` profile run. Its run state, the decisions D-001 to D-014, the evidence, the six review-findings files and the pilot log are on branch [`agent-run/16-notification-service`](https://github.com/box1-org/box1-docs/tree/agent-run/16-notification-service/agent-runs/16-notification-service). That branch is not merged.
+This was a `frontier` profile run. Its run state, the decisions D-001 to D-014, the evidence, the six review-findings files and the pilot log are in [`agent-runs/16-notification-service/`](../../agent-runs/16-notification-service/).
 
 ## Outcome
 

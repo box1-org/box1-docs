@@ -1,0 +1,78 @@
+{
+  "issue": "box1-org/box1-docs#16",
+  "title": "Service 06 \u2014 Notification service",
+  "profile": "frontier",
+  "prompt": "box1_operations_agent_prompts/01-services/06_notification_service.md@0b75ee3 (branch notification-frontier; PR #69 open)",
+  "started": "2026-11-05T23:33-05:00",
+  "current_phase": "7 complete (cluster-provable requirements)",
+  "repositories": [
+    {
+      "name": "box1-org/notification-service",
+      "role": "target",
+      "base": "3db3fbcb7110dc93e82428014c7868a7da159c59",
+      "branch": "issue-16-notification",
+      "commit": "8b8c27698760ebbc91e50ea86ea91507ded1cdad",
+      "pr": "https://github.com/box1-org/notification-service/pull/1",
+      "ci": "box1-ci/notification-service-validate-7gp7r Succeeded"
+    },
+    {
+      "name": "box1-org/box1-docs",
+      "role": "run state",
+      "branch": "agent-run/16-notification-service"
+    },
+    {
+      "name": "box1-org/box1-ops-contracts",
+      "role": "notification schemas + TOPICS.md group",
+      "base": "d57a4ef",
+      "branch": "notification-events-v1",
+      "commit": "1078fd4",
+      "pr": "https://github.com/box1-org/box1-ops-contracts/pull/9"
+    },
+    {
+      "name": "box1-org/box1-workloads-dev",
+      "role": "deployment manifests",
+      "base": "7b5813d",
+      "branch": "run16-notification-runtime",
+      "commit": "16c05a8",
+      "pr": "https://github.com/box1-org/box1-workloads-dev/pull/94"
+    },
+    {
+      "name": "box1-org/box1-gitops",
+      "role": "DLQ topic, Keycloak client",
+      "base": "5e05888",
+      "prs": [
+        "https://github.com/box1-org/box1-gitops/pull/75 (run16-notification-dlq 37b9a0d)",
+        "https://github.com/box1-org/box1-gitops/pull/76 (run16-notification-keycloak f40d9ca)"
+      ]
+    }
+  ],
+  "worktrees": [
+    "/Users/mike/Documents/ChatGPT/box1/run16-docs",
+    "/Users/mike/Documents/ChatGPT/box1/run16-notification-service (clone)",
+    "/Users/mike/Documents/ChatGPT/box1/run16-contracts",
+    "/Users/mike/Documents/ChatGPT/box1/run16-gitops",
+    "/Users/mike/Documents/ChatGPT/box1/run16-workloads"
+  ],
+  "containers_prefix": "run16-",
+  "image_digest": "sha256:69788422d2f3beef94a255e4247ba3142f662f9edb25018489f2058edd5b363a",
+  "gitops_commit": "box1-workloads-dev ef17294 (promotion #108 1d54764)",
+  "review_passes_completed": [
+    "architecture",
+    "persistence",
+    "messaging",
+    "security",
+    "operations",
+    "release"
+  ],
+  "merged": {
+    "notification-service#1": "bacc353",
+    "box1-ops-contracts#9": "4748ff5",
+    "box1-gitops#75": "01cc506",
+    "box1-gitops#76": "ad5edd6",
+    "box1-workloads-dev#94": "ed5afc3",
+    "box1-workloads-dev#110": "2c8f93c",
+    "box1-workloads-dev#113": "ef17294",
+    "box1-ops-contracts#11": "c2b10e4",
+    "box1-gitops#80": "73d482e"
+  }
+}
