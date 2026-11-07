@@ -110,7 +110,7 @@ after installing their operators.
 | --- | --- | --- |
 | `ClusterPolicy/gpu-cluster-policy` | cluster | 2026-10-22 |
 | `NodeFeatureDiscovery/nfd-instance` | `openshift-nfd` | 2026-10-22 |
-| `LVMCluster/box1-storage` | `openshift-lvm-storage` | 2026-10-23 |
+| `LVMCluster/box1-storage` (`vg1` overprovisionRatio raised 1 → 2 on 2026-11-06) | `openshift-lvm-storage` | 2026-10-23 |
 | `StorageCluster/ocs-storagecluster` | `openshift-storage` | 2026-10-25 |
 | `HyperConverged/kubevirt-hyperconverged` | `openshift-cnv` | 2026-11-05 |
 

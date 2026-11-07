@@ -17,5 +17,5 @@ spec:
         chunkSizeCalculationPolicy: Static
         metadataSizeCalculationPolicy: Host
         name: thin-pool-1
-        overprovisionRatio: 1
+        overprovisionRatio: 2  # raised from 1 on 2026-11-06 (see achievements/2026/2026-11-06-pv-capacity-audit.md)
         sizePercent: 90
