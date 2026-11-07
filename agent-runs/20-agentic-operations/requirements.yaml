@@ -159,4 +159,4 @@
   commands: []
   evidence: []
   deployment: {}
-  limitations: ['Deferred by user decision 2026-11-06 (no persistent store); follow-up issue to file']
+  limitations: ['Deferred by user decision 2026-11-06 (no persistent store); follow-up #97']

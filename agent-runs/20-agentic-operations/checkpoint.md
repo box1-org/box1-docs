@@ -27,7 +27,7 @@ Phases 0 (discovery) and 1 (design) are complete as of 2026-11-06 22:30 EST. **T
 ## Open risks
 
 - Using the vLLM endpoint while it is anonymous and public.
-- A single replica with in-memory state: analyses are lost on restart, by design.
+- A single replica with in-memory state: analyses are lost on restart, by design. Reconfirmed by the user over PostgreSQL on 2026-11-06 (D-003). Durable state comes with the approval workflow, #97.
 - Kafka has no authentication (#71).
 
 ## Exact next action
