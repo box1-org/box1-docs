@@ -1,7 +1,7 @@
 # Inventory service: built, reviewed and deployed under the frontier profile
 
 **Date:** 2026-11-05 (America/New_York)
-**Status:** Deployed and partly live-verified. Closed as [box1-docs#12](https://github.com/box1-org/box1-docs/issues/12). The remaining live acceptance and follow-ups are in [box1-docs#47](https://github.com/box1-org/box1-docs/issues/47). Full run state, decisions and evidence are on branch [`agent-run/12-inventory-service`](https://github.com/box1-org/box1-docs/tree/agent-run/12-inventory-service/agent-runs/12-inventory-service).
+**Status:** Deployed and partly live-verified. Closed as [box1-docs#12](https://github.com/box1-org/box1-docs/issues/12). The remaining live acceptance and follow-ups are in [box1-docs#47](https://github.com/box1-org/box1-docs/issues/47). Full run state, decisions and evidence are in [`agent-runs/12-inventory-service/`](../../agent-runs/12-inventory-service/).
 
 ## Outcome
 
@@ -13,7 +13,7 @@ source  box1-org/inventory-service 6b722a3
 gitops  box1-org/box1-workloads-dev cd0c280 (Argo CD Synced/Healthy)
 ```
 
-This was the second run under the `frontier` execution profile, after the [order-service pilot](https://github.com/box1-org/box1-docs/tree/agent-run/11-order-service/agent-runs/11-order-service). The agent owned discovery through deployment and stopped only for approvals.
+This was the second run under the `frontier` execution profile, after the [order-service pilot](../../agent-runs/11-order-service/). The agent owned discovery through deployment and stopped only for approvals.
 
 ## Starting baseline
 

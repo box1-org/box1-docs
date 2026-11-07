@@ -1,0 +1,40 @@
+Local saga: real order-service main (0920f9a, built from git archive) with inventory-service 5bd69c7, PostgreSQL 15 and Kafka 4.2.0 in Podman.
+Run 2026-11-05 16:57-17:06 EST, workstation awake (caffeinate). Script: evidence/scripts/local-saga.py. Customer IDs are synthetic.
+
+PASS new order reached FULFILLMENT_REQUESTED and its hold COMMITTED ord_fb610bee7ede4211bcd82bfc9f4cebf6
+PASS order holds the published reservationId
+PASS available reflects one hold {'siteId': 'site_nyc', 'sku': 'SKU-42', 'onHand': 100, 'reserved': 2, 'available': 98, 'updatedAt': '2026-11-05T21:56:24.041025Z'}
+PASS retained orders stay SUBMITTED
+PASS no reservation for a retained order
+PASS skip counter counted the 2 retained orders ['box1_events_consumed_total{outcome="skipped_before_floor",type="order.placed.v1"} 2.0]
+PASS UNKNOWN_SKU moves Order to REJECTED
+PASS SITE_UNAVAILABLE moves Order to REJECTED
+PASS INSUFFICIENT_STOCK moves Order to REJECTED
+PASS final unit: one reserved and one rejected
+PASS no customer ID in inventory events
+PASS no customer ID in the inventory log
+PASS Order down past the TTL goes to EXCEPTION as ORDER-STATE says RESERVATION_EXPIRED
+PASS expired hold returned stock
+PASS a healthy order stays FULFILLMENT_REQUESTED past the TTL FULFILLMENT_REQUESTED
+PASS Order dead-letter topic stayed empty
+PASS Inventory dead-letter topic stayed empty
+PASS no drift
+PASS runbook replay of an applied event had no second effect
+LOAD orders=300 seconds=62 inventory_rss_peak_mib=242 ['box1_event_age_seconds_max 5.032', 'box1_outbox_publish_lag_seconds_max 1.987488']
+PASS load: one reservation per order, none lost
+PASS inventory live while the database is down
+PASS reads answer 503 while the database is down 503
+DB_RECOVERY ready after 0.2s
+PASS after a restart the unread signal beats a short TTL
+RESULT ALL PASS
+e2e exit=0
+
+Notes:
+- The floor run reproduces the cluster: two orders placed before the floor stay SUBMITTED, with no reservation and no inventory event.
+- "Order down past the TTL" used a 3 s TTL with no grace, on purpose. It is the case D-003 accepts.
+- The healthy-order step uses a 10 s TTL with no grace. An earlier run with 3 s failed: a just-restarted Order took longer than 3 s to answer, which is the test's own artefact, not a production setting (15 min).
+- Load: 300 orders at about 5/s through Order's API, -Xmx256m. Inventory RSS peak 242 MiB, max event age 5.0 s, max publish lag 2.0 s. Workstation only.
+- Database restart: inventory readiness returned in 0.2 s with no application restart.
+- Earlier run (16:52 EST) put the database restart before the load step, and load timed out. Order's log showed its
+  inventory-events consumer exceeding max.poll.interval during the outage, and the group lost it. Inventory reserved what
+  it received. Cause inside order-service is not established. Reported to the user; not in this run's scope.

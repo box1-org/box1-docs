@@ -1,0 +1,9 @@
+Pipelines as Code checks, observed 2026-11-05 America/New_York.
+
+inventory-service#1 at 5bd69c7: inventory-service-validate success. The CI task has no container runtime, so it runs the 35
+container-free tests (contract, security, greeting, gate unit tests), Checkstyle and SpotBugs. The scenario tests run only locally.
+box1-gitops#57 at f34d958: first box1-onboarding-plugin-guard run failed before starting, "secret pac-gitauth-... not found", a PAC
+  credential race. After /retest the guard succeeded. box1-phase1-smoke succeeded.
+box1-workloads-dev#57 at c13293b: box1-gitops-validate and box1-phase1-smoke success. An earlier run on 5c8986c was cancelled by PAC
+  when the next commit arrived.
+box1-ops-contracts#5: no checks are configured. npm run validate and npm test pass locally.

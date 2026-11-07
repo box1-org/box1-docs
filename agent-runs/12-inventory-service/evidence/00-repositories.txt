@@ -1,0 +1,25 @@
+Observed 2026-11-05 11:25-11:45 EST. Read-only.
+
+box1-docs            origin/main c151c2f. Run branch agent-run/12-inventory-service, worktree run12-docs.
+inventory-service    Exists. Created 2026-11-05 10:46 EST by Golden Path onboarding (templateVersion 1.1.0).
+                     main 5fed34f. Scaffold only: greeting, info, liveness. No PRs. No other branches.
+                     Description "The backend inventory service for box1 operations". Public.
+box1-ops-inventory   Does not exist. The prompt's proposed name is superseded by the user's instruction.
+order-service        origin/main 0920f9a (#4 merged). Deployed source is 4ec33fb. Release order-service-release-9kb6b was Pending at discovery.
+box1-ops-contracts   origin/main 0b25a9f. Open: #4 (order run).
+box1-workloads-dev   origin/main 30c6c2d. workloads/inventory-service/ exists from onboarding.
+box1-gitops          origin/main f66d95a.
+box1-templates       origin/main 702a052. #23 and #24 merged 2026-11-05. #25 closed unmerged, base image digest handled otherwise.
+quarkus-reference    Not changed; read only if needed.
+
+Contracts versus issue #12:
+- inventory.reserved, inventory.rejected, inventory.reservation-expired schemas exist. reasonCode is a free pattern, no enum.
+- postgres/migrations/inventory/V1__create_inventory.sql: table `stock` with available_quantity; issue wants inventory_stock(onHand). No outbox table. States ACTIVE, EXPIRED, RELEASED only.
+- No inventory OpenAPI.
+- TOPICS.md: `inventory` is a consumer of box1.order.events.v1 but not box1.fulfillment.events.v1. No inventory dead-letter topic.
+- OWNERSHIP.md: generated names replace the table's names; Inventory's mapping not stated.
+
+Scaffold versus order-service, gaps that matter:
+- .tekton/release.yaml has security-gates: disabled. order-service sets gate.
+- No Guava override (CVE-2026-102554 fix in order-service 121d7e6). Base image digest already current: sha256:cfa544ef...
+- The template skeleton has no Guava override either, so every new service inherits this.

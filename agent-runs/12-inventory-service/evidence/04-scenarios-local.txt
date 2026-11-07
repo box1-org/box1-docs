@@ -1,0 +1,105 @@
+Local suite with real PostgreSQL 15 (postgres:15-alpine) and Kafka 4.2.0 (apache/kafka) in Podman.
+Commit: 5bd69c759ff2d3821caf4839ac772041b9b6a09e (inventory-service, branch inventory-domain). Run 2026-11-05 12:22-12:28 EST.
+Command: DOCKER_HOST=<podman socket> TESTCONTAINERS_RYUK_DISABLED=true ./mvnw clean verify -Pcontainers -DskipITs=false
+
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.385 s -- in org.box1.GreetingResourceTest
+Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.502 s -- in org.box1.inventory.ContractTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.586 s -- in org.box1.inventory.SecurityTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.788 s -- in org.box1.inventory.DatabaseDownTest
+Tests run: 39, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 75.15 s -- in org.box1.inventory.ReservationScenariosTest
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in org.box1.GreetingServiceTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in org.box1.inventory.ExpiryGateTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.664 s -- in org.box1.inventory.MigrationTest
+Tests run: 71, Failures: 0, Errors: 0, Skipped: 0
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.253 s -- in org.box1.GreetingResourceIT
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 244.4 s -- in org.box1.inventory.ProcessRestartIT
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0
+You have 0 Checkstyle violations.
+BugInstance size is 0
+BUILD SUCCESS
+Total time:  05:47 min
+
+Test cases (surefire and failsafe reports):
+  pass GreetingResourceTest.rejectsBlankName 0.4s
+  pass GreetingResourceTest.allowsDeveloperHubApiTester 0.0s
+  pass GreetingResourceTest.exposesHealthAndJava21 0.2s
+  pass GreetingResourceTest.returnsJsonGreetingAndDefault 0.0s
+  pass GreetingResourceTest.publishesOpenApiAndPrometheusMetrics 0.1s
+  pass GreetingServiceTest.usesTheConfiguredPrefix 0.0s
+  pass GreetingServiceTest.greetsAndTrimsTheName 0.0s
+  pass GreetingServiceTest.rejectsMissingOrExcessivelyLongNames 0.0s
+  pass ContractTest.producedEventsMatchTheirSchemasAndEnvelope 0.3s
+  pass ContractTest.parserAcceptsEveryConsumedFixture 0.0s
+  pass ContractTest.producedEventsCarryNoCustomerId 0.0s
+  pass ContractTest.reasonCodesAreTheContractSet 0.1s
+  pass ContractTest.malformedEventsArePoison 0.0s
+  pass ContractTest.producedEventsMeetTheDeployedOrderConsumerRules 0.0s
+  pass ContractTest.generatedOpenApiCoversTheContract 0.1s
+  pass DatabaseDownTest.readinessFailsWhileLivenessAndHonestErrorsHold 0.3s
+  pass ExpiryGateTest.aLateEventClosesItAndAFreshOneDoesNot 0.0s
+  pass ExpiryGateTest.closedUntilTheStartupGraceEnds 0.0s
+  pass ExpiryGateTest.closedDuringRetriesAndForAGraceAfter 0.0s
+  pass ExpiryGateTest.anUnreachableBrokerClosesIt 0.0s
+  pass ExpiryGateTest.noGraceLeavesOnlyActiveRetries 0.0s
+  pass MigrationTest.migratesEmptyThenRerunsAsNoOpAndKeepsNoCredentials 1.7s
+  pass ReservationScenariosTest.historyRecordsTheTruePreviousStatus 0.1s
+  pass ReservationScenariosTest.restockIsAuthenticatedIdempotentAndAudited 0.1s
+  pass ReservationScenariosTest.aSchemaMismatchIsDeadLettered 6.3s
+  pass ReservationScenariosTest.reservedThroughKafkaPublishesOneContractEvent 3.3s
+  pass ReservationScenariosTest.releaseIsAuthenticatedRepeatableAndAudited 0.1s
+  pass ReservationScenariosTest.aRejectedOrderStaysRejectedAfterStockArrives 0.0s
+  pass ReservationScenariosTest.aSignalForAReservationThatIsNotThisOrdersOpensAnItem 0.0s
+  pass ReservationScenariosTest.aCommittedHoldDoesNotExpire 0.0s
+  pass ReservationScenariosTest.anEventAtTheFloorIsProcessed 0.1s
+  pass ReservationScenariosTest.customerDataIsNotKeptOrRepublished 0.0s
+  pass ReservationScenariosTest.theSameOrderInParallelDecidesOnce 0.0s
+  pass ReservationScenariosTest.shipmentEventsArriveThroughKafka 1.1s
+  pass ReservationScenariosTest.availableCannotGoNegativeEvenByDirectSql 0.0s
+  pass ReservationScenariosTest.aShipmentForAnotherRequestDoesNotConsumeACommittedHold 0.1s
+  pass ReservationScenariosTest.anUnavailableDatabaseHoldsPositionWithoutUsingAttempts 10.4s
+  pass ReservationScenariosTest.historyIsImmutable 0.1s
+  pass ReservationScenariosTest.redeliveryOfTheSameEventIdHasNoEffect 0.1s
+  pass ReservationScenariosTest.expiryRacingFulfillmentHasOneWinner 0.6s
+  pass ReservationScenariosTest.shipmentEdgeCasesOpenReconciliationItems 0.0s
+  pass ReservationScenariosTest.twoConcurrentOrdersForTheFinalUnit 0.4s
+  pass ReservationScenariosTest.aLateShipmentWithNoStockLeftIsRecordedAndChangesNothing 0.0s
+  pass ReservationScenariosTest.brokerOutageAfterCommitLosesNothing 15.2s
+  pass ReservationScenariosTest.expiryRacingShipmentHasOneWinner 0.6s
+  pass ReservationScenariosTest.invalidUtf8IsDeadLettered 6.1s
+  pass ReservationScenariosTest.aPoisonPayloadGoesToTheDeadLetterTopicAndTheNextEventStillRuns 6.2s
+  pass ReservationScenariosTest.aValueTheDatabaseCanNeverStoreIsDeadLetteredAtOnce 6.2s
+  pass ReservationScenariosTest.unknownSkuAndUnavailableSiteHaveStableReasons 0.1s
+  pass ReservationScenariosTest.retryExhaustionDeadLettersAndReplayAppliesOnce 6.6s
+  pass ReservationScenariosTest.historyAndConsumedStockAreAttributable 0.0s
+  pass ReservationScenariosTest.anEquivalentOrderUnderANewEventIdHasNoEffect 0.0s
+  pass ReservationScenariosTest.clockDrivenExpiryRestoresStockAndPublishesOnce 4.8s
+  pass ReservationScenariosTest.anEventBeforeTheFloorHasNoEffectAndItsOffsetAdvances 0.1s
+  pass ReservationScenariosTest.cancellationReleasesAnActiveHoldOnly 0.0s
+  pass ReservationScenariosTest.aRepeatedLateShipmentTakesStockOnce 0.0s
+  pass ReservationScenariosTest.theSameOrderWithADifferentPayloadIsPoisonAndLeavesNoRecord 0.0s
+  pass ReservationScenariosTest.theSeedFixtureIsLoaded 0.0s
+  pass ReservationScenariosTest.theReadApiShowsSiteSpecificAvailability 0.1s
+  pass ReservationScenariosTest.manyConcurrentOrdersAcrossSitesAndSkus 1.2s
+  pass ReservationScenariosTest.metricsExistAndStayConsistent 0.1s
+  pass SecurityTest.theRoleReachesValidation 0.1s
+  pass SecurityTest.anInvalidTokenOnAReadRouteIsRejected 0.0s
+  pass SecurityTest.aTokenWithoutTheRoleIsForbidden 0.0s
+  pass SecurityTest.platformPathsStayOpenForTheSmokeTask 0.0s
+  pass SecurityTest.anonymousMutationIsRejected 0.0s
+  pass SecurityTest.readRoutesExposeNoMutation 0.1s
+  pass SecurityTest.badTokensAreRejected 0.1s
+  pass SecurityTest.readsFailClosedByDefault 0.0s
+  pass SecurityTest.aRoleOutsideTheClientClaimIsForbidden 0.0s
+  pass SecurityTest.noOtherInternalRouteExists 0.2s
+  pass GreetingResourceIT.rejectsBlankName 0.5s
+  pass GreetingResourceIT.allowsDeveloperHubApiTester 0.1s
+  pass GreetingResourceIT.exposesHealthAndJava21 0.2s
+  pass GreetingResourceIT.returnsJsonGreetingAndDefault 0.0s
+  pass GreetingResourceIT.publishesOpenApiAndPrometheusMetrics 0.1s
+  pass ProcessRestartIT.crashBetweenCommitAndPublishPublishesAfterRestart 16.1s
+  pass ProcessRestartIT.withoutAValidFloorTheApplicationRefusesToStart 6.2s
+  pass ProcessRestartIT.prodProfileLogsAreStructuredAndFreeOfCustomerData 78.8s
+  pass ProcessRestartIT.killDuringMessageProcessingRedeliversAndAppliesOnce 90.2s
+  pass ProcessRestartIT.killDuringExpiryExpiresOnceAfterRestart 49.8s
+
+Earlier runs on this branch, kept for the pilot log: run1 at 967e2de failed historyIsImmutable (test bug); run2 and run3 at 967e2de/9d6deed found the lazy floor defect and the leaked-process cascade; run4 at 9d6deed passed 58+10; run5 at the repairs failed one security test (role check after body binding), fixed by ClientRoleAugmentor.
