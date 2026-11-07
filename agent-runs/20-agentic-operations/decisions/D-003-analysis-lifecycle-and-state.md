@@ -22,3 +22,9 @@
   - migrations and backups;
   - a 14th Postgres pod on the single node.
 - **Revisit with the approval workflow:** approval and execution records must be durable and auditable. The deferred runbook index would likely need pgvector. Tracked in [#97](https://github.com/box1-org/box1-docs/issues/97).
+
+## Amendments (review A-2, A-7, 2026-11-06)
+
+- The TTL counts from completion. An unfinished entry is held for the TTL from creation.
+- A submission reserves its queue slot before writing the store, so a BUSY rejection never evicts an existing analysis.
+- If every finding the model makes is uncited, the summary is replaced with fixed text (A-1).

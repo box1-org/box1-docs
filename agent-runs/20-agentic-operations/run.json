@@ -4,16 +4,16 @@
   "profile": "frontier",
   "prompt": "box1_operations_agent_prompts/01-services/10_ai_operations.md@12f0b11 (PR #96 merged)",
   "started": "2026-11-06T21:50-05:00",
-  "current_phase": "4 complete; CI green; phase 5 reviews next",
+  "current_phase": "5 complete (repairs CI-green); phase 6 PRs next",
   "repositories": [
     {
       "name": "box1-org/agentic-operations",
       "role": "target",
       "base": "61bcb8c38e4b5e6777c95d77b7398ea299b1ca5e",
       "branch": "issue-20-agentic-operations",
-      "commit": "bed8e44",
+      "commit": "0cf2604",
       "pr": "https://github.com/box1-org/agentic-operations/pull/1",
-      "ci": "agentic-operations-validate-9wksz Succeeded"
+      "ci": "agentic-operations-validate-6lt27 Succeeded"
     },
     {
       "name": "box1-org/box1-docs",
@@ -46,7 +46,14 @@
   "containers_prefix": "run20-",
   "image_digest": null,
   "gitops_commit": null,
-  "review_passes_completed": [],
+  "review_passes_completed": [
+    "architecture",
+    "messaging",
+    "security",
+    "operations",
+    "release",
+    "persistence (n/a)"
+  ],
   "onboarding": {
     "workloads_prs": [
       "box1-workloads-dev#146 fe383c6",

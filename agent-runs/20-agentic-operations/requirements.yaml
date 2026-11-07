@@ -6,8 +6,8 @@
   status: ci_verified
   implementation: ["src/main/java/org/box1/aiops/evidence/EvidenceService.java", "src/main/java/org/box1/aiops/analysis/AnalysisService.java"]
   tests: ["AnalysisApiTest.erpSlowdownReturnsCitedErpEvidenceAndStatesWhatIsUnavailable", "AnalysisApiTest.anAbsentSourceIsStatedAndDegradesTheAnalysis", "EvaluationTest (slow-erp, missing-evidence)"]
-  commands: ["./mvnw -B -ntp verify (agentic-operations bed8e44; 58 tests)", "CI agentic-operations-validate-9wksz (bed8e44) Succeeded"]
-  evidence: ["evidence/04-local-tests.md", "evidence/05-prod-profile-and-live-model.md", "evidence/06-ci.md"]
+  commands: ["./mvnw -B -ntp verify (agentic-operations 0cf2604; 69 tests)", "CI agentic-operations-validate-6lt27 (0cf2604) Succeeded"]
+  evidence: ["evidence/04-local-tests.md", "evidence/05-prod-profile-and-live-model.md", "evidence/06-ci.md", "evidence/07-review-repairs.md"]
   deployment: {}
   limitations: ['Live seeded ERP slowdown (erp-delayed-processing) not yet run; trace reference is an identifier only (Q-6)']
 - id: AIO-INJ-001
@@ -16,8 +16,8 @@
   status: ci_verified
   implementation: ["src/main/java/org/box1/aiops/analysis/Prompt.java", "src/main/java/org/box1/aiops/analysis/OutputValidator.java", "src/main/java/org/box1/aiops/window/EvidenceWindow.java"]
   tests: ["EvaluationTest (prompt-injection)", "EvidenceWindowTest.payloadKeepsOnlyBoundedScalarsSoInjectedTextStaysSmallData", "VllmModelClientTest.toolCallsAreRefused", "live probe evidence/05 (n=1)"]
-  commands: ["./mvnw -B -ntp verify (agentic-operations bed8e44; 58 tests)", "CI agentic-operations-validate-9wksz (bed8e44) Succeeded"]
-  evidence: ["evidence/04-local-tests.md", "evidence/05-prod-profile-and-live-model.md", "evidence/06-ci.md"]
+  commands: ["./mvnw -B -ntp verify (agentic-operations 0cf2604; 69 tests)", "CI agentic-operations-validate-6lt27 (0cf2604) Succeeded"]
+  evidence: ["evidence/04-local-tests.md", "evidence/05-prod-profile-and-live-model.md", "evidence/06-ci.md", "evidence/07-review-repairs.md"]
   deployment: {}
   limitations: ['Live probe is a single sample']
 - id: AIO-ROLE-001
@@ -26,8 +26,8 @@
   status: ci_verified
   implementation: ["src/main/java/org/box1/aiops/security/Guard.java"]
   tests: ["AnalysisApiTest.otherRolesAreRejected", "AnalysisApiTest.viewerCannotStartAnAnalysis", "AnalysisApiTest.tokensFromUnacceptedClientsAreRejected", "McpToolsTest.callersWithoutAnAiopsRoleGetNoEvidence", "EvaluationTest roleLeaks=0"]
-  commands: ["./mvnw -B -ntp verify (agentic-operations bed8e44; 58 tests)", "CI agentic-operations-validate-9wksz (bed8e44) Succeeded"]
-  evidence: ["evidence/04-local-tests.md", "evidence/05-prod-profile-and-live-model.md", "evidence/06-ci.md"]
+  commands: ["./mvnw -B -ntp verify (agentic-operations 0cf2604; 69 tests)", "CI agentic-operations-validate-6lt27 (0cf2604) Succeeded"]
+  evidence: ["evidence/04-local-tests.md", "evidence/05-prod-profile-and-live-model.md", "evidence/06-ci.md", "evidence/07-review-repairs.md"]
   deployment: {}
   limitations: ['Operator-only v1 (Q-4); no customer identity exists']
 - id: AIO-MODEL-001
@@ -36,8 +36,8 @@
   status: ci_verified
   implementation: ["src/main/java/org/box1/aiops/model/VllmModelClient.java", "src/main/java/org/box1/aiops/analysis/AnalysisService.java"]
   tests: ["AnalysisApiTest.modelDowntimeIsTypedAndInventsNothing", "AnalysisApiTest.invalidOrTruncatedOutputIsRejected", "AnalysisApiTest.orderServiceDownMeansNoDiagnosisAndNoModelCall", "VllmModelClientTest (7)"]
-  commands: ["./mvnw -B -ntp verify (agentic-operations bed8e44; 58 tests)", "CI agentic-operations-validate-9wksz (bed8e44) Succeeded"]
-  evidence: ["evidence/04-local-tests.md", "evidence/05-prod-profile-and-live-model.md", "evidence/06-ci.md"]
+  commands: ["./mvnw -B -ntp verify (agentic-operations 0cf2604; 69 tests)", "CI agentic-operations-validate-6lt27 (0cf2604) Succeeded"]
+  evidence: ["evidence/04-local-tests.md", "evidence/05-prod-profile-and-live-model.md", "evidence/06-ci.md", "evidence/07-review-repairs.md"]
   deployment: {}
   limitations: ['Model-down not exercised against the live endpoint']
 - id: AIO-NOEXEC-001
@@ -46,8 +46,8 @@
   status: ci_verified
   implementation: ["src/main/java/org/box1/aiops/analysis/OutputValidator.java", "src/main/java/org/box1/aiops/api/AnalysisResource.java", "src/main/java/org/box1/aiops/mcp/AiopsTools.java"]
   tests: ["AnalysisApiTest.uncitedFindingsAndUnlistedActionsAreDropped", "AnalysisApiTest.theApiHasNoWriteRoutes", "McpToolsTest.theCatalogHoldsOnlyReadOnlyEvidenceAndAnalysisTools"]
-  commands: ["./mvnw -B -ntp verify (agentic-operations bed8e44; 58 tests)", "CI agentic-operations-validate-9wksz (bed8e44) Succeeded"]
-  evidence: ["evidence/04-local-tests.md", "evidence/05-prod-profile-and-live-model.md", "evidence/06-ci.md"]
+  commands: ["./mvnw -B -ntp verify (agentic-operations 0cf2604; 69 tests)", "CI agentic-operations-validate-6lt27 (0cf2604) Succeeded"]
+  evidence: ["evidence/04-local-tests.md", "evidence/05-prod-profile-and-live-model.md", "evidence/06-ci.md", "evidence/07-review-repairs.md"]
   deployment: {}
   limitations: []
 - id: AIO-MCP-001
@@ -56,8 +56,8 @@
   status: ci_verified
   implementation: ["src/main/java/org/box1/aiops/mcp/AiopsTools.java", "src/main/java/org/box1/aiops/mcp/ToolAudit.java"]
   tests: ["McpToolsTest (8)"]
-  commands: ["./mvnw -B -ntp verify (agentic-operations bed8e44; 58 tests)", "CI agentic-operations-validate-9wksz (bed8e44) Succeeded"]
-  evidence: ["evidence/04-local-tests.md", "evidence/05-prod-profile-and-live-model.md", "evidence/06-ci.md"]
+  commands: ["./mvnw -B -ntp verify (agentic-operations 0cf2604; 69 tests)", "CI agentic-operations-validate-6lt27 (0cf2604) Succeeded"]
+  evidence: ["evidence/04-local-tests.md", "evidence/05-prod-profile-and-live-model.md", "evidence/06-ci.md", "evidence/07-review-repairs.md"]
   deployment: {}
   limitations: []
 - id: AIO-PARITY-001
@@ -66,8 +66,8 @@
   status: ci_verified
   implementation: ["src/main/java/org/box1/aiops/mcp/AiopsTools.java"]
   tests: ["McpToolsTest.restAndMcpUseTheSameEvidenceAndDecisions", "EvaluationTest (REST and MCP status per case)"]
-  commands: ["./mvnw -B -ntp verify (agentic-operations bed8e44; 58 tests)", "CI agentic-operations-validate-9wksz (bed8e44) Succeeded"]
-  evidence: ["evidence/04-local-tests.md", "evidence/05-prod-profile-and-live-model.md", "evidence/06-ci.md"]
+  commands: ["./mvnw -B -ntp verify (agentic-operations 0cf2604; 69 tests)", "CI agentic-operations-validate-6lt27 (0cf2604) Succeeded"]
+  evidence: ["evidence/04-local-tests.md", "evidence/05-prod-profile-and-live-model.md", "evidence/06-ci.md", "evidence/07-review-repairs.md"]
   deployment: {}
   limitations: []
 - id: AIO-RESTART-001
@@ -76,8 +76,8 @@
   status: ci_verified
   implementation: ["src/main/java/org/box1/aiops/analysis/AnalysisStore.java", "src/main/java/org/box1/aiops/window/WindowStartSeek.java"]
   tests: ["AnalysisStoreTest.aNewStoreAfterARestartKnowsNothing", "ConsumerWiringTest.readinessDoesNotIncludeKafkaOrTheModel", "prod-profile jar readiness with Kafka unreachable (evidence/05)"]
-  commands: ["./mvnw -B -ntp verify (agentic-operations bed8e44; 58 tests)", "CI agentic-operations-validate-9wksz (bed8e44) Succeeded"]
-  evidence: ["evidence/04-local-tests.md", "evidence/05-prod-profile-and-live-model.md", "evidence/06-ci.md"]
+  commands: ["./mvnw -B -ntp verify (agentic-operations 0cf2604; 69 tests)", "CI agentic-operations-validate-6lt27 (0cf2604) Succeeded"]
+  evidence: ["evidence/04-local-tests.md", "evidence/05-prod-profile-and-live-model.md", "evidence/06-ci.md", "evidence/07-review-repairs.md"]
   deployment: {}
   limitations: ['Seek-to-time rebuild not exercised against a real broker']
 - id: AIO-CITE-001
@@ -86,8 +86,8 @@
   status: ci_verified
   implementation: ["src/main/java/org/box1/aiops/evidence/EvidenceItem.java", "src/main/java/org/box1/aiops/analysis/OutputValidator.java"]
   tests: ["AnalysisApiTest.erpSlowdownReturnsCitedErpEvidenceAndStatesWhatIsUnavailable", "OutputValidatorTest (4)"]
-  commands: ["./mvnw -B -ntp verify (agentic-operations bed8e44; 58 tests)", "CI agentic-operations-validate-9wksz (bed8e44) Succeeded"]
-  evidence: ["evidence/04-local-tests.md", "evidence/05-prod-profile-and-live-model.md", "evidence/06-ci.md"]
+  commands: ["./mvnw -B -ntp verify (agentic-operations 0cf2604; 69 tests)", "CI agentic-operations-validate-6lt27 (0cf2604) Succeeded"]
+  evidence: ["evidence/04-local-tests.md", "evidence/05-prod-profile-and-live-model.md", "evidence/06-ci.md", "evidence/07-review-repairs.md"]
   deployment: {}
   limitations: []
 - id: AIO-BUSY-001
@@ -96,8 +96,8 @@
   status: ci_verified
   implementation: ["src/main/java/org/box1/aiops/analysis/AnalysisService.java"]
   tests: ["AnalysisApiTest.theQueueIsBoundedAndExcessRequestsAreBusy"]
-  commands: ["./mvnw -B -ntp verify (agentic-operations bed8e44; 58 tests)", "CI agentic-operations-validate-9wksz (bed8e44) Succeeded"]
-  evidence: ["evidence/04-local-tests.md", "evidence/05-prod-profile-and-live-model.md", "evidence/06-ci.md"]
+  commands: ["./mvnw -B -ntp verify (agentic-operations 0cf2604; 69 tests)", "CI agentic-operations-validate-6lt27 (0cf2604) Succeeded"]
+  evidence: ["evidence/04-local-tests.md", "evidence/05-prod-profile-and-live-model.md", "evidence/06-ci.md", "evidence/07-review-repairs.md"]
   deployment: {}
   limitations: []
 - id: AIO-KAFKA-001
@@ -106,18 +106,18 @@
   status: ci_verified
   implementation: ["src/main/java/org/box1/aiops/window/EvidenceWindow.java", "src/main/java/org/box1/aiops/window/EventConsumer.java"]
   tests: ["EvidenceWindowTest (7)", "ConsumerWiringTest (2)"]
-  commands: ["./mvnw -B -ntp verify (agentic-operations bed8e44; 58 tests)", "CI agentic-operations-validate-9wksz (bed8e44) Succeeded"]
-  evidence: ["evidence/04-local-tests.md", "evidence/05-prod-profile-and-live-model.md", "evidence/06-ci.md"]
+  commands: ["./mvnw -B -ntp verify (agentic-operations 0cf2604; 69 tests)", "CI agentic-operations-validate-6lt27 (0cf2604) Succeeded"]
+  evidence: ["evidence/04-local-tests.md", "evidence/05-prod-profile-and-live-model.md", "evidence/06-ci.md", "evidence/07-review-repairs.md"]
   deployment: {}
-  limitations: ['Not run against the live broker; consumer group not yet in TOPICS.md (Q-7)']
+  limitations: ['Not run against the live broker; consumer group not yet in TOPICS.md (Q-7); one replica with Recreate required (runtime PR)']
 - id: AIO-AUDIT-001
   description: "Tool-call audit metadata complete and free of evidence content"
   source: 'Interfaces: MCP surface; scenario: audit; D-004, D-012'
   status: ci_verified
   implementation: ["src/main/java/org/box1/aiops/mcp/ToolAudit.java"]
   tests: ["McpToolsTest (audit lines emitted per call; content not logged by construction)"]
-  commands: ["./mvnw -B -ntp verify (agentic-operations bed8e44; 58 tests)", "CI agentic-operations-validate-9wksz (bed8e44) Succeeded"]
-  evidence: ["evidence/04-local-tests.md", "evidence/05-prod-profile-and-live-model.md", "evidence/06-ci.md"]
+  commands: ["./mvnw -B -ntp verify (agentic-operations 0cf2604; 69 tests)", "CI agentic-operations-validate-6lt27 (0cf2604) Succeeded"]
+  evidence: ["evidence/04-local-tests.md", "evidence/05-prod-profile-and-live-model.md", "evidence/06-ci.md", "evidence/07-review-repairs.md"]
   deployment: {}
   limitations: ['No automated assertion on log content']
 - id: AIO-EVAL-001
@@ -126,8 +126,8 @@
   status: ci_verified
   implementation: ["src/test/java/org/box1/aiops/EvaluationTest.java", "src/test/resources/eval/cases.json"]
   tests: ["EvaluationTest"]
-  commands: ["./mvnw -B -ntp verify (agentic-operations bed8e44; 58 tests)", "CI agentic-operations-validate-9wksz (bed8e44) Succeeded"]
-  evidence: ["evidence/04-local-tests.md", "evidence/05-prod-profile-and-live-model.md", "evidence/06-ci.md"]
+  commands: ["./mvnw -B -ntp verify (agentic-operations 0cf2604; 69 tests)", "CI agentic-operations-validate-6lt27 (0cf2604) Succeeded"]
+  evidence: ["evidence/04-local-tests.md", "evidence/05-prod-profile-and-live-model.md", "evidence/06-ci.md", "evidence/07-review-repairs.md"]
   deployment: {}
   limitations: ['Pipeline scoring with a deterministic model; live box1-coder evaluation is two single-sample probes']
 - id: AIO-OPS-001
@@ -136,8 +136,8 @@
   status: ci_verified
   implementation: ["src/main/resources/application.properties", "docs/index.md"]
   tests: ["prod-profile jar run (evidence/05)"]
-  commands: ["./mvnw -B -ntp verify (agentic-operations bed8e44; 58 tests)", "CI agentic-operations-validate-9wksz (bed8e44) Succeeded"]
-  evidence: ["evidence/04-local-tests.md", "evidence/05-prod-profile-and-live-model.md", "evidence/06-ci.md"]
+  commands: ["./mvnw -B -ntp verify (agentic-operations 0cf2604; 69 tests)", "CI agentic-operations-validate-6lt27 (0cf2604) Succeeded"]
+  evidence: ["evidence/04-local-tests.md", "evidence/05-prod-profile-and-live-model.md", "evidence/06-ci.md", "evidence/07-review-repairs.md"]
   deployment: {}
   limitations: ['ServiceMonitor, PrometheusRule and resources pending the box1-workloads-dev runtime PR']
 - id: AIO-RAG-001

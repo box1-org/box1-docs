@@ -7,3 +7,7 @@
 - The incident type is re-derived from order state with the same rules as the console: `ORDER_EXCEPTION`, `AWAITING_ERP_TOO_LONG`, or `NONE`. The threshold `AIOPS_STUCK_THRESHOLD` defaults to `10m`, the same as `console.stuck-threshold`. The service does not copy console code; the rule is small and both sides are tested.
 - An order with no current incident can still be analyzed. The analysis then reports a "healthy control" result and must not invent a fault.
 - The service keeps no incident store. Incidents stay derived, as in the console.
+
+## Amendment (review A-4, 2026-11-06)
+
+An order in `FULFILLMENT_REQUESTED` is `AWAITING_ERP_TOO_LONG` at any age, matching the console's `Incidents.current()` on its evidence page. The prompt also receives `minutesAwaitingErp`. The threshold now matters only in the console's list view.

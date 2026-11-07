@@ -13,3 +13,12 @@
 - **Poison records** (unparseable, missing envelope fields or unknown `eventType`): skipped, counted in `aiops_kafka_records_skipped_total{topic,reason}`, and logged with topic, partition and offset only. Nothing is written to any DLQ: the service is read-only and does not own the DLQs.
 - **Health and metrics:** Kafka is not part of readiness. The window exposes `aiops_window_events`, `aiops_window_oldest_age_seconds` and per-partition consumer lag. An empty window reads as "no recent events", never as an error.
 - **Retry path:** the contract requires a bounded retry path. That is met by skipping, because the window is a best-effort cache and the authoritative state stays in the owning services' APIs.
+
+## Amendments (review M-2 to M-6, S-2, S-3, 2026-11-06)
+
+- Group ID: `AIOPS_CONSUMER_GROUP`, default `agentic-operations`. Each environment gets its own declared group. One replica with the `Recreate` strategy: the window is per pod.
+- Payloads keep only the contract fields of each event type (`KEPT`), not every scalar.
+- A correlation index is added (`forCorrelation`), and `list_recent_events` accepts `correlationId`.
+- Pruning and the oldest-age gauge go by `occurredAt`, not by arrival order.
+- The envelope also requires `schemaVersion == 1` and a 1–128 character `causationId`.
+- A seek failure is caught and counted (`aiops_window_seek_failures_total`). The window then fills from now.

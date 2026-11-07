@@ -28,3 +28,7 @@
 - **Arguments:** validated against the contracts' ID patterns. An unknown tool or invalid arguments return a protocol error, and no upstream call is made.
 - **Results:** structured content `{untrusted: true, source, retrievedAt, retrievalStatus, data}`. Text fields are bounded in length.
 - **Audit:** an INFO log line per call with tool, subject, roles, decision, duration, result bytes and traceId. It never contains argument values beyond IDs, nor any evidence content.
+
+## Amendment (review S-4, S-5, 2026-11-06)
+
+The HTTP permission on `/mcp*` and `/api/v1/ai/*` now requires an `aiops-*` role, not only authentication. `Guard` still enforces roles and the accepted client in the service layer. The audit log records a caller ID only when it has a known shape.

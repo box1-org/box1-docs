@@ -2,11 +2,12 @@
 
 ## Current phase
 
-Phase 4 is complete locally (2026-11-06 23:10 EST).
+Phase 5 is complete (2026-11-06 23:45 EST).
 
-- Service PR [agentic-operations#1](https://github.com/box1-org/agentic-operations/pull/1) is open at `bed8e44`. CI `agentic-operations-validate-9wksz` **Succeeded** (58 tests and 5 ITs, `evidence/06`).
-- Ledger: 14 requirements `ci_verified`, 2 `superseded`.
-- Evidence: `evidence/04` (58 tests and the evaluation report) and `evidence/05` (production-profile jar and live model probe).
+- **Reviews:** five reviewer passes ran in fresh subagents: architecture, messaging, security, operations and release. Persistence is not applicable. They found no high-severity issues.
+- **Repairs:** the in-scope findings are repaired on agentic-operations#1 at `0cf2604` (`evidence/07`). CI `agentic-operations-validate-6lt27` is green, with 69 tests and 5 ITs.
+- **Ledger:** 14 requirements `ci_verified`, 2 `superseded`.
+- **Open findings:** they need the three platform PRs (M-1/A-3/R-1, R-4, WR-1 to WR-3) or are accepted (M-7, R-2).
 
 ## Completed
 
@@ -40,11 +41,15 @@ Phase 4 is complete locally (2026-11-06 23:10 EST).
 
 ## Exact next action
 
-1. Phase 5: run the reviewer passes (architecture, messaging, security, operations, release) in fresh subagents, using the diff `61bcb8c..issue-20-agentic-operations`, the prompt and the contracts. Persistence is not applicable because there is no database. Record each pass in `review-findings/`, repair what they find, and rerun `./mvnw -B -ntp verify`.
-2. Open three PRs. Each needs the user's approval before merge:
-   - box1-ops-contracts: the `TOPICS.md` group change (Q-7);
-   - box1-gitops: the `agentic-operations` and `agentic-operations-cli` KeycloakClients (Q-5);
-   - box1-workloads-dev: runtime env, resources, replicas 1, ServiceMonitor and PrometheusRule.
-3. Raise the anonymous public vLLM route on #26, after the user agrees.
+1. Phase 6: open three PRs. Each needs the user's approval before merge:
+   - **box1-ops-contracts:** in `TOPICS.md`, rename `ai-operations` to `agentic-operations` on telemetry and add it to the order, inventory, fulfillment and notification rows (Q-7).
+   - **box1-gitops:** KeycloakClients `agentic-operations` (confidential, roles `aiops-viewer` and `aiops-analyst`, no upstream grants in v1) and `agentic-operations-cli` (public, PKCE, audience mapper and role scope mapping), following `scenario-controller-client.yaml` and `scenario-controller-cli-client.yaml` (Q-5).
+   - **box1-workloads-dev:** `strategy: Recreate`, `replicas: 1`, and Deployment `env` for the runtime URLs, `AIOPS_ALLOWED_AZP`, `AIOPS_CONSUMER_GROUP` and the OTel attributes. Also a ServiceMonitor and a PrometheusRule (model unavailable, window not refilling, pod down), copied from notification-service.
+2. Link the three PRs from agentic-operations#1.
+3. After the user merges them in order, merge #1, then watch the release, promotion, digest and Argo.
+4. Phase 7, live acceptance, after approval:
+   - `erp-delayed-processing` through the scenario controller, analyzed through REST and through an MCP client;
+   - the anonymous 401 checks, the trace linkage, the window refill time, and `oc adm top` during the replay.
+5. File a follow-up for per-service release smoke checks (R-2). Raise the anonymous vLLM route on #26, once the user agrees.
 
-Still open: Q-5 (Keycloak PR), Q-6 (deferred RBAC) and Q-7 (contracts PR).
+Still open: Q-5 and Q-7 (PR approvals) and Q-6 (deferred RBAC).
