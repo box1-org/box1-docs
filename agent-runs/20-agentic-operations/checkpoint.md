@@ -2,7 +2,7 @@
 
 ## Current phase
 
-**Phase 7 is partly done** (2026-11-07 00:50 EST, `evidence/10-live-acceptance.md`). Live REST and MCP analysis of a real order: cited evidence, identical evidence through REST and MCP, trace across 4 services, clean audit logs. The token came from a device login approved by `mike`. Ledger: 5 `live_verified`, 9 `deployed`, 2 `superseded`. The seeded ERP slowdown waits for the user's approval.
+**Phase 7 is complete, except the live seeded ERP slowdown, which the user waived on 2026-11-07** (`open-decisions.md`). Handoff: `handoff.md`. Ledger: 5 `live_verified`, 9 `deployed`, 2 `superseded`.
 
 **Phase 6 is complete** (2026-11-07 00:35 EST). See `evidence/09-delivery.md`.
 
@@ -53,12 +53,4 @@ Phase 5 is complete (2026-11-06 23:45 EST).
 
 ## Exact next action
 
-1. With the user's approval, run `erp-delayed-processing` through the scenario controller in its allowlisted demo namespace (see 09_scenario_controller.md). Analyze the resulting `AWAITING_ERP_TOO_LONG` incident through REST and MCP, then stop or reset the scenario. Record this in `evidence/11`, then move AIO-ERP-001 and AIO-MODEL-related entries up if they are proven.
-2. Optional, needs approval: a pod restart, to observe the analysis 404 and the window refill live.
-3. Follow-ups to propose to the user:
-   - the `SCAN_OUTPUT` false failure (on #42);
-   - per-service release smoke checks (R-2);
-   - the anonymous public vLLM route (on #26);
-   - MCP requests have no server span;
-   - RAG and persistent state are #97.
-4. Handoff (`05_HANDOFF_TEMPLATE.md`), then the achievement log when the user asks.
+None required for #20. Offer the follow-ups listed in `handoff.md`. Write the achievement log when the user asks for it.

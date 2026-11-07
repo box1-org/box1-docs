@@ -20,3 +20,10 @@ Updated 2026-11-07 00:10 EST. Each item is an approval or a product decision und
 4. agentic-operations#1: the service.
 
 Wait about 10 seconds between merges (box1-docs#64).
+
+## Waived
+
+- **Live seeded ERP slowdown** (AIO-ERP-001 at phase 7). Waived by the user on 2026-11-07 ("Skip ERP scenario").
+  - Reason: `erp-delayed-processing` needs ERP demo faults (off in the cluster image, #83 item 2) and a person at the ERP console.
+  - `erp-manual-hold` was offered as an alternative and declined.
+  - The requirement stays `deployed`, proven in CI and the evaluation.
