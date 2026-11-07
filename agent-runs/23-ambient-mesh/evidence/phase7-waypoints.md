@@ -56,3 +56,39 @@
 | **L4 (ztunnel, Kiali TCP)** | every connection between workloads, mTLS on/off, bytes; service → Postgres; traffic to and from systems outside the mesh as `unknown` | requests, status codes, latency, anything per order |
 | **L7 (waypoints, Kiali HTTP)** | requests per edge with response codes, latency histograms and caller identity (SPIFFE principal), for console → order and console → inventory only | Kafka (most of the order flow), Postgres (opted out), Route and Prometheus traffic (from outside the mesh, no waypoint) |
 | **Tempo trace** | one order end to end through REST and Kafka: 4 services, 22 spans, causal order | transport security; whether a hop crossed the mesh |
+
+## Tracing fix (box1-gitops#98) and the waypoint spans
+- [box1-gitops#98](https://github.com/box1-org/box1-gitops/pull/98), squash-merged at the user's instruction as `68b16f4` (23:11:19 EST). `observability-tracing` was synced: `Succeeded`, `Synced`/`Healthy`.
+- `box1-observability` now has `istio-discovery: enabled` (no `dataplane-mode`), and istiod wrote `istio-ca-root-cert` there. The collector and Tempo pods are unchanged (1/1, 5/5, no restarts).
+- istiod's `Not able to configure requested tracing provider` warning stopped (0 after the sync).
+- The order waypoint's `config_dump` now has a tracing block: `random_sampling 100`, exporting to `outbound|4317||box1-collector.box1-observability.svc.cluster.local`.
+- **Traced order** `ord_2f6bb653158242adbc3bfa81b6ccb4d7`, trace `8670e0b4e7e2ac6b40fd9f86b76e77ea`, POSTed from the console pod, reached SHIPPED in about 7 s. Tempo, as first read:
+
+| +ms | Service | Span | Kind | Duration | Parent |
+|---|---|---|---|---|---|
+| 0.0 | `waypoint.order-service-dev` | order-service.order-service-dev.svc… | SERVER | 4.82 ms | caller's `traceparent` |
+| 0.5 | order-service | `POST /api/v1/orders` | SERVER | 4.24 ms | **waypoint.order-service-dev** |
+| 307.9 | `waypoint.inventory-service-dev` | inventory-service.inventory-service-dev.svc… | SERVER | 2.08 ms | caller |
+| 308.4 | inventory-service | `GET /api/v1/inventory` | SERVER | 1.45 ms | **waypoint.inventory-service-dev** |
+| 713.0+ | inventory, order, notification | Kafka consumers (`order.placed`, `inventory.reserved`, …) | INTERNAL | | application spans |
+
+**Waypoint hop latency** (waypoint span minus application span): about 0.6 ms for order and inventory, one sample each. This is not a statistical measurement.
+
+**Waypoint resource use** (23:13 EST): console 1m / 29Mi, order 2m / 34Mi, inventory 2m / 33Mi; requests 100m / 128Mi each.
+
+## L4 vs L7 vs trace for the same order (final)
+
+| | L4: ztunnel, Kiali TCP | L7: waypoints, Kiali HTTP | Tempo trace |
+|---|---|---|---|
+| Unit | connection | HTTP request | one business transaction |
+| For this order | console → order and console → inventory connections (mTLS); order/inventory → Postgres (mTLS); everything else is `unknown` | `POST /orders` 201 and `GET /inventory` 200, each with the caller's SPIFFE identity, status and latency, *only for console → order and console → inventory* | 14+ spans: the two waypoint hops, the REST server spans and the Kafka consumers in inventory, order and notification |
+| Kafka path (most of the order) | edges to `unknown` | **not visible**: Kafka is TCP and outside the mesh | **visible** |
+| Security | mTLS per edge | mTLS plus principals per request | none |
+| Cost | ztunnel 6m / 10Mi (all 7 namespaces) | about 2m / 33Mi per waypoint | already paid (#22) |
+
+## Recommendation: waypoints for the other four namespaces (decision for the user)
+**Do not add them now.**
+- Since enrollment, the only HTTP traffic between enrolled workloads goes from `operations-console` to order, inventory, **fulfillment-adapter** and **asset-service**.
+- `notification-service` and `scenario-controller` receive no HTTP from inside the mesh at all. Their inbound traffic is the Route and Prometheus, from outside the mesh, which bypass waypoints. A waypoint there would show nothing.
+- For the adapter and asset, a waypoint would add HTTP metrics for the console's calls only. The adapter's real work (Kafka, SFTP to the ERP VM, Postgres) stays L4 or outside the mesh. The Tempo trace already covers those calls through the console's own instrumentation.
+- If the Route traffic to the public order API is what you want to see at L7, the better lever is `istio.io/ingress-use-waypoint: "true"` on `order-service-dev`, not more waypoints. **Not tested.**

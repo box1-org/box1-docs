@@ -29,14 +29,17 @@
   limitations: [browser login not verified]
 - id: MESH-L7-001
   description: Waypoints on operations-console, order and inventory give an L7 graph; L4/L7/Tempo compared for one orderId; recommendation recorded
-  status: deployed
-  implementation: [box1-workloads-dev workloads/{operations-console,order-service,inventory-service}/waypoint.yaml, namespace.yaml use-waypoint]
-  evidence: [evidence/phase7-waypoints.md]
-  deployment: {gitops_commit: d4acbcffcc567b1d3d6d8313bac943a414654c4e}
-  limitations: [waypoint spans missing until box1-gitops#98 (collector discovery); recommendation not yet written]
+  status: live_verified
+  implementation: [box1-workloads-dev workloads/{operations-console,order-service,inventory-service}/waypoint.yaml, namespace.yaml use-waypoint, box1-gitops platform/observability/tracing/namespace.yaml istio-discovery]
+  commands: ["istio_requests_total{reporter=waypoint}", "kiali graph versionedApp waypoints=true", "tempo /api/traces/8670e0b4e7e2ac6b40fd9f86b76e77ea"]
+  evidence: [evidence/phase7-waypoints.md, decisions/006-waypoint-scope.md]
+  deployment: {gitops_commit: 68b16f4f5ab383827e74296190ec317bbe15c362}
+  limitations: [waypoint latency from one sample; Kiali 'Multiple workloads found for GatewayAPI waypoint' warning not investigated]
 - id: MESH-NP-001
   description: NetworkPolicy baseline on DB, Kafka and ERP paths works under ambient; a blocked flow is refused; DNS and monitoring unaffected
   status: proposed
 - id: MESH-COST-001
   description: Resource cost of istiod, CNI, ztunnel, Kiali and waypoints measured; ingress Gateway API unaffected; no failure-domain HA stated
-  status: proposed
+  status: live_verified
+  evidence: [evidence/phase6-control-plane-kiali.md, evidence/phase7-enroll-remaining.md, evidence/phase7-waypoints.md]
+  limitations: [point-in-time oc adm top samples; node memory varies more than the mesh cost; single node gives no failure-domain HA]

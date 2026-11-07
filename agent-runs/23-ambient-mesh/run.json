@@ -2,11 +2,12 @@
   "issue": "box1-org/box1-docs#23",
   "profile": "frontier",
   "current_phase": 7,
-  "phase_state": "L7 on; waypoint tracing fix PR #98 awaiting merge",
-  "updated_at": "2026-11-06T23:15:00-05:00",
+  "phase_state": "L7 + waypoint tracing live_verified; recommendation written; remaining: rollback test (#150), NetworkPolicy baseline",
+  "updated_at": "2026-11-06T23:20:00-05:00",
   "open_decisions": [
-    "merge box1-gitops#98 then sync observability-tracing (collector discovery for waypoint tracing)",
-    "rollback test #150 deferred; now conflicts with #152 (needs rebase)"
+    "rollback test #150 (deferred; needs rebase after #152)",
+    "NetworkPolicy baseline approval",
+    "waypoint scope decision for other four namespaces (recommendation: none)"
   ],
   "repositories": {
     "box1-docs": {
@@ -18,9 +19,7 @@
       "main": "e07852a",
       "run_branch": null,
       "pr": null,
-      "prs": [
-        98
-      ],
+      "prs": [],
       "merged_prs": [
         {
           "pr": 93,
@@ -41,6 +40,10 @@
         {
           "pr": 97,
           "merge_commit": "fc4621a024e76a421d0470abeb4e4b26987d3c24"
+        },
+        {
+          "pr": 98,
+          "merge_commit": "68b16f4f5ab383827e74296190ec317bbe15c362"
         }
       ]
     },
