@@ -7,6 +7,8 @@ legacy ERP, telemetry, notifications, an operator console and AI operations).
 
 - **Read in Developer Hub (TechDocs):**
   <https://developer-hub.apps.ocp.box1.org/docs/default/component/box1-docs>
+- **Interactive service map:**
+  <https://box1-org.github.io/box1-docs/architecture/service-map.html>
 - **Source:** <https://github.com/box1-org/box1-docs>
 - **Backlog:** <https://github.com/box1-org/box1-docs/issues>
 
