@@ -1,7 +1,11 @@
 - id: MESH-PREREQ-001
   description: OVN local gateway mode enabled so ambient probes work, without breaking cluster traffic
-  status: blocked
-  limitations: [awaiting user approval of decision 001]
+  status: live_verified
+  implementation: [box1-gitops platform/service-mesh/network/network.yaml]
+  commands: ["oc get network.operator cluster -o jsonpath={..routingViaHost}", "order-probe after-lgw"]
+  evidence: [evidence/phase6-network-after.md, evidence/phase6-network-rollout.log]
+  deployment: {gitops_commit: 7acba8cfc11bf9490d47b84077d64a467d9f8c09}
+  limitations: [traffic interruption length during rollout not measured]
 - id: MESH-L4-001
   description: Order flow works before enrollment, under ambient L4 on all seven namespaces, and after rolling back one namespace
   status: proposed

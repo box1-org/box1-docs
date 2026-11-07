@@ -1,6 +1,6 @@
 # Checkpoint — #23 ambient mesh and Kiali
 
-**Phase:** 6 GitOps delivery of the prerequisites, **waiting on the user's merge** (2026-11-06 22:10 EST). Nothing has changed on the cluster yet.
+**Phase:** 6 GitOps delivery of the prerequisites. **Local gateway mode is live and verified** (2026-11-06 21:57 EST; `evidence/phase6-network-after.md`). The operators PR #94 waits on the user; they chose to merge only #93 for now.
 
 ## Approvals (user, chat, 2026-11-06)
 - Decision 001: local gateway mode.
@@ -23,7 +23,7 @@ See `evidence/phase6-network-before.txt` (21:51 EST):
 - order `ord_dae76559f66643f7b9b07ed59e425c31` reached SHIPPED in about 6 s (trace `a10ee959ee104b5d33bc6fe571b871d3`).
 
 ## Exact next action
-1. After #93 merges: sync `service-mesh-network` by setting the Application `operation` at the merge revision.
+1. Done: after #93 merged (`7acba8c`), sync `service-mesh-network` by setting the Application `operation` at the merge revision.
 2. Watch the `ovnkube-node` rollout and the `network` cluster operator.
 3. Repeat the baseline checks and an order probe. Record the results in `evidence/phase6-network-after.md`.
 4. After #94 merges, about 10 s after #93: sync `service-mesh-operators`.

@@ -1,0 +1,11 @@
+21:55:29 ovnkube-control-plane-758df87dd7-cv455 2/2 Running (15d;ovnkube-node-rsqlx 8/8 Running 15d; co=True False False
+21:55:34 ovnkube-control-plane-758df87dd7-cv455 2/2 Running (15d;ovnkube-node-rsqlx 8/8 Running 15d; co=True False False
+21:55:39 ovnkube-control-plane-5cdb9fcb5-5cbqg 2/2 Running 2s;ovnkube-node-flwp4 0/8 PodInitializing 1s; co=True True False
+21:55:45 ovnkube-control-plane-5cdb9fcb5-5cbqg 2/2 Running 8s;ovnkube-node-flwp4 6/8 Running 7s; co=True False False
+21:55:50 ovnkube-control-plane-5cdb9fcb5-5cbqg 2/2 Running 13s;ovnkube-node-flwp4 7/8 Running 12s; co=True False False
+21:55:55 ovnkube-control-plane-5cdb9fcb5-5cbqg 2/2 Running 18s;ovnkube-node-flwp4 7/8 Running 17s; co=True False False
+21:56:00 ovnkube-control-plane-5cdb9fcb5-5cbqg 2/2 Running 23s;ovnkube-node-flwp4 7/8 Running 22s; co=True False False
+21:56:06 ovnkube-control-plane-5cdb9fcb5-5cbqg 2/2 Running 29s;ovnkube-node-flwp4 7/8 Running 28s; co=True False False
+21:56:11 ovnkube-control-plane-5cdb9fcb5-5cbqg 2/2 Running 34s;ovnkube-node-flwp4 7/8 Running 33s; co=True False False
+21:56:16 ovnkube-control-plane-5cdb9fcb5-5cbqg 2/2 Running 40s;ovnkube-node-flwp4 7/8 Running 39s; co=True False False
+21:56:22 ovnkube-control-plane-5cdb9fcb5-5cbqg 2/2 Running 45s;ovnkube-node-flwp4 8/8 Running 44s; co=True False False

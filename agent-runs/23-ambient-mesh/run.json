@@ -2,11 +2,11 @@
   "issue": "box1-org/box1-docs#23",
   "profile": "frontier",
   "current_phase": 6,
-  "phase_state": "awaiting_user_merge",
-  "updated_at": "2026-11-06T22:10:00-05:00",
+  "phase_state": "network_prereq_live_verified",
+  "updated_at": "2026-11-06T22:00:00-05:00",
   "open_decisions": [
-    "user merges box1-gitops#93 (network) and #94 (operators), about 10 s apart",
-    "mesh CRs + Kiali CR approval (privileged DaemonSets) after operators install"
+    "user decides on box1-gitops#94 (operators)",
+    "mesh CRs + Kiali CR approval after operators install"
   ],
   "repositories": {
     "box1-docs": {
@@ -19,8 +19,13 @@
       "run_branch": null,
       "pr": null,
       "prs": [
-        93,
         94
+      ],
+      "merged_prs": [
+        {
+          "pr": 93,
+          "merge_commit": "7acba8cfc11bf9490d47b84077d64a467d9f8c09"
+        }
       ]
     },
     "box1-workloads-dev": {
