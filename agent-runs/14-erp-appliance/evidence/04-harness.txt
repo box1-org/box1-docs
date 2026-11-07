@@ -1,0 +1,61 @@
+# Container harness, harness/run-scenarios.sh at ERP commit 48aebae (harness files unchanged since the run), 2026-11-05 ~18:11 EST
+# CentOS Stream 10 arm64 (quay.io/centos/centos:stream10@sha256:c54d6bf3...), systemd PID 1, OpenSSH sftp, rootless podman.
+# The worker ran with harness/worker-harness-only.conf (12 seccomp-based sandbox directives off; see that file).
+== clocks: host 23:11:03 podman-vm 23:11:03
+== image 88b4c0f793ec
+== systemd: degraded default target: box1-erp.target
+== units (the worker runs with harness/worker-harness-only.conf: 12 seccomp-based directives off)
+PASS  systemd-analyze verify accepts both application units
+→ Overall exposure level for box1-erp-worker.service: 5.5 MEDIUM :-|
+== missing ledger: worker fails safe at boot, no ledger created
+PASS  worker unit failed (exit 2, no restart)
+PASS  no ledger was created
+{"ts": "2026-11-05T23:11:06Z", "level": "error", "component": "worker", "msg": "ledger missing; is the data volume mounted? refusing to create one", "path": "/v
+== provision ledger and start
+initialized /var/lib/box1-erp/ledger.db
+PASS  worker active
+PASS  worker runs as box1erp
+== SFTP account: key only, chrooted, no shell, no database
+PASS  sftp login with the key works
+   sftp ls / -> sftp> ls / /consumed  /inbound   /outbound   
+PASS  chroot root shows only the exchange areas
+PASS  database path unreachable over SFTP
+PASS  cannot escape the chroot with ..
+   ssh erpsftp id -> This service allows sftp connections only.
+PASS  no shell or command for the SFTP account
+PASS  password authentication refused
+PASS  erpsftp cannot read the ledger even outside the chroot
+PASS  erpsftp is not in the box1erp group
+== upload like the adapter: temp name, rename, then a result comes back
+PASS  upload under a temp name and rename
+PASS  result revision 1 PENDING appears in outbound
+PASS  MANUAL: request imported, not shipped
+PASS  adapter can move a result into consumed/ with a nonce
+PASS  the inbound file left the exchange (archived)
+   total 0
+   drwxrws---. 1 root erpxfer 82 Nov  5 23:11 consumed
+   drwxrws---. 1 root erpxfer  6 Nov  5 23:11 inbound
+   drwxrws---. 1 root erpxfer  6 Nov  5 23:11 outbound
+== crash after commit, restart by systemd, original shipment recovered
+shipped shp_39002c8d18bc128e79622c4bc7a9712c
+PASS  worker crashed with exit 70
+PASS  systemd restarted it (NRestarts>=1) and it is active
+PASS  SHIPPED result published after restart
+PASS  exactly one shipment
+PASS  crash fault disarmed (no loop)
+NRestarts=1 ExecMainStatus=0 ActiveState=active 
+== worker killed: systemd restarts it; ledger intact
+PASS  worker back after SIGKILL
+PASS  ledger integrity ok
+== backup while running, restore with the worker stopped
+   backup at /var/lib/box1-erp/backups/harness
+PASS  restore refused while the worker runs
+PASS  restore succeeds with the worker stopped
+PASS  restored records match (request, state, shipment, version)
+PASS  worker active after restore
+   records: ful_h1SHIPPEDshp_39002c8d18bc128e79622c4bc7a9712c2
+== journald, not the console
+   Stopped box1-erp-worker.service - box1 legacy ERP worker (file ingestion, AUTO processing, result publication).
+   Started box1-erp-worker.service - box1 legacy ERP worker (file ingestion, AUTO processing, result publication).
+   {"ts": "2026-11-05T23:11:27Z", "level": "info", "component": "worker", "msg": "worker started", "pid": 241, "mode": "MANUAL", "pending_publication": 0, "removed
+== result: 29 passed, 0 failed

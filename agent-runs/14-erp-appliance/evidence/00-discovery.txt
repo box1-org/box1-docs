@@ -1,0 +1,64 @@
+# Phase 0 discovery, 2026-11-05 ~17:35-17:45 EST (22:35-22:45 UTC)
+
+## Clocks
+host: Thu Nov  5 22:38:13 UTC 2026  podman-machine: Thu Nov  5 22:38:13 UTC 2026
+
+## box1-org repositories (gh repo list)
+rhel-image-poc PRIVATE
+box1-gitops PUBLIC
+box1-docs PUBLIC
+box1-workloads-dev PUBLIC
+order-service PUBLIC
+inventory-service PUBLIC
+box1-ops-contracts PUBLIC
+box1-templates PUBLIC
+quarkus-reference PUBLIC
+No ERP repository (box1-ops-erp-simulator or other) exists.
+
+## box1-docs
+origin/main: 56500157a5d231292a6b4e021065cdf4bad46504
+PR #45 merged: MERGED a376dfd5c5e59ce7e55a503f28f21adc564d77d7
+Issue #14 comments: 0, labels: frontier
+Issue #25: one comment adding sub-issue #46 (rhel-image-poc bootc prototype; OPEN).
+
+## box1-ops-contracts origin/main e27894027ffd453c2b7fdce2e4d463a201132a01
+.gitignore
+DRILLS.md
+INVENTORY-RESERVATIONS.md
+ORDER-STATE.md
+README.md
+TOPICS.md
+drills
+events
+fixtures
+openapi
+package-lock.json
+package.json
+postgres
+scripts
+test
+No legacy/ or ERP file protocol. No .github/ or .tekton/ directory: the repo has no CI; checks are 'npm test' and 'npm run validate' (Node 20.11+).
+fulfillment.requested.v1 required: orderId reservationId fulfillmentRequestId siteId sku quantity (single sku, ful_ prefix).
+shipment.confirmed.v1: orderId fulfillmentRequestId shipmentId(shp_) shippedAt. shipment.failed.v1: orderId fulfillmentRequestId retryable reasonCode(^[A-Z][A-Z0-9_]*$, <=64).
+
+## order-service origin/main 8fda087
+EventParser bounds: ful_[A-Za-z0-9_-]{1,124}, shp_[A-Za-z0-9_-]{1,124}; fulfillmentRequestId = 'ful_' + orderId suffix (OrderService.java:89).
+Transitions.java:79 shipment.failed retryable -> note SHIPMENT_RETRYING, else EXCEPTION/SHIPMENT_FAILED.
+
+## rhel-image-poc (private) 9b99e8b: Containerfile, rootfs/, disk/, deploy/, local/ (bootc prototype, issue #46).
+
+## Local toolchain
+system python3 3.9.6, homebrew python3.11/3.14, uv present; sqlite (system python) 3.43.2
+podman version 6.1.3
+Pre-existing processes not owned by this run (left untouched): 5 java quarkus-run.jar
+Pre-existing podman containers: none named run14-*
+
+## CI and artifact paths (read-only subagent, origin/main SHAs: box1-templates 702a052, box1-gitops 2feea46, quarkus-reference f0c1394, box1-workloads-dev 359c711)
+- box1-templates has two templates: quarkus-rest-service (.tekton PR/release + GitOps workload) and github-repository (README + catalog-info only). No language-agnostic CI template.
+- All PipelineRuns run in box1-ci, tasks via cluster resolver (box1-quarkus-maven, box1-security-gates, box1-gitops-promote, box1-quarkus-smoke); SAs ci-test (PR) and ci-build (release).
+- box1-security-gates (Syft 1.55.0 SBOM -> RHTPA, roxctl image scan/check) accepts only an image digest; it cannot scan a bare wheel.
+- Tekton Chains enabled in tektonconfig.yaml; whether signatures are produced was not checked.
+- GitHub App box1-pipelines installed org-wide. Repository CRs in box1-ci come from box1-gitops platform/pipelines/ci/*-repository.yaml (platform repos) or box1-workloads-dev workloads/<app>/onboarding.yaml (apps).
+- 0 GitHub Actions workflows in all 9 org repos.
+- Only registry: OpenShift internal registry (projects box1-ci, box1-plugins). No PyPI/devpi/Nexus/Quay.
+- rhel-image-poc: inline buildah tasks in .tekton/, pushes box1-ci/rhel-image-poc@digest, security gates in observe mode; its Repository CR and SAs are in box1-gitops PR #58 (OPEN), so its CI is not active.

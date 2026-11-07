@@ -1,0 +1,67 @@
+{
+  "issue": "box1-org/box1-docs#14",
+  "profile": "frontier",
+  "current_phase": 7,
+  "phase_state": "blocked_on_other_runs",
+  "updated_at": "2026-11-05T19:30:00-05:00",
+  "open_decisions": [],
+  "repositories": {
+    "box1-docs": {
+      "branch": "agent-run/14-erp-appliance",
+      "base": "5650015"
+    },
+    "box1-ops-contracts": {
+      "role": "legacy file protocol and fixtures",
+      "main": "e278940",
+      "run_branch": "legacy-erp-file-v1",
+      "commit": "13fcfd2",
+      "pr": 6,
+      "merged": true,
+      "merge_commit": "eef13ea"
+    },
+    "box1-ops-erp-simulator": {
+      "role": "implementation target",
+      "main": "c84c910",
+      "run_branch": null,
+      "commit": "c84c910",
+      "pr": [
+        1,
+        2
+      ],
+      "merged": true
+    },
+    "order-service": {
+      "role": "read only (ID bounds)",
+      "main": "8fda087"
+    },
+    "rhel-image-poc": {
+      "role": "read only (#46 bootc prototype)",
+      "main": "9b99e8b"
+    },
+    "box1-gitops": {
+      "role": "PaC registration",
+      "run_branch": "erp-simulator-ci",
+      "pr": 61,
+      "merged": true
+    }
+  },
+  "worktrees": [
+    "/Users/mike/Documents/ChatGPT/box1/run14-docs",
+    "/Users/mike/Documents/ChatGPT/box1/run14-contracts",
+    "/Users/mike/Documents/ChatGPT/box1/run14-gitops"
+  ],
+  "containers_prefix": "run14-",
+  "review_passes_completed": [
+    "contract-protocol",
+    "architecture",
+    "persistence",
+    "messaging",
+    "security",
+    "operations"
+  ],
+  "review_pass_not_applicable": [
+    "release"
+  ],
+  "image_digest": "sha256:34053e1b1b6ac8aeb7d8f497c7d21f63ef89ad9f2a9693c1acb420d127b01aab",
+  "release_run": "box1-ops-erp-simulator-release-5dgjm"
+}

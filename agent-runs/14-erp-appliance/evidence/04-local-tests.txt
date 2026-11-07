@@ -1,0 +1,161 @@
+# Phase 4 local verification, 2026-11-05 18:12 EST
+ERP repo (local, no remote): 48aebaeaec3d765fd7c3c0a95206e8c828dde4e0; contracts fixtures: box1-ops-contracts b20694c8971169025e345a3bcf0843e260096bc3 (PR #6 head)
+Python 3.12.12 SQLite 3.50.4, macOS host; clocks: host 23:12:30 podman-vm 23:12:30
+
+$ ruff check src tests
+I001 [*] Import block is un-sorted or un-formatted
+ --> tests/test_backup.py:2:1
+  |
+1 |   """Application-consistent backup and restore, with record checks."""
+2 | / import signal
+3 | | import sqlite3
+4 | |
+5 | | import pytest
+6 | |
+7 | | from box1_erp import backup, db, domain
+8 | | from helpers import drop, make_appliance, q, request_bytes, start_worker, wait_for
+  | |__________________________________________________________________________________^
+  |
+help: Organize imports
+
+Found 1 error.
+[*] 1 fixable with the `--fix` option.
+
+$ ERP1_CONTRACTS_DIR=../run14-contracts pytest -v
+tests/test_backup.py::test_backup_while_running_then_restore_with_record_checks PASSED
+tests/test_backup.py::test_tampered_backup_is_refused PASSED
+tests/test_domain.py::test_missing_ledger_is_an_error_not_a_new_database PASSED
+tests/test_domain.py::test_settings_and_pragmas PASSED
+tests/test_domain.py::test_initialize_is_rerunnable PASSED
+tests/test_domain.py::test_import_new_then_equivalent_then_conflicting PASSED
+tests/test_domain.py::test_hold_release_ship_with_revisions_and_audit PASSED
+tests/test_domain.py::test_terminal_states_refuse_everything PASSED
+tests/test_domain.py::test_reject_requires_reason_and_known_code PASSED
+tests/test_domain.py::test_stale_console_action_is_refused PASSED
+tests/test_domain.py::test_reemit_keeps_identity_and_creates_no_shipment PASSED
+tests/test_domain.py::test_auto_ship_respects_mode_and_holds PASSED
+tests/test_domain.py::test_mode_persists_across_connections PASSED
+tests/test_domain.py::test_database_backstop_rejects_a_second_shipment PASSED
+tests/test_domain.py::test_faults_need_demo_mode_and_crash_is_one_shot PASSED
+tests/test_domain.py::test_manual_ship_racing_automatic_ship_yields_one_shipment[0] PASSED
+tests/test_domain.py::test_manual_ship_racing_automatic_ship_yields_one_shipment[1] PASSED
+tests/test_domain.py::test_manual_ship_racing_automatic_ship_yields_one_shipment[2] PASSED
+tests/test_domain.py::test_manual_ship_racing_automatic_ship_yields_one_shipment[3] PASSED
+tests/test_domain.py::test_manual_ship_racing_automatic_ship_yields_one_shipment[4] PASSED
+tests/test_domain.py::test_manual_ship_racing_automatic_ship_yields_one_shipment[5] PASSED
+tests/test_domain.py::test_manual_ship_racing_automatic_ship_yields_one_shipment[6] PASSED
+tests/test_domain.py::test_manual_ship_racing_automatic_ship_yields_one_shipment[7] PASSED
+tests/test_domain.py::test_manual_ship_racing_automatic_ship_yields_one_shipment[8] PASSED
+tests/test_domain.py::test_manual_ship_racing_automatic_ship_yields_one_shipment[9] PASSED
+tests/test_domain.py::test_manual_ship_racing_automatic_ship_yields_one_shipment[10] PASSED
+tests/test_domain.py::test_manual_ship_racing_automatic_ship_yields_one_shipment[11] PASSED
+tests/test_domain.py::test_manual_ship_racing_automatic_ship_yields_one_shipment[12] PASSED
+tests/test_domain.py::test_manual_ship_racing_automatic_ship_yields_one_shipment[13] PASSED
+tests/test_domain.py::test_manual_ship_racing_automatic_ship_yields_one_shipment[14] PASSED
+tests/test_domain.py::test_manual_ship_racing_automatic_ship_yields_one_shipment[15] PASSED
+tests/test_domain.py::test_manual_ship_racing_automatic_ship_yields_one_shipment[16] PASSED
+tests/test_domain.py::test_manual_ship_racing_automatic_ship_yields_one_shipment[17] PASSED
+tests/test_domain.py::test_manual_ship_racing_automatic_ship_yields_one_shipment[18] PASSED
+tests/test_domain.py::test_manual_ship_racing_automatic_ship_yields_one_shipment[19] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/valid/single-line.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/valid/multi-line-api.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/valid/escaped-values.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/valid/max-lines.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/valid/single-line-repeat-api.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/valid/single-line-conflict.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/valid/single-line-other-site.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/invalid/too-large.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/invalid/bom.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/invalid/invalid-utf8.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/invalid/crlf.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/invalid/tab-in-sku.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/invalid/empty.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/invalid/no-final-lf.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/invalid/cut-before-trl.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/invalid/unknown-record.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/invalid/bad-escape.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/invalid/field-count.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/invalid/blank-line.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/invalid/version-2.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/invalid/version-2-new-shape.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/invalid/version-long.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/invalid/first-record-not-hdr.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/invalid/header-says-res.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/invalid/year-0001.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/invalid/leap-second.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/invalid/bad-name-bad-content.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/invalid/lin-before-req.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/invalid/trl-without-lin.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/invalid/record-after-trl.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/invalid/lines-100.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/invalid/missing-order-id.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/invalid/sku-81.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/invalid/quantity-zero.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/invalid/quantity-leading-zero.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/invalid/quantity-too-long.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/invalid/impossible-date.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/invalid/timestamp-offset.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/invalid/timestamp-no-millis.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/invalid/line-out-of-sequence.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/invalid/wrong-prefix.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/invalid/bad-origin.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/invalid/header-type.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/invalid/count-mismatch.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/invalid/name-other-id.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[inbound/invalid/name-short-nonce.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[outbound/valid/ful_1042-r1-pending.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[outbound/valid/ful_1042-r2-held.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[outbound/valid/ful_1042-r3-pending.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[outbound/valid/ful_1042-r4-shipped.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[outbound/valid/ful_1042-r2-other-result-id.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[outbound/valid/ful_1042-r1-same-id-other-bytes.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[outbound/valid/ful_1042-r5-after-terminal.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[outbound/valid/ful_1042-r5-other-shipment.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[outbound/valid/ful_9999-r1-unknown-request.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[outbound/valid/ful_1042-r1-other-order.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[outbound/valid/ful_2001-r1-pending.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[outbound/valid/ful_2001-r2-rejected.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[outbound/valid/err-conflicting-reuse.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[outbound/invalid/shipped-without-shipment.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[outbound/invalid/pending-with-shipment.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[outbound/invalid/rejected-without-reason.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[outbound/invalid/rejected-unknown-code.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[outbound/invalid/revision-zero.erp1] PASSED
+tests/test_protocol_fixtures.py::test_fixture[outbound/invalid/name-unpadded-revision.erp1] PASSED
+tests/test_protocol_fixtures.py::test_manifest_is_present_and_complete PASSED
+tests/test_protocol_fixtures.py::test_equivalence PASSED
+tests/test_protocol_fixtures.py::test_name_classification PASSED
+tests/test_protocol_fixtures.py::test_writer_reproduces_valid_result_fixtures_byte_for_byte PASSED
+tests/test_protocol_fixtures.py::test_mapping_from_fulfillment_requested_event PASSED
+tests/test_tui.py::test_renders_at_80x24_ascii_only_and_ships_with_confirmation PASSED
+tests/test_tui.py::test_hold_release_reject_and_mode_from_the_keyboard PASSED
+tests/test_tui.py::test_resize_smaller_then_back_and_ctrl_c_does_not_exit PASSED
+tests/test_tui.py::test_worker_stopped_is_visible_and_the_console_stays_usable PASSED
+tests/test_tui.py::test_tui_restart_does_not_interrupt_the_worker PASSED
+tests/test_tui.py::test_quarantine_screen_and_replay PASSED
+tests/test_tui.py::test_demo_fault_screen_arms_and_shows_faults PASSED
+tests/test_worker.py::test_manual_mode_imports_publishes_and_does_not_ship PASSED
+tests/test_worker.py::test_temporary_names_are_ignored_until_renamed PASSED
+tests/test_worker.py::test_malformed_files_are_quarantined_with_reasons_and_err_files[REQ.ful_1.0a1b2c3d.erp1-HDR|ERP1|REQ|2026-11-05T22:00:00.000Z\nREQ|ful_1-TRUNCATED] PASSED
+tests/test_worker.py::test_malformed_files_are_quarantined_with_reasons_and_err_files[REQ.ful_1.0a1b2c3d.erp1-HDR|ERP1|REQ|2026-11-05T22:00:00.000Z\nREQ|ful_1|ord_1|res_1|site_a|EVENT|2026-11-05T21:59:00.000Z|corr-ful_1|\nLIN|1|SK-TRUNCATED] PASSED
+tests/test_worker.py::test_malformed_files_are_quarantined_with_reasons_and_err_files[REQ.ful_1.0a1b2c3d.erp1-garbage\n-MALFORMED_RECORD] PASSED
+tests/test_worker.py::test_malformed_files_are_quarantined_with_reasons_and_err_files[REQ.ful_1.0a1b2c3d.erp1-HDR|ERP1|REQ|2026-11-05T22:00:00.000Z\nREQ|ful_1|ord_1|res_1|site_a|EVENT|2026-11-05T21:59:00.000Z|corr-ful_1|\nLIN|1|SKU-1|0\nTRL|4\n-FIELD_VALUE] PASSED
+tests/test_worker.py::test_malformed_files_are_quarantined_with_reasons_and_err_files[notes.txt-hello\n-FILENAME_MISMATCH] PASSED
+tests/test_worker.py::test_malformed_files_are_quarantined_with_reasons_and_err_files[REQ.ful_1.0a1b2c3d.erp1.tmp-HDR|ERP1|REQ|2026-11-05T22:00:00.000Z\nREQ|ful_1|ord_1|res_1|site_a|EVENT|2026-11-05T21:59:00.000Z|corr-ful_1|\nLIN|1|SKU-1|2\nTRL|4\n-FILENAME_MISMATCH] PASSED
+tests/test_worker.py::test_repeated_and_conflicting_request_ids PASSED
+tests/test_worker.py::test_auto_mode_ships_with_the_same_domain_path PASSED
+tests/test_worker.py::test_hold_then_auto_then_release PASSED
+tests/test_worker.py::test_reemission_republishes_identical_bytes_without_a_new_shipment PASSED
+tests/test_worker.py::test_paused_publication_then_resume PASSED
+tests/test_worker.py::test_faults_are_ignored_when_demo_mode_is_off PASSED
+tests/test_worker.py::test_delayed_automatic_processing PASSED
+tests/test_worker.py::test_quarantine_replay_keeps_deduplication PASSED
+tests/test_worker.py::test_crash_after_commit_then_restart_recovers_original_shipment PASSED
+tests/test_worker.py::test_stale_temp_files_from_a_crash_are_cleaned_and_republished PASSED
+tests/test_worker.py::test_worker_refuses_to_start_without_its_ledger PASSED
+tests/test_worker.py::test_mode_and_ledger_persist_across_worker_restart PASSED
+tests/test_worker.py::test_publication_failure_is_recorded_and_retried PASSED
+======================== 133 passed in 60.86s (0:01:00) ========================
+
+## Race distribution (manual ship vs automatic ship, separate processes, 50 rounds)
+50 rounds: winners {'worker': 31, 'console': 19}; rounds with other than exactly one shipment: 0
