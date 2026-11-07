@@ -1,0 +1,23 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: box1-docs
+  description: Box1 backlog, achievement logs, runbooks, agent prompts and agent run state
+  annotations:
+    github.com/project-slug: box1-org/box1-docs
+    backstage.io/techdocs-ref: dir:.
+  tags: [repository, documentation]
+  links:
+    - url: https://github.com/box1-org/box1-docs/issues
+      title: Backlog (GitHub Issues)
+      icon: github
+    - url: https://github.com/box1-org/box1-docs/blob/main/README.md
+      title: README on GitHub
+      icon: github
+    - url: https://devspaces.apps.ocp.box1.org/#https://github.com/box1-org/box1-docs
+      title: Open in Dev Spaces
+      icon: code
+spec:
+  type: repository
+  lifecycle: experimental
+  owner: user:default/mike4263
