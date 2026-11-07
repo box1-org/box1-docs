@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Box1 Service Map</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Source+Sans+3:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one wide wiring diagram (scrolls sideways on phones), a detail panel beside it, then the two flows and the topic register. */
+:root{
+  --bg:#f3f5f7; --surface:#ffffff; --ink:#18212b; --muted:#5b6876; --line:#d5dbe2;
+  --http:#2f5fb3; --kafka:#c46a12; --ext:#2c7a5b; --planned:#8a94a0;
+  --node:#ffffff; --node-ink:#18212b; --band:#fbf3ea; --band-line:#ebd2b6;
+  --dim:.12;
+  --f-display:"Archivo",system-ui,sans-serif;
+  --f-body:"Source Sans 3",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11161c; --surface:#18202a; --ink:#e3e9ef; --muted:#97a3b0; --line:#2c3846;
+  --http:#7ea6ec; --kafka:#f0a050; --ext:#5cc39a; --planned:#7d8894;
+  --node:#1d2731; --node-ink:#e3e9ef; --band:#22201b; --band-line:#4a3c2b; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11161c; --surface:#18202a; --ink:#e3e9ef; --muted:#97a3b0; --line:#2c3846;
+  --http:#7ea6ec; --kafka:#f0a050; --ext:#5cc39a; --planned:#7d8894;
+  --node:#1d2731; --node-ink:#e3e9ef; --band:#22201b; --band-line:#4a3c2b; color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 var(--f-body)}
+.wrap{max-width:1500px;margin:0 auto;padding-block:28px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:28px}
+header{display:grid;gap:6px}
+h1{font:700 1.9rem/1.15 var(--f-display);margin:0;letter-spacing:-.01em;text-wrap:balance}
+h2{font:600 1.15rem/1.3 var(--f-display);margin:0 0 10px;text-wrap:balance}
+.lede{color:var(--muted);margin:0;max-width:75ch}
+.meta{font:12px/1.4 var(--f-mono);color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:8px 20px;font-size:14px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:8px}
+.legend svg{flex:none}
+.stage{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:20px;align-items:start}
+@media (max-width:1100px){.stage{grid-template-columns:minmax(0,1fr)}}
+.diagram{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow-x:auto;min-width:0}
+.diagram svg{display:block;width:100%;min-width:900px;height:auto}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;display:grid;gap:10px;min-width:0}
+.panel .kind{font:500 11px/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.panel h3{font:600 1.2rem/1.25 var(--f-display);margin:0}
+.panel p{margin:0;color:var(--muted)}
+.panel ul{margin:0;padding:0;list-style:none;display:grid;gap:6px}
+.panel li{display:grid;grid-template-columns:62px 1fr;gap:8px;font-size:14px;align-items:baseline}
+.panel li b{font:500 10.5px/1.6 var(--f-mono);text-transform:uppercase;letter-spacing:.06em;border-radius:4px;padding:0 5px;text-align:center}
+.panel li code{font:12.5px/1.4 var(--f-mono);overflow-wrap:anywhere}
+.t-http{color:var(--http);background:color-mix(in srgb,var(--http) 12%,transparent)}
+.t-pub,.t-sub{color:var(--kafka);background:color-mix(in srgb,var(--kafka) 14%,transparent)}
+.t-ext{color:var(--ext);background:color-mix(in srgb,var(--ext) 14%,transparent)}
+.t-plan{color:var(--planned);background:color-mix(in srgb,var(--planned) 16%,transparent)}
+.hint{font-size:13px;color:var(--muted)}
+/* svg */
+.node rect{fill:var(--node);stroke:var(--line);stroke-width:1.2}
+.node.app rect{stroke:var(--ink);stroke-opacity:.35}
+.node.actor rect{fill:transparent;stroke-dasharray:3 3}
+.node.ext rect{stroke:var(--ext);stroke-width:1.4}
+.node.idp rect{stroke:var(--ext);stroke-width:1.4}
+.node.planned rect{stroke:var(--planned);stroke-dasharray:5 4}
+.node .t{font:600 15px var(--f-display);fill:var(--node-ink)}
+.node .s{font:11px var(--f-mono);fill:var(--muted)}
+.node{cursor:pointer;outline:none;transition:opacity .15s}
+.node:focus-visible rect{stroke:var(--http);stroke-width:2.5}
+.node.sel rect{stroke:var(--http);stroke-width:2.2}
+.topic rect{fill:var(--node);stroke:var(--kafka);stroke-width:1.3}
+.topic text{font:500 12px var(--f-mono);fill:var(--kafka)}
+.band{fill:var(--band);stroke:var(--band-line)}
+.band-t{font:600 13px var(--f-display);fill:var(--kafka);letter-spacing:.04em}
+.band-n{font:11.5px var(--f-mono);fill:var(--muted)}
+.edge{fill:none;stroke-width:1.7;transition:opacity .15s}
+.edge.http{stroke:var(--http)}
+.edge.pub{stroke:var(--kafka)}
+.edge.sub{stroke:var(--kafka);stroke-dasharray:6 4}
+.edge.ext,.edge.idp{stroke:var(--ext)}
+.edge.idp{stroke-dasharray:2 4}
+.edge.plan{stroke:var(--planned);stroke-dasharray:3 5}
+.elab{font:500 11px var(--f-mono);paint-order:stroke;stroke:var(--surface);stroke-width:4px}
+.elab.http{fill:var(--http)} .elab.ext,.elab.idp{fill:var(--ext)} .elab.plan{fill:var(--planned)}
+svg.focus .edge:not(.on),svg.focus .node:not(.on),svg.focus .topic:not(.on),svg.focus .elab:not(.on){opacity:var(--dim)}
+svg.focus .edge.on{stroke-width:2.6}
+@media (prefers-reduced-motion:reduce){.edge,.node{transition:none}}
+/* lower sections */
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:20px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px 20px;min-width:0}
+ol.flow{margin:0;padding-left:22px;display:grid;gap:7px;font-size:15px}
+ol.flow code,td code{font:12.5px var(--f-mono);overflow-wrap:anywhere}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:640px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:500 11px var(--f-mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+td.num{font-variant-numeric:tabular-nums;text-align:right}
+.notes{font-size:14px;color:var(--muted);display:grid;gap:6px}
+.notes p{margin:0;max-width:95ch}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Box1 Service Map</h1>
+    <p class="lede">How the Box1 operations services talk to each other in the development environment: synchronous HTTP calls, Kafka events on the shared <code>box1-kafka</code> cluster, and the outside systems at the edges. Select a box to trace its connections.</p>
+    <div class="meta">Source: <code>main</code> of each box1-org service repo, <code>box1-ops-contracts/TOPICS.md</code> and <code>box1-workloads-dev</code> deployments · 6 Nov 2026 (America/New_York)</div>
+  </header>
+
+  <div class="legend" aria-label="Legend">
+    <span><svg width="34" height="10"><line x1="0" y1="5" x2="34" y2="5" stroke="var(--http)" stroke-width="2"/></svg>HTTP call</span>
+    <span><svg width="34" height="10"><line x1="0" y1="5" x2="34" y2="5" stroke="var(--kafka)" stroke-width="2"/></svg>Publishes to topic (outbox)</span>
+    <span><svg width="34" height="10"><line x1="0" y1="5" x2="34" y2="5" stroke="var(--kafka)" stroke-width="2" stroke-dasharray="6 4"/></svg>Consumes from topic</span>
+    <span><svg width="34" height="10"><line x1="0" y1="5" x2="34" y2="5" stroke="var(--ext)" stroke-width="2"/></svg>External protocol (SFTP, SMTP)</span>
+    <span><svg width="34" height="10"><line x1="0" y1="5" x2="34" y2="5" stroke="var(--ext)" stroke-width="2" stroke-dasharray="2 4"/></svg>Identity (Keycloak)</span>
+    <span><svg width="34" height="10"><line x1="0" y1="5" x2="34" y2="5" stroke="var(--planned)" stroke-width="2" stroke-dasharray="3 5"/></svg>Planned in contract, not built</span>
+  </div>
+
+  <div class="stage">
+    <div class="diagram"><svg id="map" viewBox="0 0 1270 760" role="img" aria-label="Box1 service interaction diagram"></svg></div>
+    <aside class="panel" id="panel" aria-live="polite"></aside>
+  </div>
+
+  <div class="cols">
+    <section class="card">
+      <h2>Order lifecycle</h2>
+      <ol class="flow">
+        <li>An operator in the Operations Console, or a Scenario Controller run, sends <code>POST /api/v1/orders</code> to Order Service.</li>
+        <li>Order Service stores the order and emits <code>order.placed.v1</code> on <code>box1.order.events.v1</code>.</li>
+        <li>Inventory Service reserves stock and answers with <code>inventory.reserved.v1</code> or <code>inventory.rejected.v1</code>.</li>
+        <li>Order Service moves the order forward and emits <code>fulfillment.requested.v1</code>.</li>
+        <li>Fulfillment Adapter queues the request, writes an <code>ERP1</code> file to the legacy ERP VM over SFTP, and reads back the result file.</li>
+        <li>The adapter emits <code>shipment.confirmed.v1</code> or <code>shipment.failed.v1</code>; Order and Inventory settle their state.</li>
+        <li>Notification Service reacts to order and shipment events, emails the customer notice through MailHog over SMTP, and records <code>notification.*</code> events.</li>
+      </ol>
+    </section>
+    <section class="card">
+      <h2>Equipment telemetry</h2>
+      <ol class="flow">
+        <li>Site equipment sends <code>POST /api/v1/telemetry/readings</code> to Asset Service with a Keycloak bearer token (role <code>telemetry-writer</code>).</li>
+        <li>Asset Service returns <code>202</code> once Kafka acknowledges <code>equipment.reading.v1</code> on <code>box1.telemetry.events.v1</code>.</li>
+        <li>Its own <code>asset-service</code> consumer group stores recent readings in PostgreSQL and raises <code>equipment.threshold-exceeded.v1</code> alerts with hysteresis.</li>
+        <li>The Operations Console reads <code>/api/v1/alerts</code>; Asset Service also serves its own telemetry console at <code>/console</code>.</li>
+        <li>The contract reserves an <code>ai-operations</code> consumer group for Agentic Operations. That service is scaffolded with Kafka enabled but has no consumer yet.</li>
+      </ol>
+    </section>
+  </div>
+
+  <section class="card">
+    <h2>Topic register</h2>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>Topic</th><th>Producer</th><th>Event types</th><th>Consumer groups</th><th class="num">Retention</th></tr></thead>
+        <tbody>
+          <tr><td><code>box1.order.events.v1</code></td><td>Order</td><td><code>order.placed.v1</code>, <code>order.state-changed.v1</code>, <code>fulfillment.requested.v1</code></td><td>inventory, fulfillment, notification · bff-projections (contract only)</td><td class="num">7 d</td></tr>
+          <tr><td><code>box1.inventory.events.v1</code></td><td>Inventory</td><td><code>inventory.reserved.v1</code>, <code>inventory.rejected.v1</code>, <code>inventory.reservation-expired.v1</code></td><td>order</td><td class="num">7 d</td></tr>
+          <tr><td><code>box1.fulfillment.events.v1</code></td><td>Fulfillment adapter</td><td><code>shipment.confirmed.v1</code>, <code>shipment.failed.v1</code></td><td>order, notification, inventory</td><td class="num">14 d</td></tr>
+          <tr><td><code>box1.telemetry.events.v1</code></td><td>Asset Service</td><td><code>equipment.reading.v1</code>, <code>equipment.threshold-exceeded.v1</code></td><td>asset-service · telemetry-projections, ai-operations (contract only)</td><td class="num">2 d</td></tr>
+          <tr><td><code>box1.notification.events.v1</code></td><td>Notification</td><td><code>notification.requested.v1</code>, <code>notification.delivered.v1</code>, <code>notification.failed.v1</code></td><td>notification-history (contract only)</td><td class="num">14 d</td></tr>
+          <tr><td><code>box1.&lt;domain&gt;.dlq.v1</code></td><td>Each consumer</td><td>Records its consumer group could not process, unchanged</td><td>Operator replay only; Notification has an opt-in <code>notification-replay</code> group</td><td class="num">7–14 d</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="notes">
+    <p>Every service that owns data runs its own PostgreSQL in its own namespace (<code>&lt;service&gt;-dev</code>) and publishes through a transactional outbox. Kafka delivery is at least once; consumers record <code>eventId</code> with their business effect and key order topics by <code>orderId</code>.</p>
+    <p>“Contract only” means the group is listed in <code>box1-ops-contracts/TOPICS.md</code> but no service on <code>main</code> consumes it yet. The Operations Console authenticates operators with Keycloak (OIDC, PKCE) and calls the services over cluster-internal HTTP; Scenario Controller fetches a client-credentials token for its Inventory calls.</p>
+  </section>
+</div>
+
+<script>
+(function(){
+const NS="http://www.w3.org/2000/svg";
+const W=190,H=58,C=[140,375,610,845,1080],R1=30,R2=160,R3=320,R5=670;
+const nodes=[
+ {id:"operator",x:C[1],y:R1,t:"Operator",s:"browser",k:"actor",kind:"Person",d:"Box1 operations staff using the console in a browser."},
+ {id:"keycloak",x:C[3],y:R1,t:"Keycloak",s:"realm box1",k:"idp",kind:"Identity provider",d:"Issues tokens for the console login, Scenario Controller's client-credentials grant, and Asset Service's bearer-token API."},
+ {id:"sensors",x:C[4],y:R1,t:"Site equipment",s:"sensor readings",k:"actor",kind:"External source",d:"Connected industrial equipment at Box1 sites, sending readings to Asset Service."},
+ {id:"console",x:C[1],y:R2,t:"Operations Console",s:"Quarkus · OIDC web app",k:"app",kind:"Service · single pane of glass",d:"Operator UI. Logs in through Keycloak and aggregates the other services over cluster HTTP. Holds no database."},
+ {id:"scenario",x:C[2],y:R2,t:"Scenario Controller",s:"Quarkus · PostgreSQL",k:"app",kind:"Service · demo driver",d:"Runs scripted demo scenarios and drills against the order flow, recording runs and an audit trail."},
+ {id:"inventory",x:C[0],y:R3,t:"Inventory Service",s:"Quarkus · PostgreSQL",k:"app",kind:"Service",d:"Owns stock levels per site and order reservations."},
+ {id:"order",x:C[1],y:R3,t:"Order Service",s:"Quarkus · PostgreSQL",k:"app",kind:"Service",d:"Transactional state of customer orders; drives the order saga through events."},
+ {id:"adapter",x:C[2],y:R3,t:"Fulfillment Adapter",s:"Quarkus · Camel · PostgreSQL",k:"app",kind:"Service · anti-corruption layer",d:"Protects the legacy ERP from unreliable upstream traffic and transport: queues requests, retries uploads and translates to the ERP1 file protocol."},
+ {id:"notification",x:C[3],y:R3,t:"Notification Service",s:"Quarkus · PostgreSQL",k:"app",kind:"Service",d:"Turns order and shipment events into deduplicated customer notices delivered by email."},
+ {id:"asset",x:C[4],y:R3,t:"Asset Service",s:"Quarkus · PostgreSQL",k:"app",kind:"Service",d:"Represents connected equipment at multiple sites: ingests readings, keeps recent history and raises threshold alerts."},
+ {id:"erp",x:727,y:R5,t:"Legacy ERP",s:"RHEL 10 bootc VM",k:"ext",kind:"Legacy system · VirtualMachine",d:"The ERP appliance the company depends on, running natively in an OpenShift Virtualization VM. Exchanges ERP1 files over SFTP (legacy-erp-sftp.legacy-erp-dev.svc)."},
+ {id:"mailhog",x:962,y:R5,t:"MailHog",s:"SMTP sink",k:"ext",kind:"Mail relay (dev)",d:"Development SMTP server that captures outbound customer email (mailhog.mailhog.svc)."},
+ {id:"agentic",x:1172,y:R5,t:"Agentic Operations",s:"scaffold · Kafka",k:"planned",kind:"Service · planned role",d:"AI-enabled operations. Deployed from the golden path with Kafka enabled; the contract's ai-operations consumer group is not implemented yet.",w:176},
+];
+const topics=[
+ {id:"t-inv",x:C[0],t:"inventory.events.v1"},
+ {id:"t-order",x:C[1],t:"order.events.v1"},
+ {id:"t-ful",x:C[2],t:"fulfillment.events.v1"},
+ {id:"t-notif",x:C[3],t:"notification.events.v1"},
+ {id:"t-tel",x:C[4],t:"telemetry.events.v1"},
+];
+const TY=490,TH=40,TW=184,B3=R3+H;
+// edge: a,b ids; c class; l label for panel; p path points; lab = on-canvas label [x,y]
+const E=[
+ {a:"operator",b:"console",c:"http",l:"HTTPS · web UI",p:[[C[1],R1+H],[C[1],R2]]},
+ {a:"console",b:"keycloak",c:"idp",l:"OIDC login (authorization code + PKCE)",h:1,p:[[C[1]+W/2,R2+14],[C[3]-W/2,R1+H/2]],lab:[600,98,"OIDC"]},
+ {a:"scenario",b:"keycloak",c:"idp",l:"client-credentials token for Inventory calls",p:[[650,R2],[815,R1+H]]},
+ {a:"asset",b:"keycloak",c:"idp",l:"validates bearer tokens (audience asset-service)",p:[[1040,R3],[875,R1+H]]},
+ {a:"sensors",b:"asset",c:"http",l:"POST /api/v1/telemetry/readings",p:[[1112,R1+H],[1112,R3]],lab:[1120,190,"readings"],la:"start"},
+ {a:"console",b:"scenario",c:"http",l:"/internal/v1/scenarios, /runs, /fixtures, /audit",h:1,p:[[C[1]+W/2,R2+40],[C[2]-W/2,R2+40]]},
+ {a:"console",b:"inventory",c:"http",l:"/api/v1/inventory, /api/v1/reservations/{id}",p:[[325,R2+H],[120,R3]]},
+ {a:"console",b:"order",c:"http",l:"/api/v1/orders, /orders/{id}/timeline",p:[[355,R2+H],[355,R3]]},
+ {a:"console",b:"adapter",c:"http",l:"/api/fulfillments",p:[[395,R2+H],[580,R3]]},
+ {a:"console",b:"asset",c:"http",l:"/api/v1/alerts, /api/v1/assets/{id}/readings",p:[[425,R2+H],[1010,R3]]},
+ {a:"scenario",b:"inventory",c:"http",l:"/internal/v1/stock, /internal/v1/sites",p:[[580,R2+H],[160,R3]]},
+ {a:"scenario",b:"order",c:"http",l:"POST /api/v1/orders",p:[[600,R2+H],[395,R3]]},
+ {a:"scenario",b:"adapter",c:"http",l:"/internal/fulfillments (fault injection)",p:[[630,R2+H],[630,R3]]},
+ {a:"inventory",b:"t-inv",c:"pub",l:"inventory.reserved / rejected / reservation-expired",p:[[C[0],B3],[C[0],TY]]},
+ {a:"order",b:"t-order",c:"pub",l:"order.placed, order.state-changed, fulfillment.requested",p:[[C[1],B3],[C[1],TY]]},
+ {a:"adapter",b:"t-ful",c:"pub",l:"shipment.confirmed / shipment.failed",p:[[C[2],B3],[C[2],TY]]},
+ {a:"notification",b:"t-notif",c:"pub",l:"notification.requested / delivered / failed",p:[[C[3],B3],[C[3],TY]]},
+ {a:"asset",b:"t-tel",c:"pub",l:"equipment.reading, equipment.threshold-exceeded",p:[[1062,B3],[1062,TY]]},
+ {a:"t-order",b:"inventory",c:"sub",l:"group inventory",p:[[335,TY],[175,B3]]},
+ {a:"t-order",b:"adapter",c:"sub",l:"group fulfillment",p:[[415,TY],[570,B3]]},
+ {a:"t-order",b:"notification",c:"sub",l:"group notification",p:[[440,TY],[785,B3]]},
+ {a:"t-inv",b:"order",c:"sub",l:"group order",p:[[185,TY],[325,B3]]},
+ {a:"t-ful",b:"order",c:"sub",l:"group order",p:[[570,TY],[410,B3]]},
+ {a:"t-ful",b:"inventory",c:"sub",l:"group inventory",p:[[545,TY],[205,B3]]},
+ {a:"t-ful",b:"notification",c:"sub",l:"group notification",p:[[650,TY],[812,B3]]},
+ {a:"t-tel",b:"asset",c:"sub",l:"group asset-service",p:[[1102,TY],[1102,B3]]},
+ {a:"adapter",b:"erp",c:"ext",l:"SFTP · ERP1 request and result files",path:`M680 ${B3} C680 430 727 430 727 470 L727 ${R5}`,lab:[735,640,"SFTP · ERP1"],la:"start"},
+ {a:"notification",b:"mailhog",c:"ext",l:"SMTP · customer notices",path:`M915 ${B3} C915 430 962 430 962 470 L962 ${R5}`,lab:[970,640,"SMTP"],la:"start"},
+ {a:"t-tel",b:"agentic",c:"plan",l:"group ai-operations (contract only)",p:[[1130,TY+TH],[1172,R5]]},
+];
+const svg=document.getElementById("map");
+const el=(n,a,p)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);(p||svg).appendChild(e);return e};
+// marker
+const defs=el("defs",{});
+[["http","var(--http)"],["pub","var(--kafka)"],["sub","var(--kafka)"],["ext","var(--ext)"],["idp","var(--ext)"],["plan","var(--planned)"]].forEach(([k,c])=>{
+  const m=el("marker",{id:"m-"+k,viewBox:"0 0 10 10",refX:"9",refY:"5",markerWidth:"7",markerHeight:"7",orient:"auto-start-reverse"},defs);
+  el("path",{d:"M0 0 L10 5 L0 10 z",fill:c},m);
+});
+// kafka band
+el("rect",{x:20,y:440,width:1230,height:150,rx:10,class:"band"});
+el("text",{x:36,y:466,class:"band-t"}).textContent="KAFKA · box1-kafka (Strimzi, namespace box1-kafka) · topics prefixed box1.";
+el("text",{x:36,y:572,class:"band-n"}).textContent="Each consumer group has a dead-letter topic box1.<domain>.dlq.v1 for operator replay.";
+// edges
+const pathOf=e=>{
+  if(e.path)return e.path;
+  const[[x1,y1],[x2,y2]]=e.p;
+  if(x1===x2||y1===y2)return`M${x1} ${y1} L${x2} ${y2}`;
+  if(e.h){const mx=(x1+x2)/2;return`M${x1} ${y1} C${mx} ${y1} ${mx} ${y2} ${x2} ${y2}`}
+  const my=(y1+y2)/2;return`M${x1} ${y1} C${x1} ${my} ${x2} ${my} ${x2} ${y2}`;
+};
+const gE=el("g",{});
+E.forEach(e=>{
+  e.el=el("path",{d:pathOf(e),class:"edge "+e.c,"marker-end":`url(#m-${e.c})`},gE);
+  if(e.lab){e.lt=el("text",{x:e.lab[0],y:e.lab[1],class:"elab "+e.c,"text-anchor":e.la||"middle"},gE);e.lt.textContent=e.lab[2]}
+});
+// topics
+topics.forEach(t=>{
+  const g=el("g",{class:"topic"});t.el=g;
+  el("rect",{x:t.x-TW/2,y:TY,width:TW,height:TH,rx:20},g);
+  const tx=el("text",{x:t.x,y:TY+25,"text-anchor":"middle"},g);tx.textContent=t.t;
+});
+// nodes
+nodes.forEach(n=>{
+  const w=n.w||W;
+  const g=el("g",{class:"node "+n.k,tabindex:"0",role:"button","aria-label":n.t});n.el=g;
+  el("rect",{x:n.x-w/2,y:n.y,width:w,height:H,rx:8},g);
+  el("text",{x:n.x,y:n.y+25,"text-anchor":"middle",class:"t"},g).textContent=n.t;
+  el("text",{x:n.x,y:n.y+44,"text-anchor":"middle",class:"s"},g).textContent=n.s;
+  g.addEventListener("mouseenter",()=>show(n.id,false));
+  g.addEventListener("mouseleave",()=>show(sel,true));
+  g.addEventListener("focus",()=>show(n.id,false));
+  g.addEventListener("click",()=>{sel=sel===n.id?null:n.id;show(sel,true)});
+  g.addEventListener("keydown",ev=>{if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();sel=sel===n.id?null:n.id;show(sel,true)}});
+});
+const byId=Object.fromEntries([...nodes,...topics].map(x=>[x.id,x]));
+const nameOf=id=>byId[id].t.startsWith("box1")||id.startsWith("t-")?"box1."+byId[id].t:byId[id].t;
+let sel=null;
+const panel=document.getElementById("panel");
+const esc=s=>s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+function rows(id){
+  const out=[];
+  E.forEach(e=>{
+    if(e.a===id){
+      const tag={http:["HTTP","calls"],idp:["Auth","uses"],pub:["Pub","publishes to"],sub:["Feeds","delivers to"],ext:["Ext","sends to"],plan:["Plan","would feed"]}[e.c];
+      out.push(`<li><b class="t-${e.c==="idp"?"ext":e.c}">${tag[0]}</b><span>${tag[1]} <strong>${esc(nameOf(e.b))}</strong><br><code>${esc(e.l)}</code></span></li>`);
+    }
+  });
+  E.forEach(e=>{
+    if(e.b===id){
+      const tag={http:["HTTP","called by"],idp:["Auth","used by"],pub:["Pub","published by"],sub:["Sub","consumes"],ext:["Ext","receives from"],plan:["Plan","planned from"]}[e.c];
+      out.push(`<li><b class="t-${e.c==="idp"?"ext":e.c}">${tag[0]}</b><span>${tag[1]} <strong>${esc(nameOf(e.a))}</strong><br><code>${esc(e.l)}</code></span></li>`);
+    }
+  });
+  return out.join("");
+}
+function show(id,persist){
+  const on=new Set();
+  svg.querySelectorAll(".on,.sel").forEach(x=>x.classList.remove("on","sel"));
+  if(!id){svg.classList.remove("focus");
+    panel.innerHTML=`<div class="kind">Overview</div><h3>11 services and systems, 5 event topics</h3><p>Order, Inventory, Fulfillment Adapter and Notification coordinate the order saga only through Kafka. HTTP is used by the two front doors (Operations Console and Scenario Controller) and by equipment posting readings.</p><p class="hint">Hover or select a box to list every call, topic and protocol it uses. Select it again to clear.</p>`;return}
+  svg.classList.add("focus");
+  on.add(id);
+  E.forEach(e=>{if(e.a===id||e.b===id){e.el.classList.add("on");e.lt&&e.lt.classList.add("on");on.add(e.a);on.add(e.b)}});
+  on.forEach(x=>byId[x].el.classList.add("on"));
+  if(persist&&sel)byId[sel].el.classList.add("sel");
+  const n=byId[id];
+  panel.innerHTML=`<div class="kind">${esc(n.kind)}</div><h3>${esc(n.t)}</h3><p>${esc(n.d)}</p><ul>${rows(id)}</ul>`;
+}
+show(null);
+})();
+</script>
