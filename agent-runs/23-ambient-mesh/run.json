@@ -1,0 +1,17 @@
+{
+  "issue": "box1-org/box1-docs#23",
+  "profile": "frontier",
+  "current_phase": 1,
+  "phase_state": "stopped_for_approval",
+  "updated_at": "2026-11-06T21:35:00-05:00",
+  "open_decisions": [
+    "approve OVN local gateway mode (decision 001)",
+    "approve OSSM 3.5 and Kiali operator installs (decision 002)",
+    "approve Kiali permissions: cluster-monitoring-view and box1-traces-read-dev (decision 003)"
+  ],
+  "repositories": {
+    "box1-docs": {"branch": "agent-run/23-ambient-mesh", "base": "2d0d078"},
+    "box1-gitops": {"role": "operators, mesh CRs, Kiali, network config", "main": "e07852a", "run_branch": null, "pr": null},
+    "box1-workloads-dev": {"role": "namespace labels, NetworkPolicies, waypoints, Telemetry", "main": "3c12637", "run_branch": null, "pr": null}
+  }
+}

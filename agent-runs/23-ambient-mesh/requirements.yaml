@@ -1,0 +1,22 @@
+- id: MESH-PREREQ-001
+  description: OVN local gateway mode enabled so ambient probes work, without breaking cluster traffic
+  status: blocked
+  limitations: [awaiting user approval of decision 001]
+- id: MESH-L4-001
+  description: Order flow works before enrollment, under ambient L4 on all seven namespaces, and after rolling back one namespace
+  status: proposed
+- id: MESH-MTLS-001
+  description: mTLS negotiated and measurable (ztunnel metrics/logs mutual_tls, Kiali)
+  status: proposed
+- id: MESH-KIALI-001
+  description: Kiali GitOps-managed, OpenShift login required, limited to selected namespaces; TCP graph shows a real order
+  status: proposed
+- id: MESH-L7-001
+  description: Waypoints on operations-console, order and inventory give an L7 graph; L4/L7/Tempo compared for one orderId; recommendation recorded
+  status: proposed
+- id: MESH-NP-001
+  description: NetworkPolicy baseline on DB, Kafka and ERP paths works under ambient; a blocked flow is refused; DNS and monitoring unaffected
+  status: proposed
+- id: MESH-COST-001
+  description: Resource cost of istiod, CNI, ztunnel, Kiali and waypoints measured; ingress Gateway API unaffected; no failure-domain HA stated
+  status: proposed
