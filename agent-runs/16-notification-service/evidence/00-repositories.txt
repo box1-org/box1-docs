@@ -1,0 +1,28 @@
+# Phase 0 repositories baseline — observed 2026-11-05 23:33–23:40 EST (America/New_York)
+
+## box1-docs
+origin/main: 61f49f9
+PR #69 (notification-frontier): OPEN at 0b75ee3 -> prompt read from branch notification-frontier, not main
+Run branch agent-run/16-notification-service created from origin/main in worktree run16-docs
+
+## box1-org/notification-service
+created 2026-11-06T04:29:23Z, pushed 2026-11-06T04:29:34Z, default main
+3db3fbc Create Quarkus service from the Box1 golden path
+c78151e Initialize Box1 development onboarding
+{
+  "id": "873c8374-8194-49d8-a43e-0647d57c2a38",
+  "name": "notification-service",
+  "namespace": "notification-service-dev",
+  "owner": "user:default/mike4263",
+  "templateVersion": "1.1.0"
+}
+
+Quarkus platform: 3.40.1.1; Java release 21; extensions: rest, rest-jackson, smallrye-openapi, smallrye-health, micrometer-prometheus, container-image-jib, messaging-kafka. No datasource/flyway/oidc yet.
+Gates in pom: checkstyle (config/checkstyle.xml), spotbugs 4.10.5.0 + findsecbugs 1.14.0, both at verify
+
+## box1-ops-contracts origin/main d57a4ef
+No notification.* schemas in events/v1. TOPICS.md: group notification listed on box1.fulfillment.events.v1 only; no box1.notification.dlq.v1 row.
+
+## Local tooling
+host UTC 2026-11-06T04:35:36Z; podman machine UTC 2026-11-06T04:35:37Z; podman 5.7.0 applehv VM 4 CPU/8 GiB shared with other runs (run15-*, run18-* containers present, not touched)
+openjdk version "21.0.13.0.3" 2026-10-24

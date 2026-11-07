@@ -1,0 +1,212 @@
+# Requirement ledger for box1-docs#16 (frontier). Status = highest level actually observed.
+# Sources: AC1–AC8 = issue #16 acceptance criteria; S-* = prompt verification scenarios; PX-* = phase exit additions.
+- id: NTF-DUP-001
+  description: One shipped-order event processed twice creates one intent and one effective delivery
+  source: 'AC1; scenario: duplicate event'
+  status: deployed
+  implementation: ["src/main/java/org/box1/notification/IntentService.java", "src/main/resources/db/migration/V1__notification_schema.sql"]
+  tests: ["ScenariosTest.duplicateShippedEventGivesOneIntentAndOneDelivery"]
+  commands: ["./mvnw -B -ntp verify -Pcontainers -DskipITs=false (local, 8b8c276)"]
+  evidence: ["evidence/07-live.md", "evidence/03-local-tests.md", "evidence/05-review-repairs.md"]
+  deployment: {"image_digest": "sha256:69788422d2f3beef94a255e4247ba3142f662f9edb25018489f2058edd5b363a", "gitops_commit": "2c8f93c", "source": "bacc353"}
+  limitations: []
+- id: NTF-RETRY-001
+  description: Stub 503 run shows increasing attempts and then success or visible FAILED; no infinite retry loop
+  source: 'AC2; scenarios: stub 503 then recovery; retry exhaustion gives FAILED; PX-7 stub 503 run after approval'
+  status: live_verified
+  implementation: ["src/main/java/org/box1/notification/delivery/DeliveryWorker.java", "src/main/java/org/box1/notification/delivery/StubProvider.java"]
+  tests: ["ScenariosTest.stub503ShowsIncreasingAttemptsThenSuccess", "ScenariosTest.retryExhaustionEndsFailedAndStopsRetrying"]
+  commands: ["live order ord_b84bd53fc0514c86bf4598e29cda8ff6 with TRANSIENT_503 failCount 2 (evidence/09)", "./mvnw -B -ntp verify -Pcontainers -DskipITs=false (local, 8b8c276)"]
+  evidence: ["evidence/09-live-acceptance.md", "evidence/07-live.md", "evidence/03-local-tests.md", "evidence/05-review-repairs.md"]
+  deployment: {"image_digest": "sha256:69788422d2f3beef94a255e4247ba3142f662f9edb25018489f2058edd5b363a", "gitops_commit": "2c8f93c", "source": "bacc353"}
+  limitations: ['Live: 503 then success. Exhaustion to FAILED proven locally only']
+- id: NTF-PERM-001
+  description: Stub permanent 4xx is not retried and ends FAILED with PERMANENT_REJECTION
+  source: 'scenario: stub permanent 4xx not retried'
+  status: deployed
+  implementation: ["src/main/java/org/box1/notification/delivery/Classifier.java"]
+  tests: ["ScenariosTest.permanentFourHundredIsNotRetried", "ClassifierAndGateTest (CI)"]
+  commands: ["./mvnw -B -ntp verify -Pcontainers -DskipITs=false (local, 8b8c276)"]
+  evidence: ["evidence/07-live.md", "evidence/03-local-tests.md", "evidence/05-review-repairs.md"]
+  deployment: {"image_digest": "sha256:69788422d2f3beef94a255e4247ba3142f662f9edb25018489f2058edd5b363a", "gitops_commit": "2c8f93c", "source": "bacc353"}
+  limitations: []
+- id: NTF-API-001
+  description: Operator query shows status, attempts and sanitized structured failure reason accurately
+  source: AC3
+  status: live_verified
+  implementation: ["src/main/java/org/box1/notification/api/NotificationResource.java", "src/main/java/org/box1/notification/api/Views.java"]
+  tests: ["ScenariosTest.readerSeesTheNoticeAndATokenWithoutTheRoleIsRefused", "ScenariosTest.permanentFourHundredIsNotRetried"]
+  commands: ["live order ord_b84bd53fc0514c86bf4598e29cda8ff6 with TRANSIENT_503 failCount 2 (evidence/09)", "./mvnw -B -ntp verify -Pcontainers -DskipITs=false (local, 8b8c276)"]
+  evidence: ["evidence/09-live-acceptance.md", "evidence/07-live.md", "evidence/03-local-tests.md", "evidence/05-review-repairs.md"]
+  deployment: {"image_digest": "sha256:69788422d2f3beef94a255e4247ba3142f662f9edb25018489f2058edd5b363a", "gitops_commit": "2c8f93c", "source": "bacc353"}
+  limitations: []
+- id: NTF-PII-001
+  description: No customer identifier in notices, receipts, logs or event payloads
+  source: 'AC4; scenario: scan of logs, receipts and payloads; PX-3'
+  status: live_verified
+  implementation: ["src/main/java/org/box1/notification/messaging/EventParser.java", "src/main/java/org/box1/notification/Templates.java"]
+  tests: ["ScenariosTest.noCustomerIdentifierAppearsAnywhere", "EventParserTest.orderPlacedIsEnvelopeOnlyAndItsCustomerFieldIsNeverRead (CI)"]
+  commands: ["live order ord_b84bd53fc0514c86bf4598e29cda8ff6 with TRANSIENT_503 failCount 2 (evidence/09)", "./mvnw -B -ntp verify -Pcontainers -DskipITs=false (local, 8b8c276)"]
+  evidence: ["evidence/09-live-acceptance.md", "evidence/07-live.md", "evidence/03-local-tests.md", "evidence/05-review-repairs.md"]
+  deployment: {"image_digest": "sha256:69788422d2f3beef94a255e4247ba3142f662f9edb25018489f2058edd5b363a", "gitops_commit": "2c8f93c", "source": "bacc353"}
+  limitations: []
+- id: NTF-FACT-001
+  description: Same business fact reported by two different events creates one intent and one effective delivery
+  source: 'AC5; scenario: the same fact through two events'
+  status: deployed
+  implementation: ["src/main/java/org/box1/notification/NoticeCatalog.java", "src/main/java/org/box1/notification/domain/Fact.java"]
+  tests: ["ScenariosTest.sameFactFromTwoEventsGivesOneIntentAndOneDelivery", "ScenariosTest.nonRetryableFailureAndTheResultingExceptionAreOneNotice", "NoticeCatalogTest (CI)"]
+  commands: ["./mvnw -B -ntp verify -Pcontainers -DskipITs=false (local, 8b8c276)"]
+  evidence: ["evidence/07-live.md", "evidence/03-local-tests.md", "evidence/05-review-repairs.md"]
+  deployment: {"image_digest": "sha256:69788422d2f3beef94a255e4247ba3142f662f9edb25018489f2058edd5b363a", "gitops_commit": "2c8f93c", "source": "bacc353"}
+  limitations: []
+- id: NTF-RETRYABLE-001
+  description: A retryable shipment.failed.v1, which leaves the order unchanged, produces an operator notice
+  source: 'AC6; scenario: retryable shipment failure produces a notice'
+  status: deployed
+  implementation: ["src/main/java/org/box1/notification/NoticeCatalog.java"]
+  tests: ["ScenariosTest.retryableShipmentFailureStillProducesAnOperatorNotice"]
+  commands: ["./mvnw -B -ntp verify -Pcontainers -DskipITs=false (local, 8b8c276)"]
+  evidence: ["evidence/07-live.md", "evidence/03-local-tests.md", "evidence/05-review-repairs.md"]
+  deployment: {"image_digest": "sha256:69788422d2f3beef94a255e4247ba3142f662f9edb25018489f2058edd5b363a", "gitops_commit": "2c8f93c", "source": "bacc353"}
+  limitations: []
+- id: NTF-AUTH-001
+  description: Anonymous API request gets 401
+  source: 'AC7; scenario: anonymous request'
+  status: live_verified
+  implementation: ["src/main/java/org/box1/notification/api/ProblemMappers.java", "application.properties"]
+  tests: ["SecurityTest.anonymousRequestsGet401ProblemJson"]
+  commands: ["curl -i https://notification-service-dev.apps.ocp.box1.org/api/v1/notifications?orderId=ord_x (anonymous, garbage token)", "./mvnw -B -ntp verify -Pcontainers -DskipITs=false (local, 8b8c276)", "PR pipeline box1-ci/notification-service-validate-7gp7r (8b8c276)"]
+  evidence: ["evidence/07-live.md", "evidence/03-local-tests.md", "evidence/05-review-repairs.md", "evidence/04-ci.md"]
+  deployment: {"image_digest": "sha256:69788422d2f3beef94a255e4247ba3142f662f9edb25018489f2058edd5b363a", "gitops_commit": "2c8f93c", "source": "bacc353"}
+  limitations: []
+- id: NTF-AUTH-002
+  description: Token without the reader role gets 403
+  source: 'AC7; scenario: request without the reader role'
+  status: deployed
+  implementation: ["src/main/java/org/box1/notification/api/ClientRoleAugmentor.java"]
+  tests: ["SecurityTest.tokensWithoutTheReaderRoleGet403", "ConsoleTokenTest"]
+  commands: ["./mvnw -B -ntp verify -Pcontainers -DskipITs=false (local, 8b8c276)", "PR pipeline box1-ci/notification-service-validate-7gp7r (8b8c276)"]
+  evidence: ["evidence/07-live.md", "evidence/03-local-tests.md", "evidence/05-review-repairs.md", "evidence/04-ci.md"]
+  deployment: {"image_digest": "sha256:69788422d2f3beef94a255e4247ba3142f662f9edb25018489f2058edd5b363a", "gitops_commit": "2c8f93c", "source": "bacc353"}
+  limitations: ['Live 403 shown for a token without the fault-operator role; a token lacking only the reader role was not available (issued user holds it); reader 403 proven in CI']
+- id: NTF-FAULT-001
+  description: Stub fault control is refused outside an allowlisted namespace
+  source: 'AC7; scenario: fault control outside the allowlist; PX-3 limits enforced server-side'
+  status: deployed
+  implementation: ["src/main/java/org/box1/notification/delivery/FaultGate.java", "src/main/java/org/box1/notification/api/StubResource.java"]
+  tests: ["SecurityTest.readerCannotSwitchFaultsAndFaultControlIsRefusedOutsideTheAllowlist (CI)", "NotAllowlistedNamespaceTest (local)", "ClassifierAndGateTest (CI)"]
+  commands: ["./mvnw -B -ntp verify -Pcontainers -DskipITs=false (local, 8b8c276)", "PR pipeline box1-ci/notification-service-validate-7gp7r (8b8c276)"]
+  evidence: ["evidence/07-live.md", "evidence/03-local-tests.md", "evidence/05-review-repairs.md", "evidence/04-ci.md"]
+  deployment: {"image_digest": "sha256:69788422d2f3beef94a255e4247ba3142f662f9edb25018489f2058edd5b363a", "gitops_commit": "2c8f93c", "source": "bacc353"}
+  limitations: []
+- id: NTF-FAULT-002
+  description: A stub fault expires on its TTL; TTL and other bounds are enforced server-side and audited with the actor
+  source: 'AC7; scenario: fault TTL expiry; PX-3'
+  status: deployed
+  implementation: ["src/main/java/org/box1/notification/store/StubStore.java", "src/main/java/org/box1/notification/ops/Housekeeping.java"]
+  tests: ["ScenariosTest.aFaultExpiresOnItsTtlWithAnAuditEntry", "ScenariosTest.faultBoundsAreEnforcedServerSideAndAudited", "ScenariosTest.theAuditTrailCannotBeChanged"]
+  commands: ["./mvnw -B -ntp verify -Pcontainers -DskipITs=false (local, 8b8c276)"]
+  evidence: ["evidence/07-live.md", "evidence/03-local-tests.md", "evidence/05-review-repairs.md"]
+  deployment: {"image_digest": "sha256:69788422d2f3beef94a255e4247ba3142f662f9edb25018489f2058edd5b363a", "gitops_commit": "2c8f93c", "source": "bacc353"}
+  limitations: []
+- id: NTF-DLQ-001
+  description: Consumer poison records reach the notification dead-letter topic unchanged, with a documented and exercised replay procedure
+  source: 'AC8; scenario: poison record reaches the dead-letter topic and replays'
+  status: deployed
+  implementation: ["src/main/java/org/box1/notification/messaging/NotificationConsumer.java", "docs/runbook.md"]
+  tests: ["ScenariosTest.poisonRecordsReachTheDeadLetterTopicUnchangedAndReplay", "ReplayTest.aMisroutedRecordIsDeadLetteredThenReplayedOnceAndGarbageStaysDeadLettered"]
+  commands: ["./mvnw -B -ntp verify -Pcontainers -DskipITs=false (local, 8b8c276)"]
+  evidence: ["evidence/07-live.md", "evidence/03-local-tests.md", "evidence/05-review-repairs.md"]
+  deployment: {"image_digest": "sha256:69788422d2f3beef94a255e4247ba3142f662f9edb25018489f2058edd5b363a", "gitops_commit": "2c8f93c", "source": "bacc353"}
+  limitations: ['Cluster topic box1.notification.dlq.v1 needs approval (O-1)', 'Replay is group-scoped (channel dlq-replay, group notification-replay) after review; not exercised on the cluster']
+- id: NTF-SHUTDOWN-001
+  description: Shutdown with a retry pending resumes after restart without a duplicate delivery
+  source: 'scenario: shutdown with a retry pending'
+  status: deployed
+  implementation: ["src/main/java/org/box1/notification/delivery/DeliveryWorker.java"]
+  tests: ["ProcessRestartIT.shutdownWithARetryPendingResumesAfterRestartWithoutADuplicateDelivery", "ScenariosTest.aWorkerThatDiesAfterTheProviderAcceptedCausesNoSecondDelivery"]
+  commands: ["./mvnw -B -ntp verify -Pcontainers -DskipITs=false (local, 8b8c276)"]
+  evidence: ["evidence/07-live.md", "evidence/03-local-tests.md", "evidence/05-review-repairs.md"]
+  deployment: {"image_digest": "sha256:69788422d2f3beef94a255e4247ba3142f662f9edb25018489f2058edd5b363a", "gitops_commit": "2c8f93c", "source": "bacc353"}
+  limitations: []
+- id: NTF-TEMPLATE-001
+  description: Template injection is escaped; templates are versioned and the version is stored and published
+  source: 'scenario: template injection is escaped; interfaces: versioned templates'
+  status: deployed
+  implementation: ["src/main/java/org/box1/notification/Templates.java"]
+  tests: ["TemplatesTest"]
+  commands: ["./mvnw -B -ntp verify -Pcontainers -DskipITs=false (local, 8b8c276)", "PR pipeline box1-ci/notification-service-validate-7gp7r (8b8c276)"]
+  evidence: ["evidence/07-live.md", "evidence/03-local-tests.md", "evidence/05-review-repairs.md", "evidence/04-ci.md"]
+  deployment: {"image_digest": "sha256:69788422d2f3beef94a255e4247ba3142f662f9edb25018489f2058edd5b363a", "gitops_commit": "2c8f93c", "source": "bacc353"}
+  limitations: []
+- id: NTF-OUTBOX-001
+  description: Broker outage gives a bounded outbox backlog and later delivery of notification events
+  source: 'scenario: broker outage; interfaces: transactional outbox'
+  status: deployed
+  implementation: ["src/main/java/org/box1/notification/store/OutboxStore.java", "src/main/java/org/box1/notification/messaging/OutboxPublisher.java"]
+  tests: ["ScenariosTest.brokerOutageLeavesABoundedOutboxBacklogThatPublishesLater"]
+  commands: ["./mvnw -B -ntp verify -Pcontainers -DskipITs=false (local, 8b8c276)"]
+  evidence: ["evidence/07-live.md", "evidence/03-local-tests.md", "evidence/05-review-repairs.md"]
+  deployment: {"image_digest": "sha256:69788422d2f3beef94a255e4247ba3142f662f9edb25018489f2058edd5b363a", "gitops_commit": "2c8f93c", "source": "bacc353"}
+  limitations: []
+- id: NTF-CONTRACT-001
+  description: notification.delivered.v1 / notification.failed.v1 schemas and TOPICS.md consumer group reviewed in box1-ops-contracts; produced events validate against them
+  source: 'PX-2; D-013'
+  status: live_verified
+  implementation: ["src/main/java/org/box1/notification/messaging/EventFactory.java"]
+  tests: ["ContractTest"]
+  commands: ["live order ord_b84bd53fc0514c86bf4598e29cda8ff6 with TRANSIENT_503 failCount 2 (evidence/09)", "./mvnw -B -ntp verify -Pcontainers -DskipITs=false (local, 8b8c276)", "PR pipeline box1-ci/notification-service-validate-7gp7r (8b8c276)"]
+  evidence: ["evidence/09-live-acceptance.md", "evidence/07-live.md", "evidence/03-local-tests.md", "evidence/05-review-repairs.md", "evidence/04-ci.md"]
+  deployment: {"image_digest": "sha256:69788422d2f3beef94a255e4247ba3142f662f9edb25018489f2058edd5b363a", "gitops_commit": "2c8f93c", "source": "bacc353"}
+  limitations: []
+- id: NTF-FLOOR-001
+  description: First start does not turn history before the event floor into notices
+  source: 'user instruction (offset policy); D-006'
+  status: deployed
+  implementation: ["src/main/java/org/box1/notification/messaging/NotificationConsumer.java", "src/main/java/org/box1/notification/ops/StartupChecks.java"]
+  tests: ["ScenariosTest.eventsBeforeTheFloorProduceNoNotice", "ProcessRestartIT.refusesToStartWithInvalidSafetyConfiguration"]
+  commands: ["./mvnw -B -ntp verify -Pcontainers -DskipITs=false (local, 8b8c276)"]
+  evidence: ["evidence/07-live.md", "evidence/03-local-tests.md", "evidence/05-review-repairs.md"]
+  deployment: {"image_digest": "sha256:69788422d2f3beef94a255e4247ba3142f662f9edb25018489f2058edd5b363a", "gitops_commit": "2c8f93c", "source": "bacc353"}
+  limitations: []
+- id: NTF-OBS-001
+  description: Metrics for pending age, delivery success/error counts and retry exhaustion; traces and correlation link a notice to the business order
+  source: 'interfaces: metrics; NFR'
+  status: live_verified
+  implementation: ["src/main/java/org/box1/notification/ops/NotificationMetrics.java"]
+  tests: ["ScenariosTest.readerSeesTheNoticeAndATokenWithoutTheRoleIsRefused"]
+  commands: ["live order ord_b84bd53fc0514c86bf4598e29cda8ff6 with TRANSIENT_503 failCount 2 (evidence/09)", "./mvnw -B -ntp verify -Pcontainers -DskipITs=false (local, 8b8c276)"]
+  evidence: ["evidence/09-live-acceptance.md", "evidence/07-live.md", "evidence/03-local-tests.md", "evidence/05-review-repairs.md"]
+  deployment: {"image_digest": "sha256:69788422d2f3beef94a255e4247ba3142f662f9edb25018489f2058edd5b363a", "gitops_commit": "2c8f93c", "source": "bacc353"}
+  limitations: []
+- id: NTF-SMOKE-001
+  description: Golden Path smoke endpoints remain anonymous and pass release smoke
+  source: 'interfaces: API; PX-6'
+  status: live_verified
+  implementation: ["src/main/java/org/box1/notification/GreetingResource.java", "src/main/java/org/box1/notification/InfoResource.java"]
+  tests: ["SecurityTest.smokePathsStayAnonymousAndOtherPathsAreDenied", "GreetingResourceIT"]
+  commands: ["manual release-smoke checks through the Route (evidence/07-live.md)", "./mvnw -B -ntp verify -Pcontainers -DskipITs=false (local, 8b8c276)", "PR pipeline box1-ci/notification-service-validate-7gp7r (8b8c276)"]
+  evidence: ["evidence/07-live.md", "evidence/03-local-tests.md", "evidence/05-review-repairs.md", "evidence/04-ci.md"]
+  deployment: {"image_digest": "sha256:69788422d2f3beef94a255e4247ba3142f662f9edb25018489f2058edd5b363a", "gitops_commit": "2c8f93c", "source": "bacc353"}
+  limitations: []
+- id: NTF-LIVE-001
+  description: A real order's shipment or failure on the cluster produces one notice visible through the API
+  source: PX-7
+  status: live_verified
+  implementation: ["src/main/java/org/box1/notification/IntentService.java"]
+  tests: []
+  commands: ["live order ord_b84bd53fc0514c86bf4598e29cda8ff6 with TRANSIENT_503 failCount 2 (evidence/09)", ]
+  evidence: ["evidence/09-live-acceptance.md", ]
+  deployment: {"image_digest": "sha256:69788422d2f3beef94a255e4247ba3142f662f9edb25018489f2058edd5b363a", "gitops_commit": "2c8f93c", "source": "bacc353"}
+  limitations: ['Proven with a rejection (ORDER_REJECTED); a shipment notice on the cluster needs the ERP path, not established on this cluster']
+- id: NTF-DOCS-001
+  description: OpenAPI, README, architecture, runbook (DLQ replay, fault control, recovery) and config documentation
+  source: finish-line checklist
+  status: deployed
+  implementation: ["README.md", "docs/architecture.md", "docs/runbook.md"]
+  tests: []
+  commands: []
+  evidence: ["evidence/07-live.md"]
+  deployment: {"image_digest": "sha256:69788422d2f3beef94a255e4247ba3142f662f9edb25018489f2058edd5b363a", "gitops_commit": "2c8f93c", "source": "bacc353"}
+  limitations: []
