@@ -1,0 +1,162 @@
+# Requirement ledger for box1-docs#20 (frontier). Status = highest level actually observed.
+# Sources: AC1–AC8 = issue #20 acceptance criteria; PX-* = prompt phase exit additions; D-* = decisions/.
+- id: AIO-ERP-001
+  description: "Seeded ERP slowdown returns specific ERP/adapter evidence and a real trace/alert/deployment reference if available; absent sources stated unavailable"
+  source: 'AC1; scenario: seeded ERP slowdown with and without a source; PX-7'
+  status: deployed
+  implementation: ["src/main/java/org/box1/aiops/evidence/EvidenceService.java", "src/main/java/org/box1/aiops/analysis/AnalysisService.java"]
+  tests: ["AnalysisApiTest.erpSlowdownReturnsCitedErpEvidenceAndStatesWhatIsUnavailable", "AnalysisApiTest.anAbsentSourceIsStatedAndDegradesTheAnalysis", "EvaluationTest (slow-erp, missing-evidence)"]
+  commands: ["./mvnw -B -ntp verify (agentic-operations 0cf2604; 69 tests)", "CI agentic-operations-validate-6lt27 (0cf2604) Succeeded"]
+  evidence: ["evidence/04-local-tests.md", "evidence/05-prod-profile-and-live-model.md", "evidence/06-ci.md", "evidence/07-review-repairs.md", "evidence/09-delivery.md", "evidence/10-live-acceptance.md"]
+  deployment: {"image_digest": "sha256:21da40d46d29f4ed36f8bcc6e6453e1ba4627708837b5b4021666b01032e4818", "gitops_commit": "55ed116", "source": "9d2d3e3"}
+  limitations: ['Live seeded ERP slowdown waived by the user on 2026-11-07 ("Skip ERP scenario"): erp-delayed-processing needs ERP demo faults, which are off in the cluster ERP image (box1-docs#83 item 2), and a person at the ERP console; erp-manual-hold was offered and declined. Proven in CI (AnalysisApiTest.erpSlowdown…, EvaluationTest slow-erp and missing-evidence). Live analysis of a real order showed FULFILLMENT evidence from the ERP adapter and a TRACE_REFERENCE (evidence/10)']
+- id: AIO-INJ-001
+  description: "Prompt injection in runbook references, logs or Kafka payloads cannot add privileges, disclose extra data or cause unsupported tool calls"
+  source: 'AC2; scenario: injection cases; D-010'
+  status: deployed
+  implementation: ["src/main/java/org/box1/aiops/analysis/Prompt.java", "src/main/java/org/box1/aiops/analysis/OutputValidator.java", "src/main/java/org/box1/aiops/window/EvidenceWindow.java"]
+  tests: ["EvaluationTest (prompt-injection)", "EvidenceWindowTest.payloadKeepsOnlyBoundedScalarsSoInjectedTextStaysSmallData", "VllmModelClientTest.toolCallsAreRefused", "live probe evidence/05 (n=1)"]
+  commands: ["./mvnw -B -ntp verify (agentic-operations 0cf2604; 69 tests)", "CI agentic-operations-validate-6lt27 (0cf2604) Succeeded"]
+  evidence: ["evidence/04-local-tests.md", "evidence/05-prod-profile-and-live-model.md", "evidence/06-ci.md", "evidence/07-review-repairs.md", "evidence/09-delivery.md", "evidence/10-live-acceptance.md"]
+  deployment: {"image_digest": "sha256:21da40d46d29f4ed36f8bcc6e6453e1ba4627708837b5b4021666b01032e4818", "gitops_commit": "55ed116", "source": "9d2d3e3"}
+  limitations: ['Live probe is a single sample']
+- id: AIO-ROLE-001
+  description: "No cross-customer data leakage through REST or MCP; operator-only v1 roles enforced server-side"
+  source: 'AC3; scenario: operator vs customer; D-005'
+  status: deployed
+  implementation: ["src/main/java/org/box1/aiops/security/Guard.java"]
+  tests: ["AnalysisApiTest.otherRolesAreRejected", "AnalysisApiTest.viewerCannotStartAnAnalysis", "AnalysisApiTest.tokensFromUnacceptedClientsAreRejected", "McpToolsTest.callersWithoutAnAiopsRoleGetNoEvidence", "EvaluationTest roleLeaks=0"]
+  commands: ["./mvnw -B -ntp verify (agentic-operations 0cf2604; 69 tests)", "CI agentic-operations-validate-6lt27 (0cf2604) Succeeded"]
+  evidence: ["evidence/04-local-tests.md", "evidence/05-prod-profile-and-live-model.md", "evidence/06-ci.md", "evidence/07-review-repairs.md", "evidence/09-delivery.md", "evidence/10-live-acceptance.md"]
+  deployment: {"image_digest": "sha256:21da40d46d29f4ed36f8bcc6e6453e1ba4627708837b5b4021666b01032e4818", "gitops_commit": "55ed116", "source": "9d2d3e3"}
+  limitations: ['Operator-only v1 (Q-4); no customer identity exists']
+- id: AIO-MODEL-001
+  description: "Model down, timeout, truncated or invalid output returns a typed status and never an invented diagnosis"
+  source: 'AC4; scenarios: model down/timeout/truncated/invalid JSON; D-008, D-009'
+  status: deployed
+  implementation: ["src/main/java/org/box1/aiops/model/VllmModelClient.java", "src/main/java/org/box1/aiops/analysis/AnalysisService.java"]
+  tests: ["AnalysisApiTest.modelDowntimeIsTypedAndInventsNothing", "AnalysisApiTest.invalidOrTruncatedOutputIsRejected", "AnalysisApiTest.orderServiceDownMeansNoDiagnosisAndNoModelCall", "VllmModelClientTest (7)"]
+  commands: ["./mvnw -B -ntp verify (agentic-operations 0cf2604; 69 tests)", "CI agentic-operations-validate-6lt27 (0cf2604) Succeeded"]
+  evidence: ["evidence/04-local-tests.md", "evidence/05-prod-profile-and-live-model.md", "evidence/06-ci.md", "evidence/07-review-repairs.md", "evidence/09-delivery.md", "evidence/10-live-acceptance.md"]
+  deployment: {"image_digest": "sha256:21da40d46d29f4ed36f8bcc6e6453e1ba4627708837b5b4021666b01032e4818", "gitops_commit": "55ed116", "source": "9d2d3e3"}
+  limitations: ['Model-down not exercised against the live endpoint']
+- id: AIO-NOEXEC-001
+  description: "Analyze cannot execute rollback or remediation; proposals only, executable=false"
+  source: 'AC5; scenario: proposed rollback not executed; D-011'
+  status: live_verified
+  implementation: ["src/main/java/org/box1/aiops/analysis/OutputValidator.java", "src/main/java/org/box1/aiops/api/AnalysisResource.java", "src/main/java/org/box1/aiops/mcp/AiopsTools.java"]
+  tests: ["AnalysisApiTest.uncitedFindingsAndUnlistedActionsAreDropped", "AnalysisApiTest.theApiHasNoWriteRoutes", "McpToolsTest.theCatalogHoldsOnlyReadOnlyEvidenceAndAnalysisTools"]
+  commands: ["live REST and MCP run 2026-11-07 (evidence/10)", "./mvnw -B -ntp verify (agentic-operations 0cf2604; 69 tests)", "CI agentic-operations-validate-6lt27 (0cf2604) Succeeded"]
+  evidence: ["evidence/04-local-tests.md", "evidence/05-prod-profile-and-live-model.md", "evidence/06-ci.md", "evidence/07-review-repairs.md", "evidence/09-delivery.md", "evidence/10-live-acceptance.md"]
+  deployment: {"image_digest": "sha256:21da40d46d29f4ed36f8bcc6e6453e1ba4627708837b5b4021666b01032e4818", "gitops_commit": "55ed116", "source": "9d2d3e3"}
+  limitations: ['Live: only NO_ACTION proposed, executable=false; no write paths in the live OpenAPI or MCP catalog']
+- id: AIO-MCP-001
+  description: "MCP tool list holds only read-only evidence tools and analysis tools; anonymous, under-privileged, unknown-tool and invalid-argument calls rejected"
+  source: 'AC6; scenarios: MCP negative cases; D-004'
+  status: live_verified
+  implementation: ["src/main/java/org/box1/aiops/mcp/AiopsTools.java", "src/main/java/org/box1/aiops/mcp/ToolAudit.java"]
+  tests: ["McpToolsTest (8)"]
+  commands: ["live REST and MCP run 2026-11-07 (evidence/10)", "./mvnw -B -ntp verify (agentic-operations 0cf2604; 69 tests)", "CI agentic-operations-validate-6lt27 (0cf2604) Succeeded"]
+  evidence: ["evidence/04-local-tests.md", "evidence/05-prod-profile-and-live-model.md", "evidence/06-ci.md", "evidence/07-review-repairs.md", "evidence/09-delivery.md", "evidence/10-live-acceptance.md"]
+  deployment: {"image_digest": "sha256:21da40d46d29f4ed36f8bcc6e6453e1ba4627708837b5b4021666b01032e4818", "gitops_commit": "55ed116", "source": "9d2d3e3"}
+  limitations: ['Under-privileged and unknown-tool cases proven in CI only (the live account holds both roles)']
+- id: AIO-PARITY-001
+  description: "Same incident through REST and MCP uses the same evidence and authorization decisions"
+  source: 'AC7; scenario: REST vs MCP'
+  status: live_verified
+  implementation: ["src/main/java/org/box1/aiops/mcp/AiopsTools.java"]
+  tests: ["McpToolsTest.restAndMcpUseTheSameEvidenceAndDecisions", "EvaluationTest (REST and MCP status per case)"]
+  commands: ["live REST and MCP run 2026-11-07 (evidence/10)", "./mvnw -B -ntp verify (agentic-operations 0cf2604; 69 tests)", "CI agentic-operations-validate-6lt27 (0cf2604) Succeeded"]
+  evidence: ["evidence/04-local-tests.md", "evidence/05-prod-profile-and-live-model.md", "evidence/06-ci.md", "evidence/07-review-repairs.md", "evidence/09-delivery.md", "evidence/10-live-acceptance.md"]
+  deployment: {"image_digest": "sha256:21da40d46d29f4ed36f8bcc6e6453e1ba4627708837b5b4021666b01032e4818", "gitops_commit": "55ed116", "source": "9d2d3e3"}
+  limitations: ['Live on one healthy order; MCP request has no server span (trace gap)']
+- id: AIO-RESTART-001
+  description: "After restart an earlier analysis ID returns typed not-found; Kafka window refills without blocking readiness"
+  source: 'AC8; scenario: restart; D-003, D-007'
+  status: deployed
+  implementation: ["src/main/java/org/box1/aiops/analysis/AnalysisStore.java", "src/main/java/org/box1/aiops/window/WindowStartSeek.java"]
+  tests: ["AnalysisStoreTest.aNewStoreAfterARestartKnowsNothing", "ConsumerWiringTest.readinessDoesNotIncludeKafkaOrTheModel", "prod-profile jar readiness with Kafka unreachable (evidence/05)"]
+  commands: ["./mvnw -B -ntp verify (agentic-operations 0cf2604; 69 tests)", "CI agentic-operations-validate-6lt27 (0cf2604) Succeeded"]
+  evidence: ["evidence/04-local-tests.md", "evidence/05-prod-profile-and-live-model.md", "evidence/06-ci.md", "evidence/07-review-repairs.md", "evidence/09-delivery.md", "evidence/10-live-acceptance.md"]
+  deployment: {"image_digest": "sha256:21da40d46d29f4ed36f8bcc6e6453e1ba4627708837b5b4021666b01032e4818", "gitops_commit": "55ed116", "source": "9d2d3e3"}
+  limitations: ['Seek-to-time rebuild not exercised against a real broker']
+- id: AIO-CITE-001
+  description: "Every material claim cites evidence with ref, type, source, timestamp, retrieval status and trusted link"
+  source: 'Interfaces: REST analysis; D-006, D-009'
+  status: live_verified
+  implementation: ["src/main/java/org/box1/aiops/evidence/EvidenceItem.java", "src/main/java/org/box1/aiops/analysis/OutputValidator.java"]
+  tests: ["AnalysisApiTest.erpSlowdownReturnsCitedErpEvidenceAndStatesWhatIsUnavailable", "OutputValidatorTest (4)"]
+  commands: ["live REST and MCP run 2026-11-07 (evidence/10)", "./mvnw -B -ntp verify (agentic-operations 0cf2604; 69 tests)", "CI agentic-operations-validate-6lt27 (0cf2604) Succeeded"]
+  evidence: ["evidence/04-local-tests.md", "evidence/05-prod-profile-and-live-model.md", "evidence/06-ci.md", "evidence/07-review-repairs.md", "evidence/09-delivery.md", "evidence/10-live-acceptance.md"]
+  deployment: {"image_digest": "sha256:21da40d46d29f4ed36f8bcc6e6453e1ba4627708837b5b4021666b01032e4818", "gitops_commit": "55ed116", "source": "9d2d3e3"}
+  limitations: ['Live evidence entries complete; the live answer had no findings (healthy order), so citation dropping is proven in CI and by the n=1 probe']
+- id: AIO-BUSY-001
+  description: "Concurrency bounded to the model's capacity; excess analyses rejected with typed BUSY"
+  source: 'Interfaces: context budget; scenario: concurrent analyses; D-008'
+  status: deployed
+  implementation: ["src/main/java/org/box1/aiops/analysis/AnalysisService.java"]
+  tests: ["AnalysisApiTest.theQueueIsBoundedAndExcessRequestsAreBusy"]
+  commands: ["./mvnw -B -ntp verify (agentic-operations 0cf2604; 69 tests)", "CI agentic-operations-validate-6lt27 (0cf2604) Succeeded"]
+  evidence: ["evidence/04-local-tests.md", "evidence/05-prod-profile-and-live-model.md", "evidence/06-ci.md", "evidence/07-review-repairs.md", "evidence/09-delivery.md", "evidence/10-live-acceptance.md"]
+  deployment: {"image_digest": "sha256:21da40d46d29f4ed36f8bcc6e6453e1ba4627708837b5b4021666b01032e4818", "gitops_commit": "55ed116", "source": "9d2d3e3"}
+  limitations: []
+- id: AIO-KAFKA-001
+  description: "Bounded evidence window: dedupe on eventId, poison records skipped and counted, lag and size metrics, Kafka outage does not fail readiness"
+  source: 'Interfaces: Kafka window; scenarios: poison, duplicate, Kafka unavailable; D-007'
+  status: deployed
+  implementation: ["src/main/java/org/box1/aiops/window/EvidenceWindow.java", "src/main/java/org/box1/aiops/window/EventConsumer.java"]
+  tests: ["EvidenceWindowTest (7)", "ConsumerWiringTest (2)"]
+  commands: ["./mvnw -B -ntp verify (agentic-operations 0cf2604; 69 tests)", "CI agentic-operations-validate-6lt27 (0cf2604) Succeeded"]
+  evidence: ["evidence/04-local-tests.md", "evidence/05-prod-profile-and-live-model.md", "evidence/06-ci.md", "evidence/07-review-repairs.md", "evidence/09-delivery.md", "evidence/10-live-acceptance.md"]
+  deployment: {"image_digest": "sha256:21da40d46d29f4ed36f8bcc6e6453e1ba4627708837b5b4021666b01032e4818", "gitops_commit": "55ed116", "source": "9d2d3e3"}
+  limitations: ['Not run against the live broker; consumer group not yet in TOPICS.md (Q-7); one replica with Recreate required (runtime PR)']
+- id: AIO-AUDIT-001
+  description: "Tool-call audit metadata complete and free of evidence content"
+  source: 'Interfaces: MCP surface; scenario: audit; D-004, D-012'
+  status: live_verified
+  implementation: ["src/main/java/org/box1/aiops/mcp/ToolAudit.java"]
+  tests: ["McpToolsTest (audit lines emitted per call; content not logged by construction)"]
+  commands: ["live REST and MCP run 2026-11-07 (evidence/10)", "./mvnw -B -ntp verify (agentic-operations 0cf2604; 69 tests)", "CI agentic-operations-validate-6lt27 (0cf2604) Succeeded"]
+  evidence: ["evidence/04-local-tests.md", "evidence/05-prod-profile-and-live-model.md", "evidence/06-ci.md", "evidence/07-review-repairs.md", "evidence/09-delivery.md", "evidence/10-live-acceptance.md"]
+  deployment: {"image_digest": "sha256:21da40d46d29f4ed36f8bcc6e6453e1ba4627708837b5b4021666b01032e4818", "gitops_commit": "55ed116", "source": "9d2d3e3"}
+  limitations: ['Live audit lines inspected for one session']
+- id: AIO-EVAL-001
+  description: "Evaluation dataset scored across REST and MCP: citation coverage, unsupported assertions, role leaks, injection refusal, tool errors, p95"
+  source: 'Interfaces: evaluation; D-014'
+  status: deployed
+  implementation: ["src/test/java/org/box1/aiops/EvaluationTest.java", "src/test/resources/eval/cases.json"]
+  tests: ["EvaluationTest"]
+  commands: ["./mvnw -B -ntp verify (agentic-operations 0cf2604; 69 tests)", "CI agentic-operations-validate-6lt27 (0cf2604) Succeeded"]
+  evidence: ["evidence/04-local-tests.md", "evidence/05-prod-profile-and-live-model.md", "evidence/06-ci.md", "evidence/07-review-repairs.md", "evidence/09-delivery.md", "evidence/10-live-acceptance.md"]
+  deployment: {"image_digest": "sha256:21da40d46d29f4ed36f8bcc6e6453e1ba4627708837b5b4021666b01032e4818", "gitops_commit": "55ed116", "source": "9d2d3e3"}
+  limitations: ['Pipeline scoring with a deterministic model; live box1-coder evaluation is two single-sample probes']
+- id: AIO-OPS-001
+  description: "Health endpoints, metrics, trace/log correlation, resource requests fitting the single node"
+  source: 'Finish-line; D-012'
+  status: deployed
+  implementation: ["src/main/resources/application.properties", "docs/index.md"]
+  tests: ["prod-profile jar run (evidence/05)"]
+  commands: ["./mvnw -B -ntp verify (agentic-operations 0cf2604; 69 tests)", "CI agentic-operations-validate-6lt27 (0cf2604) Succeeded"]
+  evidence: ["evidence/04-local-tests.md", "evidence/05-prod-profile-and-live-model.md", "evidence/06-ci.md", "evidence/07-review-repairs.md", "evidence/09-delivery.md", "evidence/10-live-acceptance.md"]
+  deployment: {"image_digest": "sha256:21da40d46d29f4ed36f8bcc6e6453e1ba4627708837b5b4021666b01032e4818", "gitops_commit": "55ed116", "source": "9d2d3e3"}
+  limitations: ['ServiceMonitor, PrometheusRule and resources pending the box1-workloads-dev runtime PR']
+- id: AIO-RAG-001
+  description: "Runbook retrieval index with ACL and freshness"
+  source: 'Interfaces: retrieval (P1)'
+  status: superseded
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {"image_digest": "sha256:21da40d46d29f4ed36f8bcc6e6453e1ba4627708837b5b4021666b01032e4818", "gitops_commit": "55ed116", "source": "9d2d3e3"}
+  limitations: ['Deferred by user decision 2026-11-06 (no persistent store); follow-up issue to file']
+- id: AIO-APPROVAL-001
+  description: "Remediation approval state machine PROPOSED→APPROVED→EXECUTED/REJECTED"
+  source: 'Interfaces: remediation'
+  status: superseded
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  deployment: {"image_digest": "sha256:21da40d46d29f4ed36f8bcc6e6453e1ba4627708837b5b4021666b01032e4818", "gitops_commit": "55ed116", "source": "9d2d3e3"}
+  limitations: ['Deferred by user decision 2026-11-06 (no persistent store); follow-up #97']

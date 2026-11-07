@@ -1,0 +1,83 @@
+{
+  "issue": "box1-org/box1-docs#20",
+  "title": "Service 10 — AI Operations service (agentic-operations)",
+  "profile": "frontier",
+  "prompt": "box1_operations_agent_prompts/01-services/10_ai_operations.md@12f0b11 (PR #96 merged)",
+  "started": "2026-11-06T21:50-05:00",
+  "current_phase": "7 complete except waived ERP scenario; handoff written",
+  "repositories": [
+    {
+      "name": "box1-org/agentic-operations",
+      "role": "target",
+      "base": "61bcb8c38e4b5e6777c95d77b7398ea299b1ca5e",
+      "branch": "issue-20-agentic-operations",
+      "commit": "0cf2604",
+      "pr": "https://github.com/box1-org/agentic-operations/pull/1",
+      "ci": "agentic-operations-validate-6lt27 Succeeded",
+      "merged": "9d2d3e3",
+      "release": "agentic-operations-release-2z4s4 (all tasks Succeeded; run marked CouldntGetPipelineResult on SCAN_OUTPUT)"
+    },
+    {
+      "name": "box1-org/box1-docs",
+      "role": "run state",
+      "branch": "agent-run/20-agentic-operations"
+    },
+    {
+      "name": "box1-org/box1-ops-contracts",
+      "role": "TOPICS.md consumer group",
+      "base": "bb381b0",
+      "state": "open",
+      "branch": "run20-agentic-operations-group",
+      "pr": "https://github.com/box1-org/box1-ops-contracts/pull/13"
+    },
+    {
+      "name": "box1-org/box1-gitops",
+      "role": "Keycloak clients",
+      "base": "b71a407",
+      "state": "open",
+      "branch": "run20-agentic-operations-keycloak",
+      "pr": "https://github.com/box1-org/box1-gitops/pull/99"
+    },
+    {
+      "name": "box1-org/box1-workloads-dev",
+      "role": "deployment manifests",
+      "base": "932b1ba",
+      "state": "open",
+      "branch": "run20-agentic-operations-runtime",
+      "pr": "https://github.com/box1-org/box1-workloads-dev/pull/153"
+    }
+  ],
+  "worktrees": [
+    "/Users/mike/Documents/ChatGPT/box1/run20-docs",
+    "/Users/mike/Documents/ChatGPT/box1/run20-agentic-operations (clone)",
+    "/Users/mike/Documents/ChatGPT/box1/run20-contracts (clone)",
+    "/Users/mike/Documents/ChatGPT/box1/run20-gitops (clone)",
+    "/Users/mike/Documents/ChatGPT/box1/run20-workloads (clone)"
+  ],
+  "containers_prefix": "run20-",
+  "image_digest": "sha256:21da40d46d29f4ed36f8bcc6e6453e1ba4627708837b5b4021666b01032e4818",
+  "gitops_commit": "box1-workloads-dev 55ed116 (promotion #154)",
+  "review_passes_completed": [
+    "architecture",
+    "messaging",
+    "security",
+    "operations",
+    "release",
+    "persistence (n/a)"
+  ],
+  "onboarding": {
+    "workloads_prs": [
+      "box1-workloads-dev#146 fe383c6",
+      "box1-workloads-dev#147"
+    ],
+    "argo_revision": "b108126",
+    "scaffold_digest": "sha256:eb145100ffbb6a6bcb8d6f338d8ccfdcc135174ecf66aef31fb853da67f2dbd1"
+  },
+  "merged": {
+    "box1-ops-contracts#13": "7b7fbac",
+    "box1-gitops#99": "26482b8",
+    "box1-workloads-dev#153": "bee7db7",
+    "agentic-operations#1": "9d2d3e3",
+    "box1-workloads-dev#154": "55ed116"
+  }
+}
