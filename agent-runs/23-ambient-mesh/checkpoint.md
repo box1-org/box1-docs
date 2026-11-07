@@ -29,4 +29,12 @@
 - **Expected L7 scope:** only mesh-sourced HTTP to the waypointed services, that is console → order and console → inventory (and console → console via its own waypoint, if any). Router (Route) and Prometheus traffic come from outside the mesh and bypass waypoints unless `istio.io/ingress-use-waypoint` is set.
 
 ## Exact next action
-Waypoints are approved (user, 2026-11-06). Wait for the user's merge instruction for box1-workloads-dev#151, then verify the Gateways are `Programmed`, the waypoint pods are ready, and the PodMonitors are `up`.
+#151 is merged (`599b241`): the waypoints are Programmed, ready and scraped, with no traffic yet (`evidence/phase7-waypoints.md`). **PR C [#152](https://github.com/box1-org/box1-workloads-dev/pull/152) is open, waiting for the user's merge instruction.** After it merges:
+- check that console → order/inventory calls return 200;
+- check `istio_requests_total` from the waypoints;
+- read the Kiali HTTP graph;
+- send a console-pod request carrying a `traceparent` and find the waypoint span in Tempo;
+- run an order probe;
+- then write the L4/L7/Tempo comparison and the waypoint recommendation.
+
+PR #150 will need a rebase after #152.
