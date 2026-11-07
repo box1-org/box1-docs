@@ -2,11 +2,11 @@
   "issue": "box1-org/box1-docs#23",
   "profile": "frontier",
   "current_phase": 6,
-  "phase_state": "network_prereq_live_verified",
-  "updated_at": "2026-11-06T22:00:00-05:00",
+  "phase_state": "operators_installed_awaiting_mesh_cr_approval",
+  "updated_at": "2026-11-06T22:05:00-05:00",
   "open_decisions": [
-    "user decides on box1-gitops#94 (operators)",
-    "mesh CRs + Kiali CR approval after operators install"
+    "approve mesh CRs (Istio v1.31.1 ambient, IstioCNI, ZTunnel: privileged DaemonSets) + Kiali CR and its two permissions",
+    "approve Postgres NetworkPolicy changes and first namespace enrollment (operations-console-dev)"
   ],
   "repositories": {
     "box1-docs": {
@@ -18,13 +18,15 @@
       "main": "e07852a",
       "run_branch": null,
       "pr": null,
-      "prs": [
-        94
-      ],
+      "prs": [],
       "merged_prs": [
         {
           "pr": 93,
           "merge_commit": "7acba8cfc11bf9490d47b84077d64a467d9f8c09"
+        },
+        {
+          "pr": 94,
+          "merge_commit": "9738e5b212f6b3b49ca986a20285bcecebcd40a2"
         }
       ]
     },
@@ -45,5 +47,9 @@
         "decision 003 Kiali permissions cluster-monitoring-view and box1-traces-read-dev"
       ]
     }
-  ]
+  ],
+  "installed": {
+    "servicemeshoperator3": "v3.5.0",
+    "kiali-operator": "v2.33.1"
+  }
 }
