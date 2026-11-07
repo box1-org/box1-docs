@@ -9,7 +9,7 @@ The LVMS thin pool is **about 22% written but 91% reserved**. Box1's storage pro
 
 Visible impact: the MTA hub cannot start. `openshift-mta/mta-hub-bucket-volume-claim` (100 Gi) is Pending with `NotEnoughCapacity`, and `mta-hub-database-volume-claim` (10 Gi) is waiting on the same unscheduled pod.
 
-This was a read-only audit. Nothing was changed, resized, or deleted.
+The audit itself was read-only. Afterwards, at the user's request, the overprovision ratio was raised from 1 to 2. That change unblocked MTA; see [Change applied: overprovisionRatio 1 → 2](#change-applied-overprovisionratio-1--2). Nothing was resized or deleted.
 
 ## Backend pool (new in this audit)
 
@@ -95,11 +95,39 @@ Usage for block-mode PVCs (the six 30 Gi OS images and the VM disks) cannot be r
 - Kubelet `/api/v1/nodes/quark.host.box1.org/proxy/stats/summary`, mapped to PVC claims through the pod specs.
 - `oc debug node/quark.host.box1.org` → `lvs` / `vgs` / `lsblk` for thin-pool Data%/Meta% and device sizes. The debug pod was the only object this audit created, and it was removed automatically.
 
+## Change applied: overprovisionRatio 1 → 2
+
+**Applied:** 2026-11-06 23:55 EST, by a live `oc patch` on `LVMCluster/box1-storage` (`openshift-lvm-storage`), path `spec.storage.deviceClasses[0]` (`vg1`) `.thinPoolConfig.overprovisionRatio`. Before patching, a server-side dry run confirmed that the LVMS admission webhook accepts the change in place.
+
+**Management:** the LVMCluster is a manual install with no Argo CD tracking, so nothing reverts the patch. The [cleaned backup](../../manual/backup/operands/lvmcluster.yaml) and the [manual-installs inventory](../../manual/manual-installs-and-secrets.md) now record ratio 2.
+
+**Verification:**
+
+- `vg-manager` reloaded `/etc/topolvm/lvmd.yaml` with `thin-pool.overprovision-ratio: 2` (the container restarted once). LVMCluster stayed `Ready`.
+- Node annotation `capacity.topolvm.io/vg1` went from 78.5 GiB to **786.0 GiB** within about 5 seconds.
+- `openshift-mta/mta-hub-bucket-volume-claim` (100 Gi) and `mta-hub-database-volume-claim` (10 Gi) became **Bound**, and pod `mta-hub-6fbbf9b7d8-7c4zb` is **Running**.
+- The same window also bound four 10 Gi Loki PVCs in `openshift-logging` (ingester storage and WAL, compactor, index gateway).
+- Reservations reconcile exactly: 45 PVs totalling 924 GiB, plus three read-only OpenShell VolumeSnapshot LVs (5 GiB), equals 929 GiB. That matches 2 × 857.5 GiB minus the 786 GiB reported capacity.
+- Real thin-pool data use did not change: 21.78% after the patch.
+
+**Safety net:** LVMS ships `PrometheusRule` alerts in `openshift-lvm-storage`:
+
+- `ThinPoolDataUsageAtThresholdNearFull` fires at more than 75% data use; `…Critical` fires at more than 85%.
+- The matching `ThinPoolMetaDataUsage…` alerts use the same thresholds for metadata.
+
+Whether those alerts route to anyone outside the console is **not verified**.
+
+**Risk:** reservations may now total up to 1,715 GiB on an 857.5 GiB pool. If real writes fill the pool, thin volumes stop accepting writes. Watch the alerts above.
+
+**Rollback:** patch `overprovisionRatio` back to `1`. Volumes that are already bound are not affected. New claims are refused until total reservations fall below the pool size, and they currently exceed it (929 GiB reserved against 857.5 GiB).
+
+**Still Pending (unrelated to capacity):** `openshift-virtualization-os-images/fedora-3c9d3f5c2fac`. Its prime PVC is Bound, but importer pod `importer-prime-f163a15a-…` has been in `Init:ContainerStatusUnknown` for 34 h.
+
 ## Follow-ups and options
 
 These are recommendations only. None has been carried out or tested.
 
-1. **Raise `overprovisionRatio`** on device class `vg1`, for example to 2. This is the largest lever: it unblocks MTA and future claims without adding hardware. The trade-off is that real thin-pool exhaustion becomes possible, so pair the change with alerting on thin-pool Data% and Meta%. Whether LVMS accepts an in-place change to this field is **not verified**. Back up the LVMCluster spec (`manual/backup/operators/lvm-storage.yaml`) before trying.
+1. **Done:** raised `overprovisionRatio` to 2 (see above).
 2. **Trim the OS golden images** to the ones actually used, for example by disabling the RHEL 8, CentOS Stream 9/10, and Fedora DataImportCrons. Each one frees a 30 Gi reservation.
 3. **Remove the orphan candidates** (TPA `f4ll2` workdir, OpenShell `grounded-moth` workspace) after confirming with their owners. Together they free 10 Gi.
 4. **Watch the growing volumes:** StackRox `scanner-v4-db` (62%) and the active TPA importer workdir (74%).
