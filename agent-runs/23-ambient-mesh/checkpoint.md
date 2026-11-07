@@ -1,6 +1,6 @@
 # Checkpoint — #23 ambient mesh and Kiali
 
-**Phase:** 7 live enrollment. **`operations-console-dev` is enrolled** (box1-workloads-dev#144 `ef49e76`, 22:24 EST). The Kiali namespace fix is live (box1-gitops#96 `0009516`); Kiali lists the nine namespaces and graphs the console. **Stopped for approval of the next enrollment.**
+**Phase:** 7 live enrollment. **`operations-console-dev` is enrolled** (box1-workloads-dev#144 `ef49e76`, 22:24 EST). The Kiali namespace fix is live (box1-gitops#96 `0009516`); Kiali lists the nine namespaces and graphs the console. Order and inventory enrollment approved; **box1-workloads-dev#148 is open and waiting for the user's merge instruction.** Note: order and inventory talk only through Kafka, which is not enrolled, so the first mTLS edges are console → order/inventory and service → Postgres.
 
 ## Done and verified
 | Step | GitOps | Evidence |

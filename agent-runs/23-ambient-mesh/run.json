@@ -2,10 +2,10 @@
   "issue": "box1-org/box1-docs#23",
   "profile": "frontier",
   "current_phase": 7,
-  "phase_state": "console_enrolled_kiali_fixed_awaiting_next_enrollment_approval",
-  "updated_at": "2026-11-06T22:32:00-05:00",
+  "phase_state": "order_inventory_pr_open_awaiting_merge",
+  "updated_at": "2026-11-06T22:40:00-05:00",
   "open_decisions": [
-    "approve enrolling order-service-dev and inventory-service-dev (first mTLS edge)"
+    "user merge instruction for box1-workloads-dev#148 (enroll order + inventory)"
   ],
   "repositories": {
     "box1-docs": {
@@ -42,7 +42,9 @@
       "main": "3c12637",
       "run_branch": null,
       "pr": null,
-      "prs": [],
+      "prs": [
+        148
+      ],
       "merged_prs": [
         {
           "pr": 144,
@@ -75,6 +77,13 @@
       "covers": [
         "Postgres NetworkPolicy HBONE change",
         "enroll operations-console-dev"
+      ]
+    },
+    {
+      "date": "2026-11-06",
+      "by": "user (chat)",
+      "covers": [
+        "enroll order-service-dev and inventory-service-dev"
       ]
     }
   ],
