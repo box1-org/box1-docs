@@ -1,0 +1,38 @@
+Release and live state, 2026-11-05 America/New_York. User approved "Do the merges and sync" at about 17:05 EST.
+
+Merges, in runbook order:
+  box1-ops-contracts#5    merged e278940 (merge commit; pinned 85d72e3 stays in main history, no repin)
+  box1-gitops#57          merged 2feea46. box1-kafka was OutOfSync on exactly one resource, KafkaTopic box1.inventory.dlq.v1.
+                          Synced that resource only, prune false, through the Application operation. Op Succeeded.
+                          Topic Ready, 3 partitions, retention 1209600000, cleanup delete. box1-kafka Synced/Healthy.
+  box1-workloads-dev#57   merged bf71c01 after validate and smoke passed at e6fe4bb. Argo auto-synced; scaffold pod restarted
+                          with INVENTORY_ORDER_EVENTS_FLOOR=2026-11-05T17:00:00Z, INVENTORY_READ_POLICY=permit,
+                          JDK_JAVA_OPTIONS=-XX:+ExitOnOutOfMemoryError. Topic re-read before merge: p0 1, p1 1, p2 0.
+  inventory-service#1     merged 6b722a3.
+
+Release inventory-service-release-vgkx9: Succeeded.
+  build     image-digest sha256:d21ab42b4822428d0b6c1404261297bf03027701145f1486f78b6f447fd34531
+  security  enforcement gate. SBOM accepted by RHTPA urn:uuid:01a1adc5-a81f-735f-b6e1-21875f517f92. RHACS scan exit=0 check exit=0. policy=pass.
+  promote   box1-workloads-dev#58 auto-merged 22:13:38Z as cd0c280. promoted=true.
+  smoke     PASS: Argo Synced/Healthy, expected source and runtime digest, REST, Java 21, health, OpenAPI, metrics, validation.
+  inventory-api-smoke  PASS: mutations need a token (anonymous POST restock and release 401 problem), read routes have no
+            mutation (405), read policy status 200, OpenAPI served. Nothing was written.
+  The Guava override and base image held under gate on the first attempt.
+
+Live, after rollout:
+  Argo inventory-service cd0c280 Synced Healthy. Deployment image @sha256:d21ab42b..., annotation 6b722a3.
+  Pod imageID @sha256:d21ab42b..., ready, 0 restarts. GET /api/info gitRef 6b722a3.
+  Logs: Flyway "Successfully applied 2 migrations", PostgreSQL 15.19. "Skipping an event older than the configured floor" x2.
+  Group inventory: box1.order.events.v1 p0 1/1, p1 1/1, lag 0; p2 and fulfillment partitions empty.
+  box1.inventory.events.v1 empty. box1.inventory.dlq.v1 empty.
+  ord_105f4cdf614f47208b6a3a14863855c4 SUBMITTED, ord_24a3627c742847c4ad6ef3670e21ea5a SUBMITTED.
+  /q/metrics: box1_events_consumed_total{outcome="skipped_before_floor",type="order.placed.v1"} 2.0,
+    box1_inventory_dlq_depth 0, box1_inventory_reserved_drift 0, box1_outbox_pending 0, reservations_active 0.
+  GET /api/v1/inventory site_nyc SKU-42 onHand 100 available 100; site_bos SKU-42 10; site_closed 50; SKU-LAST site_nyc 1.
+  GET limit=0 and siteId=bad 400 problem; GET /api/v1/reservations/res_missing 404 problem. /q/health/ready UP.
+
+Not done: the live acceptance order. Creating one through the Order Route was denied by the session's permission check,
+because the approval named merges and the sync only. It needs the user's explicit approval.
+Other: inventory-service-postgres shows 2 restarts (ContainerStatusUnknown), from a node-level event while the
+workstation was asleep. Not caused by this run.
+  Live idle sample (oc adm top, 22:2x UTC): inventory-service 10m CPU, 218Mi; postgres 5m, 29Mi. Limit 512Mi. Idle only.

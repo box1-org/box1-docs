@@ -1,0 +1,15 @@
+{
+  "issue": "box1-org/box1-docs#12",
+  "profile": "frontier",
+  "current_phase": 7,
+  "phase_state": "deployed_live_acceptance_awaiting_approval",
+  "updated_at": "2026-11-05T17:30:00-05:00",
+  "open_decisions": ["live acceptance order approval"],
+  "repositories": {
+    "box1-docs": {"branch": "agent-run/12-inventory-service", "base": "c151c2f", "worktree": "run12-docs"},
+    "inventory-service": {"role": "implementation target", "main": "6b722a3", "run_branch": "inventory-domain", "commit": "5bd69c759ff2d3821caf4839ac772041b9b6a09e", "pr": 1},
+    "box1-ops-contracts": {"role": "contract changes", "main": "e278940", "run_branch": "inventory-service-v1", "commit": "85d72e3cce2f1928ea60d3e6b3f73b313a5828fe", "pr": 5},
+    "box1-gitops": {"role": "shared infrastructure", "main": "2feea46", "run_branch": "inventory-dlq-topic", "commit": "f34d95877f35afaf872d7708570411fbfa0a79e8", "pr": 57},
+    "box1-workloads-dev": {"role": "service workloads", "main": "cd0c280", "run_branch": "inventory-service-runtime-config", "commit": "c13293be1d345b323b7ee5936b365b2190bbab91", "pr": 57}
+  }
+}

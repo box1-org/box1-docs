@@ -1,0 +1,318 @@
+# Requirement ledger for box1-docs#12. Status is the highest level actually observed.
+# FR-02 and DAT-01/02/04/05 are not defined on box1-docs main, so IDs derive from issue text.
+# Paths are in box1-org/inventory-service unless noted. Nothing is deployed, so nothing is above locally_tested or ci_verified.
+- id: INV-SCEN-FINAL-UNIT
+  description: Two concurrent orders for the final unit yield one reservation, one rejection, no negative inventory
+  status: deployed
+  implementation: ['src/main/java/org/box1/inventory/store/InventoryStore.java']
+  tests: ['src/test/java/org/box1/inventory/ReservationScenariosTest.java']
+  commands: ["./mvnw clean verify -Pcontainers -DskipITs=false"]
+  evidence: ['evidence/04-scenarios-local.txt', 'evidence/05-local-saga.txt']
+  deployment: {image_digest: "sha256:d21ab42b4822428d0b6c1404261297bf03027701145f1486f78b6f447fd34531", gitops_commit: "cd0c28024c6f1f5f3e65c125bfbf158a9cd998a7"}
+  limitations: []
+- id: INV-SCEN-MANY
+  description: Many concurrent orders across sites and SKUs: every unit taken, none over, one outcome each
+  status: deployed
+  implementation: ['src/main/java/org/box1/inventory/store/InventoryStore.java']
+  tests: ['src/test/java/org/box1/inventory/ReservationScenariosTest.java']
+  commands: ["./mvnw clean verify -Pcontainers -DskipITs=false"]
+  evidence: ['evidence/04-scenarios-local.txt']
+  deployment: {image_digest: "sha256:d21ab42b4822428d0b6c1404261297bf03027701145f1486f78b6f447fd34531", gitops_commit: "cd0c28024c6f1f5f3e65c125bfbf158a9cd998a7"}
+  limitations: []
+- id: INV-SCEN-REDELIVERY
+  description: Redelivery of the same eventId has no effect
+  status: deployed
+  implementation: ['src/main/java/org/box1/inventory/ReservationService.java']
+  tests: ['src/test/java/org/box1/inventory/ReservationScenariosTest.java']
+  commands: ["./mvnw clean verify -Pcontainers -DskipITs=false"]
+  evidence: ['evidence/04-scenarios-local.txt']
+  deployment: {image_digest: "sha256:d21ab42b4822428d0b6c1404261297bf03027701145f1486f78b6f447fd34531", gitops_commit: "cd0c28024c6f1f5f3e65c125bfbf158a9cd998a7"}
+  limitations: []
+- id: INV-SCEN-EQUIVALENT
+  description: An equivalent order under a new eventId, including after stock changes, adds no hold and no outcome
+  status: deployed
+  implementation: ['src/main/java/org/box1/inventory/ReservationService.java']
+  tests: ['src/test/java/org/box1/inventory/ReservationScenariosTest.java']
+  commands: ["./mvnw clean verify -Pcontainers -DskipITs=false"]
+  evidence: ['evidence/04-scenarios-local.txt']
+  deployment: {image_digest: "sha256:d21ab42b4822428d0b6c1404261297bf03027701145f1486f78b6f447fd34531", gitops_commit: "cd0c28024c6f1f5f3e65c125bfbf158a9cd998a7"}
+  limitations: []
+- id: INV-SCEN-CRASH-PUBLISH
+  description: Crash between database commit and publish: published after restart, one logical event
+  status: deployed
+  implementation: ['src/main/java/org/box1/inventory/messaging/OutboxPublisher.java']
+  tests: ['src/test/java/org/box1/inventory/ProcessRestartIT.java']
+  commands: ["./mvnw clean verify -Pcontainers -DskipITs=false"]
+  evidence: ['evidence/04-scenarios-local.txt']
+  deployment: {image_digest: "sha256:d21ab42b4822428d0b6c1404261297bf03027701145f1486f78b6f447fd34531", gitops_commit: "cd0c28024c6f1f5f3e65c125bfbf158a9cd998a7"}
+  limitations: []
+- id: INV-SCEN-BROKER-OUTAGE
+  description: Broker outage after commit cannot lose the result
+  status: deployed
+  implementation: ['src/main/java/org/box1/inventory/messaging/OutboxPublisher.java']
+  tests: ['src/test/java/org/box1/inventory/ReservationScenariosTest.java']
+  commands: ["./mvnw clean verify -Pcontainers -DskipITs=false"]
+  evidence: ['evidence/04-scenarios-local.txt']
+  deployment: {image_digest: "sha256:d21ab42b4822428d0b6c1404261297bf03027701145f1486f78b6f447fd34531", gitops_commit: "cd0c28024c6f1f5f3e65c125bfbf158a9cd998a7"}
+  limitations: []
+- id: INV-SCEN-CONSUMER-RESTART
+  description: Consumer killed during processing: uncommitted effects gone, redelivered, applied once
+  status: deployed
+  implementation: ['src/main/java/org/box1/inventory/messaging/OrderEventsConsumer.java']
+  tests: ['src/test/java/org/box1/inventory/ProcessRestartIT.java']
+  commands: ["./mvnw clean verify -Pcontainers -DskipITs=false"]
+  evidence: ['evidence/04-scenarios-local.txt']
+  deployment: {image_digest: "sha256:d21ab42b4822428d0b6c1404261297bf03027701145f1486f78b6f447fd34531", gitops_commit: "cd0c28024c6f1f5f3e65c125bfbf158a9cd998a7"}
+  limitations: []
+- id: INV-SCEN-POISON
+  description: Poison payload and schema mismatch go to the dead-letter path, value unchanged, and the next event runs
+  status: deployed
+  implementation: ['src/main/java/org/box1/inventory/messaging/EventParser.java']
+  tests: ['src/test/java/org/box1/inventory/ReservationScenariosTest.java', 'src/test/java/org/box1/inventory/ContractTest.java']
+  commands: ["./mvnw clean verify -Pcontainers -DskipITs=false"]
+  evidence: ['evidence/04-scenarios-local.txt']
+  deployment: {image_digest: "sha256:d21ab42b4822428d0b6c1404261297bf03027701145f1486f78b6f447fd34531", gitops_commit: "cd0c28024c6f1f5f3e65c125bfbf158a9cd998a7"}
+  limitations: ['Dead-letter topic does not exist live yet']
+- id: INV-SCEN-RETRY-EXHAUST
+  description: Retry exhaustion dead-letters; replay applies once
+  status: deployed
+  implementation: ['src/main/java/org/box1/inventory/messaging/OrderEventsConsumer.java']
+  tests: ['src/test/java/org/box1/inventory/ReservationScenariosTest.java']
+  commands: ["./mvnw clean verify -Pcontainers -DskipITs=false"]
+  evidence: ['evidence/04-scenarios-local.txt', 'evidence/05-local-saga.txt']
+  deployment: {image_digest: "sha256:d21ab42b4822428d0b6c1404261297bf03027701145f1486f78b6f447fd34531", gitops_commit: "cd0c28024c6f1f5f3e65c125bfbf158a9cd998a7"}
+  limitations: ['Replay was exercised on a local broker only']
+- id: INV-SCEN-EXPIRY-CLOCK
+  description: Clock-driven expiry restores the fixture level and publishes once
+  status: deployed
+  implementation: ['src/main/java/org/box1/inventory/ExpiryScheduler.java']
+  tests: ['src/test/java/org/box1/inventory/ReservationScenariosTest.java']
+  commands: ["./mvnw clean verify -Pcontainers -DskipITs=false"]
+  evidence: ['evidence/04-scenarios-local.txt']
+  deployment: {image_digest: "sha256:d21ab42b4822428d0b6c1404261297bf03027701145f1486f78b6f447fd34531", gitops_commit: "cd0c28024c6f1f5f3e65c125bfbf158a9cd998a7"}
+  limitations: []
+- id: INV-SCEN-EXPIRY-RESTART
+  description: Scheduler killed during expiry: expires once after restart
+  status: deployed
+  implementation: ['src/main/java/org/box1/inventory/ReservationService.java']
+  tests: ['src/test/java/org/box1/inventory/ProcessRestartIT.java']
+  commands: ["./mvnw clean verify -Pcontainers -DskipITs=false"]
+  evidence: ['evidence/04-scenarios-local.txt']
+  deployment: {image_digest: "sha256:d21ab42b4822428d0b6c1404261297bf03027701145f1486f78b6f447fd34531", gitops_commit: "cd0c28024c6f1f5f3e65c125bfbf158a9cd998a7"}
+  limitations: []
+- id: INV-SCEN-EXPIRY-RACE
+  description: Expiry racing fulfillment or shipment has one winner, stock consistent
+  status: deployed
+  implementation: ['src/main/java/org/box1/inventory/store/InventoryStore.java']
+  tests: ['src/test/java/org/box1/inventory/ReservationScenariosTest.java']
+  commands: ["./mvnw clean verify -Pcontainers -DskipITs=false"]
+  evidence: ['evidence/04-scenarios-local.txt']
+  deployment: {image_digest: "sha256:d21ab42b4822428d0b6c1404261297bf03027701145f1486f78b6f447fd34531", gitops_commit: "cd0c28024c6f1f5f3e65c125bfbf158a9cd998a7"}
+  limitations: []
+- id: INV-SCEN-REPEAT
+  description: A release or an expiry repeated has no second effect
+  status: deployed
+  implementation: ['src/main/java/org/box1/inventory/ReservationService.java']
+  tests: ['src/test/java/org/box1/inventory/ReservationScenariosTest.java']
+  commands: ["./mvnw clean verify -Pcontainers -DskipITs=false"]
+  evidence: ['evidence/04-scenarios-local.txt']
+  deployment: {image_digest: "sha256:d21ab42b4822428d0b6c1404261297bf03027701145f1486f78b6f447fd34531", gitops_commit: "cd0c28024c6f1f5f3e65c125bfbf158a9cd998a7"}
+  limitations: []
+- id: INV-SCEN-REASONS
+  description: Unknown SKU and unavailable site produce stable reasons, and Order goes to REJECTED
+  status: deployed
+  implementation: ['src/main/java/org/box1/inventory/domain/ReasonCode.java']
+  tests: ['src/test/java/org/box1/inventory/ReservationScenariosTest.java']
+  commands: ["./mvnw clean verify -Pcontainers -DskipITs=false"]
+  evidence: ['evidence/04-scenarios-local.txt', 'evidence/05-local-saga.txt']
+  deployment: {image_digest: "sha256:d21ab42b4822428d0b6c1404261297bf03027701145f1486f78b6f447fd34531", gitops_commit: "cd0c28024c6f1f5f3e65c125bfbf158a9cd998a7"}
+  limitations: []
+- id: INV-SCEN-UNAUTHORIZED
+  description: Unauthorized mutation attempts are rejected and change nothing
+  status: live_verified
+  implementation: ['src/main/java/org/box1/inventory/api/AdminResource.java', 'src/main/java/org/box1/inventory/api/ClientRoleAugmentor.java']
+  tests: ['src/test/java/org/box1/inventory/SecurityTest.java', 'src/test/java/org/box1/inventory/ReservationScenariosTest.java']
+  commands: ["./mvnw clean verify -Pcontainers -DskipITs=false"]
+  evidence: ['evidence/04-scenarios-local.txt', evidence/08-release-live.txt]
+  deployment: {image_digest: "sha256:d21ab42b4822428d0b6c1404261297bf03027701145f1486f78b6f447fd34531", gitops_commit: "cd0c28024c6f1f5f3e65c125bfbf158a9cd998a7"}
+  limitations: ['Live: anonymous calls only, via inventory-api-smoke. Positive admin path is local with a test key (D-010).']
+- id: INV-SCEN-DB-READINESS
+  description: Database unavailable: readiness fails, liveness holds, honest errors; recovers without restart
+  status: deployed
+  implementation: ['src/main/java/org/box1/inventory/DatabaseReadinessCheck.java']
+  tests: ['src/test/java/org/box1/inventory/DatabaseDownTest.java']
+  commands: ["./mvnw clean verify -Pcontainers -DskipITs=false"]
+  evidence: ['evidence/04-scenarios-local.txt', 'evidence/05-local-saga.txt']
+  deployment: {image_digest: "sha256:d21ab42b4822428d0b6c1404261297bf03027701145f1486f78b6f447fd34531", gitops_commit: "cd0c28024c6f1f5f3e65c125bfbf158a9cd998a7"}
+  limitations: []
+- id: INV-SCEN-CUSTOMER-DATA
+  description: No customer data in logs, events or tables
+  status: deployed
+  implementation: ['src/main/java/org/box1/inventory/messaging/EventParser.java']
+  tests: ['src/test/java/org/box1/inventory/ReservationScenariosTest.java', 'src/test/java/org/box1/inventory/ProcessRestartIT.java']
+  commands: ["./mvnw clean verify -Pcontainers -DskipITs=false"]
+  evidence: ['evidence/04-scenarios-local.txt', 'evidence/05-local-saga.txt']
+  deployment: {image_digest: "sha256:d21ab42b4822428d0b6c1404261297bf03027701145f1486f78b6f447fd34531", gitops_commit: "cd0c28024c6f1f5f3e65c125bfbf158a9cd998a7"}
+  limitations: ['Dead-letter records keep the original value, by design']
+- id: INV-FLOOR
+  description: Events before the floor have no effect, and the floor is required, valid and not in the future (D-002)
+  status: live_verified
+  implementation: ['src/main/java/org/box1/inventory/messaging/OrderEventsConsumer.java', 'src/main/java/org/box1/inventory/StartupChecks.java']
+  tests: ['src/test/java/org/box1/inventory/ReservationScenariosTest.java', 'src/test/java/org/box1/inventory/ProcessRestartIT.java']
+  commands: ["./mvnw clean verify -Pcontainers -DskipITs=false"]
+  evidence: ['evidence/04-scenarios-local.txt', 'evidence/05-local-saga.txt', evidence/08-release-live.txt]
+  deployment: {image_digest: "sha256:d21ab42b4822428d0b6c1404261297bf03027701145f1486f78b6f447fd34531", gitops_commit: "cd0c28024c6f1f5f3e65c125bfbf158a9cd998a7"}
+  limitations: ['Lowering the floor later does not rewind offsets']
+- id: INV-LIFETIME
+  description: A committed hold does not expire; expiry waits while events may be unread (D-003, D-009)
+  status: deployed
+  implementation: ['src/main/java/org/box1/inventory/ExpiryGate.java']
+  tests: ['src/test/java/org/box1/inventory/ReservationScenariosTest.java', 'src/test/java/org/box1/inventory/ExpiryGateTest.java']
+  commands: ["./mvnw clean verify -Pcontainers -DskipITs=false"]
+  evidence: ['evidence/04-scenarios-local.txt', 'evidence/05-local-saga.txt']
+  deployment: {image_digest: "sha256:d21ab42b4822428d0b6c1404261297bf03027701145f1486f78b6f447fd34531", gitops_commit: "cd0c28024c6f1f5f3e65c125bfbf158a9cd998a7"}
+  limitations: ['A reservation unpublished past expiresAt still goes to EXCEPTION by Order rule']
+- id: INV-SHIPMENT
+  description: A shipment consumes a hold; a late one is recorded and takes stock at most once (D-004)
+  status: deployed
+  implementation: ['src/main/java/org/box1/inventory/ReservationService.java']
+  tests: ['src/test/java/org/box1/inventory/ReservationScenariosTest.java']
+  commands: ["./mvnw clean verify -Pcontainers -DskipITs=false"]
+  evidence: ['evidence/04-scenarios-local.txt']
+  deployment: {image_digest: "sha256:d21ab42b4822428d0b6c1404261297bf03027701145f1486f78b6f447fd34531", gitops_commit: "cd0c28024c6f1f5f3e65c125bfbf158a9cd998a7"}
+  limitations: ['No fulfillment producer exists; fixtures only']
+- id: INV-RELEASE
+  description: Cancellation and operator release follow D-005
+  status: deployed
+  implementation: ['src/main/java/org/box1/inventory/ReservationService.java']
+  tests: ['src/test/java/org/box1/inventory/ReservationScenariosTest.java']
+  commands: ["./mvnw clean verify -Pcontainers -DskipITs=false"]
+  evidence: ['evidence/04-scenarios-local.txt']
+  deployment: {image_digest: "sha256:d21ab42b4822428d0b6c1404261297bf03027701145f1486f78b6f447fd34531", gitops_commit: "cd0c28024c6f1f5f3e65c125bfbf158a9cd998a7"}
+  limitations: ['Release tells Order nothing, documented; no contract event']
+- id: INV-QUERY
+  description: Query API reflects site-specific available-to-promise
+  status: live_verified
+  implementation: ['src/main/java/org/box1/inventory/api/InventoryResource.java']
+  tests: ['src/test/java/org/box1/inventory/ReservationScenariosTest.java']
+  commands: ["./mvnw clean verify -Pcontainers -DskipITs=false"]
+  evidence: ['evidence/04-scenarios-local.txt', 'evidence/05-local-saga.txt', evidence/08-release-live.txt]
+  deployment: {image_digest: "sha256:d21ab42b4822428d0b6c1404261297bf03027701145f1486f78b6f447fd34531", gitops_commit: "cd0c28024c6f1f5f3e65c125bfbf158a9cd998a7"}
+  limitations: ['Anonymous reads by decision D-011']
+- id: INV-ATOMIC
+  description: Stock, reservation, history, dedupe and outbox commit together
+  status: deployed
+  implementation: ['src/main/java/org/box1/inventory/ReservationService.java']
+  tests: ['src/test/java/org/box1/inventory/ReservationScenariosTest.java']
+  commands: ["./mvnw clean verify -Pcontainers -DskipITs=false"]
+  evidence: ['evidence/04-scenarios-local.txt']
+  deployment: {image_digest: "sha256:d21ab42b4822428d0b6c1404261297bf03027701145f1486f78b6f447fd34531", gitops_commit: "cd0c28024c6f1f5f3e65c125bfbf158a9cd998a7"}
+  limitations: []
+- id: INV-HISTORY
+  description: Reservation history and stock movements are attributable and immutable
+  status: deployed
+  implementation: ['src/main/resources/db/migration/V1__inventory_schema.sql']
+  tests: ['src/test/java/org/box1/inventory/ReservationScenariosTest.java']
+  commands: ["./mvnw clean verify -Pcontainers -DskipITs=false"]
+  evidence: ['evidence/04-scenarios-local.txt']
+  deployment: {image_digest: "sha256:d21ab42b4822428d0b6c1404261297bf03027701145f1486f78b6f447fd34531", gitops_commit: "cd0c28024c6f1f5f3e65c125bfbf158a9cd998a7"}
+  limitations: []
+- id: INV-NONNEGATIVE
+  description: Available cannot go negative, enforced by the database
+  status: deployed
+  implementation: ['src/main/resources/db/migration/V1__inventory_schema.sql']
+  tests: ['src/test/java/org/box1/inventory/ReservationScenariosTest.java']
+  commands: ["./mvnw clean verify -Pcontainers -DskipITs=false"]
+  evidence: ['evidence/04-scenarios-local.txt']
+  deployment: {image_digest: "sha256:d21ab42b4822428d0b6c1404261297bf03027701145f1486f78b6f447fd34531", gitops_commit: "cd0c28024c6f1f5f3e65c125bfbf158a9cd998a7"}
+  limitations: []
+- id: INV-METRICS
+  description: Reserved by site, denials, conflict retries, event age, expired count, dead-letter depth
+  status: deployed
+  implementation: ['src/main/java/org/box1/inventory/InventoryMetrics.java']
+  tests: ['src/test/java/org/box1/inventory/ReservationScenariosTest.java']
+  commands: ["./mvnw clean verify -Pcontainers -DskipITs=false"]
+  evidence: ['evidence/04-scenarios-local.txt']
+  deployment: {image_digest: "sha256:d21ab42b4822428d0b6c1404261297bf03027701145f1486f78b6f447fd34531", gitops_commit: "cd0c28024c6f1f5f3e65c125bfbf158a9cd998a7"}
+  limitations: ['No scraping; read from /q/metrics (box1-docs#22)']
+- id: INV-TRACE
+  description: Logs and traces are correlated to the order
+  status: deployed
+  implementation: ['src/main/java/org/box1/inventory/messaging/OrderEventsConsumer.java']
+  tests: ['src/test/java/org/box1/inventory/ProcessRestartIT.java']
+  commands: ["./mvnw clean verify -Pcontainers -DskipITs=false"]
+  evidence: ['evidence/04-scenarios-local.txt']
+  deployment: {image_digest: "sha256:d21ab42b4822428d0b6c1404261297bf03027701145f1486f78b6f447fd34531", gitops_commit: "cd0c28024c6f1f5f3e65c125bfbf158a9cd998a7"}
+  limitations: ['No trace backend (box1-docs#22)']
+- id: INV-MIGRATIONS
+  description: Migrations run on an empty database, and a rerun is a no-op
+  status: live_verified
+  implementation: ['src/main/resources/db/migration/']
+  tests: ['src/test/java/org/box1/inventory/MigrationTest.java']
+  commands: ["./mvnw clean verify -Pcontainers -DskipITs=false"]
+  evidence: ['evidence/04-scenarios-local.txt', evidence/08-release-live.txt]
+  deployment: {image_digest: "sha256:d21ab42b4822428d0b6c1404261297bf03027701145f1486f78b6f447fd34531", gitops_commit: "cd0c28024c6f1f5f3e65c125bfbf158a9cd998a7"}
+  limitations: ['Forward-only; not yet applied anywhere']
+- id: INV-RESOURCES
+  description: Runs within the requested limits (workstation sample 242 MiB RSS at -Xmx256m against a 512Mi limit)
+  status: deployed
+  implementation: ['workloads/inventory-service/deployment.yaml in box1-workloads-dev']
+  tests: []
+  commands: ["./mvnw clean verify -Pcontainers -DskipITs=false"]
+  evidence: ['evidence/05-local-saga.txt', 'evidence/08-release-live.txt']
+  deployment: {image_digest: "sha256:d21ab42b4822428d0b6c1404261297bf03027701145f1486f78b6f447fd34531", gitops_commit: "cd0c28024c6f1f5f3e65c125bfbf158a9cd998a7"}
+  limitations: ['Live sample is idle only; load measured on the workstation']
+- id: INV-CI
+  description: PR checks pass with the release gate configured to gate
+  status: ci_verified
+  implementation: [.tekton/release.yaml, .tekton/pull-request.yaml]
+  tests: [container-free tests only]
+  commands: [inventory-service-validate on 5bd69c7]
+  evidence: [evidence/06-ci.txt, evidence/08-release-live.txt]
+  deployment: {image_digest: "sha256:d21ab42b4822428d0b6c1404261297bf03027701145f1486f78b6f447fd34531", gitops_commit: "cd0c28024c6f1f5f3e65c125bfbf158a9cd998a7"}
+  limitations: []
+- id: INV-GATE
+  description: The image passes the release gate
+  status: live_verified
+  implementation: []
+  tests: []
+  commands: []
+  evidence: [evidence/08-release-live.txt]
+  deployment: {image_digest: "sha256:d21ab42b4822428d0b6c1404261297bf03027701145f1486f78b6f447fd34531", gitops_commit: "cd0c28024c6f1f5f3e65c125bfbf158a9cd998a7"}
+  limitations: []
+- id: INV-DEPLOY
+  description: Digest and revision observed through GitOps
+  status: live_verified
+  implementation: []
+  tests: []
+  commands: []
+  evidence: [evidence/08-release-live.txt]
+  deployment: {image_digest: "sha256:d21ab42b4822428d0b6c1404261297bf03027701145f1486f78b6f447fd34531", gitops_commit: "cd0c28024c6f1f5f3e65c125bfbf158a9cd998a7"}
+  limitations: []
+- id: INV-LIVE-RESERVE
+  description: One real order through the Route reaches an inventory outcome and the expected order state
+  status: blocked
+  implementation: []
+  tests: []
+  commands: []
+  evidence: [evidence/08-release-live.txt]
+  deployment: {image_digest: "sha256:d21ab42b4822428d0b6c1404261297bf03027701145f1486f78b6f447fd34531", gitops_commit: "cd0c28024c6f1f5f3e65c125bfbf158a9cd998a7"}
+  limitations: ['Creating a live order needs explicit user approval; denied by the session permission check']
+- id: INV-LIVE-RETAINED
+  description: Retained live orders are unchanged after first start
+  status: live_verified
+  implementation: []
+  tests: []
+  commands: []
+  evidence: [evidence/08-release-live.txt]
+  deployment: {image_digest: "sha256:d21ab42b4822428d0b6c1404261297bf03027701145f1486f78b6f447fd34531", gitops_commit: "cd0c28024c6f1f5f3e65c125bfbf158a9cd998a7"}
+  limitations: []
+- id: INV-LIVE-AUTH
+  description: Anonymous and forged mutation attempts are rejected through the Route
+  status: live_verified
+  implementation: []
+  tests: []
+  commands: []
+  evidence: [evidence/08-release-live.txt]
+  deployment: {image_digest: "sha256:d21ab42b4822428d0b6c1404261297bf03027701145f1486f78b6f447fd34531", gitops_commit: "cd0c28024c6f1f5f3e65c125bfbf158a9cd998a7"}
+  limitations: ['Anonymous only; forged-token checks are local']

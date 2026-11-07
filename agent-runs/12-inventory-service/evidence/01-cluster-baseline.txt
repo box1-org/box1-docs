@@ -1,0 +1,31 @@
+Observed 2026-11-05 11:25-11:45 EST. Read-only. Cluster 5.0.0-rc.7. Node 5% CPU, 53% memory.
+
+inventory-service-dev: app 1/1 at scaffold digest sha256:4a1ae810...c836, postgres 1/1, 5Gi PVC on lvms-vg1, Route, NetworkPolicy for 5432.
+Argo: inventory-service Synced/Healthy at 30c6c2d. syncPolicy automated selfHeal, no prune, PruneLast. order-service Synced/Healthy.
+GET /api/info through Route: gitRef 5fed34f. /api/v1/inventory is absent.
+Secret inventory-service-postgres exists. Keys not read in the cluster. See D-012 for the pointer.
+
+Kafka 4.2.0, one broker, plain listener no auth. Broker config does not set auto.create.topics.enable (default true).
+Topics: box1.order.events.v1, box1.inventory.events.v1, box1.fulfillment.events.v1, box1.order.dlq.v1, notification, telemetry. No inventory DLQ.
+Groups: only `order`. No `inventory` group.
+
+Offsets:
+  box1.order.events.v1       p0 0..1, p1 0..1, p2 0..0  => 2 retained records
+  box1.inventory.events.v1   empty
+  box1.fulfillment.events.v1 empty
+  box1.order.dlq.v1          empty
+
+Retained records, customerId omitted (read with no group, nothing committed):
+  p0/0 order.placed.v1 ord_105f4cdf614f47208b6a3a14863855c4 occurredAt 2026-11-05T15:56:45.276583Z eventId 9d19e7e2-25c2-4658-9622-8d465dc7ed2a SKU-42 x2 site_nyc
+  p1/0 order.placed.v1 ord_24a3627c742847c4ad6ef3670e21ea5a occurredAt 2026-11-05T14:11:05.882718Z eventId 63052b4d-4aaa-42b5-817e-77b3abfee584 SKU-42 x2 site_nyc
+Both orders are SUBMITTED through GET /api/v1/orders. The issue and request speak of one live test order; there are two.
+
+Order API smoke (order-service .tekton/release.yaml): writes nothing, so releases do not add events.
+
+Gate dependencies, read-only and short of the working path:
+  noobaa-default-backing-store Ready. scanner-v4-matcher Running 0 restarts (53 m old), Central Running.
+  order-service-release-jn4rl with gate succeeded about 40 min earlier, which is the most recent proof of the working path.
+  The rhacs-ci and rhtpa-ci credentials were not issued to this run and were not read or used, so no direct scan or upload was tried.
+
+Observability: no OpenTelemetry, Tempo, Loki, ExternalSecret, Vault CRDs. No cluster-monitoring-config, so user workload monitoring is off.
+Keycloak: https://keycloak.apps.ocp.box1.org/auth/realms/box1, Let's Encrypt certificate verified, JWKS reachable from the workstation. No inventory client.

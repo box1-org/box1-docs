@@ -1,0 +1,12 @@
+Re-checked 2026-11-05 17:00 EST, read-only.
+
+box1.order.events.v1 end offsets p0 1, p1 1, p2 0: still the same 2 retained records.
+box1.inventory.events.v1 empty. Consumer groups: only `order`.
+ord_105f4cdf614f47208b6a3a14863855c4 and ord_24a3627c742847c4ad6ef3670e21ea5a: SUBMITTED.
+inventory-service still the scaffold (gitRef 5fed34f), Argo Synced/Healthy.
+
+Gate path: order-service-release-xgfj7 and -8jp8d (16:33 and 16:39 UTC) passed `security` with gate, then failed at
+promote. Their promotion PRs box1-workloads-dev#55 (closed) and #56 (open, box1-phase1-smoke failing after repeated
+cancellations) are Order's. Promote logs were already gone, so the cause is not established.
+Workloads repository has PAC concurrency_limit 1. All queued workloads runs, including this run's #57 first runs, were
+cancelled together at 16:57 UTC by something outside this run. Whether #57 queueing delayed #56 is not established.
