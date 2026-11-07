@@ -71,6 +71,8 @@ evidence/                # redacted command output and observations
 review-findings/         # one file per reviewer pass
 ```
 
+When the run reaches its final phase, or stops to wait on the owner, open a `box1-docs` pull request that merges `agent-runs/<issue>-<short-topic>/` into `main`. Link the merged path from the achievement log, not the branch: run branches are deleted once merged. Later updates to a merged run go in a follow-up pull request.
+
 Never put run state in `box1-gitops`. Only consumer-facing architecture, contracts and runbooks belong in a service repository. Redact everything in `evidence/`: no credentials, tokens, kubeconfigs or unredacted authentication logs.
 
 `checkpoint.md` must let a fresh session resume without the conversation. It records the current phase, completed work, branch and commit, changed files, test results, evidence paths, open risks, blocked decisions and the **exact next action**. Update it at each phase exit and before any long-running step.
