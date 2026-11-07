@@ -2,7 +2,13 @@
 
 ## Current phase
 
-**Phase 6 is in progress** (2026-11-07 00:10 EST). All four PRs are open, with checks green, and are waiting for the user's merge approval (`evidence/08-platform-prs.md`).
+**Phase 6 is complete** (2026-11-07 00:35 EST). See `evidence/09-delivery.md`.
+
+- **Merged:** all four PRs. The service is live at `9d2d3e3`.
+- **Digest:** `sha256:21da40d4…` matches across GitOps and the pod. `/api/info` reports the same revision, and Argo is Synced/Healthy.
+- **Live checks:** anonymous calls get 401 on REST and `/mcp`. The Kafka window is filling from the real broker (144 events across 18 partitions).
+- **Ledger:** 14 requirements `deployed`, 2 `superseded`.
+- **Known issue:** the release PipelineRun is marked `CouldntGetPipelineResult`. All its tasks succeeded, but `SCAN_OUTPUT` is missing because security gates are disabled by the template default (#42). The image went out without an ACS or TPA check.
 
 Phase 5 summary follows.
 
@@ -45,16 +51,18 @@ Phase 5 is complete (2026-11-06 23:45 EST).
 
 ## Exact next action
 
-1. The user approves the merges, in this order, with about 10 seconds between them:
-   1. box1-ops-contracts#13
-   2. box1-gitops#99
-   3. box1-workloads-dev#153
-   4. agentic-operations#1
-2. After #99 syncs, check the clients, roles and scope mapping in Keycloak, and the token claims. The user assigns the `aiops-*` roles.
-3. After #1 merges, watch the release PipelineRun and the promotion PR. Then confirm the digest in box1-workloads-dev, Argo Synced/Healthy and the running pod's imageID. Also check that `/api/info` `gitRef` equals the merge commit.
-4. Phase 7, live acceptance, after approval:
-   - anonymous 401 on `/api/v1/ai/*` and `/mcp`;
-   - `erp-delayed-processing` through the scenario controller, analyzed through REST and through an MCP client;
-   - trace linkage in Tempo;
-   - window refill time and `oc adm top` during the replay.
-5. File a follow-up for per-service release smoke checks (R-2). Raise the anonymous vLLM route on #26, once the user agrees.
+Phase 7 needs a user token. The user:
+1. assigns `aiops-analyst` (or `aiops-viewer`) on client `agentic-operations` to a test user, as was done with the `claude` login for #16;
+2. approves the live acceptance.
+
+Then:
+- Get a CLI token (PKCE or device grant). Confirm the claims `aud`, `azp` and `resource_access.agentic-operations.roles`.
+- Run `erp-delayed-processing` through the scenario controller (approval, demo namespace).
+- Analyze the incident through REST and through an MCP client. Check the cited evidence, the model behaviour and the trace linkage in Tempo.
+- Check a viewer gets 403 on analyze.
+- Check that after a restart the analysis ID returns 404 and the window refills.
+
+Follow-ups to propose to the user:
+- the `SCAN_OUTPUT` false failure, on #42;
+- per-service release smoke checks (R-2);
+- the anonymous public vLLM route, on #26.

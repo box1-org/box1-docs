@@ -4,7 +4,7 @@
   "profile": "frontier",
   "prompt": "box1_operations_agent_prompts/01-services/10_ai_operations.md@12f0b11 (PR #96 merged)",
   "started": "2026-11-06T21:50-05:00",
-  "current_phase": "6 in progress: all PRs open, awaiting merge approval",
+  "current_phase": "6 complete (deployed); phase 7 live acceptance needs a user token",
   "repositories": [
     {
       "name": "box1-org/agentic-operations",
@@ -13,7 +13,9 @@
       "branch": "issue-20-agentic-operations",
       "commit": "0cf2604",
       "pr": "https://github.com/box1-org/agentic-operations/pull/1",
-      "ci": "agentic-operations-validate-6lt27 Succeeded"
+      "ci": "agentic-operations-validate-6lt27 Succeeded",
+      "merged": "9d2d3e3",
+      "release": "agentic-operations-release-2z4s4 (all tasks Succeeded; run marked CouldntGetPipelineResult on SCAN_OUTPUT)"
     },
     {
       "name": "box1-org/box1-docs",
@@ -53,8 +55,8 @@
     "/Users/mike/Documents/ChatGPT/box1/run20-workloads (clone)"
   ],
   "containers_prefix": "run20-",
-  "image_digest": null,
-  "gitops_commit": null,
+  "image_digest": "sha256:21da40d46d29f4ed36f8bcc6e6453e1ba4627708837b5b4021666b01032e4818",
+  "gitops_commit": "box1-workloads-dev 55ed116 (promotion #154)",
   "review_passes_completed": [
     "architecture",
     "messaging",
@@ -70,5 +72,12 @@
     ],
     "argo_revision": "b108126",
     "scaffold_digest": "sha256:eb145100ffbb6a6bcb8d6f338d8ccfdcc135174ecf66aef31fb853da67f2dbd1"
+  },
+  "merged": {
+    "box1-ops-contracts#13": "7b7fbac",
+    "box1-gitops#99": "26482b8",
+    "box1-workloads-dev#153": "bee7db7",
+    "agentic-operations#1": "9d2d3e3",
+    "box1-workloads-dev#154": "55ed116"
   }
 }
