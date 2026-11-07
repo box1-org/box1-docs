@@ -2,10 +2,10 @@
   "issue": "box1-org/box1-docs#23",
   "profile": "frontier",
   "current_phase": 7,
-  "phase_state": "three_namespaces_enrolled_awaiting_next_approval",
-  "updated_at": "2026-11-06T22:50:00-05:00",
+  "phase_state": "remaining_four_pr_open_awaiting_merge",
+  "updated_at": "2026-11-06T22:55:00-05:00",
   "open_decisions": [
-    "approve enrolling fulfillment-adapter-dev, notification-service-dev, asset-service-dev, scenario-controller-dev"
+    "user merge instruction for box1-workloads-dev#149 (enroll adapter, notification, asset, scenario-controller)"
   ],
   "repositories": {
     "box1-docs": {
@@ -42,7 +42,9 @@
       "main": "3c12637",
       "run_branch": null,
       "pr": null,
-      "prs": [],
+      "prs": [
+        149
+      ],
       "merged_prs": [
         {
           "pr": 144,
@@ -86,6 +88,13 @@
       "by": "user (chat)",
       "covers": [
         "enroll order-service-dev and inventory-service-dev"
+      ]
+    },
+    {
+      "date": "2026-11-06",
+      "by": "user (chat)",
+      "covers": [
+        "enroll fulfillment-adapter, notification, asset, scenario-controller"
       ]
     }
   ],
