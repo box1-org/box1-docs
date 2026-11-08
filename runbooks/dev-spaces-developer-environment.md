@@ -2,7 +2,10 @@
 
 How to use the Box1 OpenShift Dev Spaces workspace. It covers running Tekton pipelines, editing Camel routes in Kaoto, using Claude Code, debugging JVMs, running uncommitted code on the cluster with Quarkus remote dev, and opening Hawtio. Tracking issue: [#114](https://github.com/box1-org/box1-docs/issues/114).
 
-> **Status (2026-11-08, America/New_York):** These changes are open PRs. None are merged, synced or tested end to end yet. Every step below is **not verified** until #114's acceptance criteria are checked off.
+> **Status (2026-11-08, America/New_York):**
+> - **Merged and synced:** the UDI (box1-devspaces `ad6020a`, image `sha256:ba61eab4…`), box1-gitops#118 (`pipelines-ci` and `dev-spaces`) and Hawtio.
+> - **Verified in a live `fulfillment-adapter` workspace:** the toolchain, the extensions from open-vsx.org, `oc` as the user, remote-dev deploy and sync, and a JDWP handshake over port-forward. JDWP refuses connections on the pod IP.
+> - **Not yet verified:** `box1-pipeline validate`, the `<service>-dev` debug component, a VS Code debugger attach, Claude Code sign-in and editing a route in Kaoto.
 
 ## Pieces and where they live
 
@@ -25,6 +28,8 @@ The embedded Dev Spaces extension registry doesn't have Kaoto (`redhat.vscode-ka
 3. Run commands from **Terminal → Run Task → devfile**, or run the `box1-*` helpers directly in a terminal.
 
 Check the toolchain with `cat /etc/box1-udi-release`, `java -version` (expect 21), `tkn version`, `tkn pac version`, `camel --version` and `claude --version`.
+
+**Run `oc whoami` first. It must print your OpenShift username.** The dashboard writes `~/.kube/config` with your token after the workspace starts. If the file is missing, `oc` falls back to the workspace service account and the `box1-*` helpers fail. On 2026-11-08 the first start from a factory link got no kubeconfig. Stopping and starting the workspace from the dashboard fixed it. The dashboard pod had also been recreated just before, so the cause isn't established. The dashboard logs only at ERROR level, so the injection step leaves no trace either way.
 
 ## Claude Code
 
