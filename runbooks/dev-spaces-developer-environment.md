@@ -92,6 +92,27 @@ Kaoto opens Camel YAML/XML routes such as `src/main/resources/routes/*.camel.yam
 
 The **Hawtio** devfile task prints the Hawtio Online URL from the `hawtio` namespace. Pods show up there when they expose a `jolokia` port. `fulfillment-adapter` is the first service set up for this (box1-gitops#117, fulfillment-adapter#8, box1-workloads-dev#178).
 
+## Containers in workspaces
+
+Since box1-gitops#123, the CheCluster runs workspaces with container run enabled. It uses the built-in `nested-container` SCC, gives each workspace pod its own user namespace, and adds `/dev/fuse` and `/dev/net/tun`. Box1 devfiles put podman storage (`~/.local/share/containers`) on an ephemeral volume, so images and containers are discarded when the workspace stops.
+
+### Recovery: workspace deletion stuck on podman storage
+
+**Symptom:** the `cleanup-<workspace-id>` job in `<user>-devspaces` fails with `rm: cannot remove '…/persistent-home/.local/share/containers/storage/vfs/dir/…': Operation not permitted`, and the DevWorkspace stays in Error with a deletion timestamp. This happens when a workspace ran podman before the ephemeral volume was added. Image layers end up on the per-user PVC owned by sub-UIDs (for postgres, host UID 10069 = container UID 70), and the cleanup job runs as the plain user UID.
+
+**Fix without a privileged pod** (used on 2026-11-08):
+1. Start a pod in `<user>-devspaces` that matches the old workspace:
+   - Use the workspace's `workspace<id>-sa` service account, which may still use `container-build`.
+   - Set the annotation `openshift.io/required-scc: container-build`.
+   - Use the Box1 UDI image.
+   - Give the container `allowPrivilegeEscalation: true` and add SETGID and SETUID.
+   - Mount `claim-devworkspace` with `subPath: workspace<id>/persistent-home` at `/home/user`.
+2. In that pod, add `user:x:$(id -u):0:user:/home/user:/bin/bash` to `/etc/passwd`, so the image's `/etc/subuid` entry `user:10000:65536` applies.
+3. Set `P="/usr/bin/podman.orig --storage-driver=vfs --root /tmp/ps-root --runroot /tmp/ps-run"`.
+4. For each `…/vfs/dir/*/var/lib/postgresql`, run `$P unshare sh -c 'cd <dir> && setpriv --reuid=70 --regid=70 --clear-groups rmdir data'`. User-namespace root can't remove these sticky directories because their group isn't mapped.
+5. Run `$P unshare rm -rf /home/user/.local/share/containers/storage`.
+6. Delete the helper pod and the failed `cleanup-<workspace-id>` job. The DevWorkspace controller recreates the job, and the deletion completes.
+
 ## Updating the UDI
 
 1. Change `udi/Containerfile` or `udi/bin` in box1-devspaces with a PR. The PR pipeline builds the image without pushing.
