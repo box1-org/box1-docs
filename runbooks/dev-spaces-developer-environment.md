@@ -94,7 +94,7 @@ The **Hawtio** devfile task prints the Hawtio Online URL from the `hawtio` names
 
 ## Containers in workspaces
 
-Since box1-gitops#123, the CheCluster runs workspaces with container run enabled. It uses the built-in `nested-container` SCC, gives each workspace pod its own user namespace, and adds `/dev/fuse` and `/dev/net/tun`. Box1 devfiles put podman storage (`~/.local/share/containers`) on an ephemeral volume, so images and containers are discarded when the workspace stops.
+Since box1-gitops#123, the CheCluster runs workspaces with container run enabled. It uses the built-in `nested-container` SCC, gives each workspace pod its own user namespace, and adds `/dev/fuse` and `/dev/net/tun`. Podman stores images in `/var/lib/box1-containers` (the UDI sets `CONTAINERS_STORAGE_CONF`), and Box1 devfiles mount an ephemeral volume there, so images and containers are discarded when the workspace stops. **Don't mount volumes inside `/home/user`.** It's the persistent home, a subPath of the per-user PVC, and mounts nested inside it block workspace deletion (see the recovery below). `~/.m2` persists with the home and needs no volume of its own.
 
 Workspace containers run as UID 1000. Both levels are set in the CheCluster: `containerRunConfiguration.containerSecurityContext.runAsUser` (box1-gitops#124) and `security.podSecurityContext.runAsUser` (box1-gitops#125). Without them, `nested-container` assigns UID 0, which either fails the start or leaves `/projects` owned by root.
 
@@ -122,6 +122,23 @@ Workspace containers run as UID 1000. Both levels are set in the CheCluster: `co
 4. For each `…/vfs/dir/*/var/lib/postgresql`, run `$P unshare sh -c 'cd <dir> && setpriv --reuid=70 --regid=70 --clear-groups rmdir data'`. User-namespace root can't remove these sticky directories because their group isn't mapped.
 5. Run `$P unshare rm -rf /home/user/.local/share/containers/storage`.
 6. Delete the helper pod and the failed `cleanup-<workspace-id>` job. The DevWorkspace controller recreates the job, and the deletion completes.
+
+### Recovery: workspace pod stuck terminating, per-user PVC stuck Terminating
+
+**Symptom:**
+- A new workspace stops at "Provisioning storage: Shared PVC is in terminating state" and fails after 5 minutes.
+- The old workspace pod stays in `Error` with a deletion timestamp.
+- The kubelet log shows `umount: …/volume-subpaths/pvc-…/<container>/<n>: target is busy` every 2 minutes.
+
+**Cause (2026-11-08):** devfile volumes mounted at `/home/user/.m2` and `/home/user/.local/share/containers` stayed mounted on the node, inside each container's subPath of the persistent home.
+
+**Fix:**
+1. List the nested mounts: `oc debug node/<node> -- chroot /host findmnt -R <busy subPath>`.
+2. Unmount them **in the host mount namespace**: `oc debug node/<node> -- chroot /host nsenter -t 1 -m -- umount <mount>`, deepest first. A plain `umount` inside `oc debug` only affects the debug pod's own copy of the mount namespace.
+
+The kubelet then finishes deleting the pod within about a minute, the old PVC and PV are deleted, and the next workspace start creates a new PVC. Since box1-devspaces#4 nothing is mounted inside the home, so this shouldn't recur.
+
+**Also expected:** when you delete your last workspace, the DevWorkspace operator deletes the per-user `claim-devworkspace`, and the persistent home (including `~/.m2`) goes with it.
 
 ## Updating the UDI
 
