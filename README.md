@@ -80,6 +80,7 @@ the operator console and observability.
 
 | Runbook | Covers |
 | --- | --- |
+| [Dev Spaces developer environment](https://github.com/box1-org/box1-docs/blob/main/runbooks/dev-spaces-developer-environment.md) | Box1 UDI, devfile commands, Tekton, remote dev, JVM debug, Kaoto, Claude Code, Hawtio |
 | [Kafka and PostgreSQL foundation](https://github.com/box1-org/box1-docs/blob/main/runbooks/kafka-postgres-foundation.md) | Shared Kafka cluster and per-service PostgreSQL |
 | [OpenShift AI lab](https://github.com/box1-org/box1-docs/blob/main/runbooks/openshift-ai-lab.md) | OpenShift AI workbench and KServe validation |
 | [RHDH onboarding plugin: OCI delivery](https://github.com/box1-org/box1-docs/blob/main/runbooks/rhdh-onboarding-plugin-oci.md) | Publishing the onboarding plugin as an immutable OCI artifact |

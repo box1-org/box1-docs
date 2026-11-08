@@ -1,0 +1,115 @@
+# Dev Spaces developer environment
+
+How to use the Box1 OpenShift Dev Spaces workspace. It covers running Tekton pipelines, editing Camel routes in Kaoto, using Claude Code, debugging JVMs, running uncommitted code on the cluster with Quarkus remote dev, and opening Hawtio. Tracking issue: [#114](https://github.com/box1-org/box1-docs/issues/114).
+
+> **Status (2026-11-08, America/New_York):** These changes are open PRs. None are merged, synced or tested end to end yet. Every step below is **not verified** until #114's acceptance criteria are checked off.
+
+## Pieces and where they live
+
+| Piece | Repository / path | Managed by |
+| --- | --- | --- |
+| Box1 UDI image and the `box1-pipeline`, `box1-remote-dev` and `box1-debug` helpers | [box1-devspaces](https://github.com/box1-org/box1-devspaces) `udi/` | PaC release builds the image on push to `main` → `box1-devtools/box1-udi` |
+| PaC Repository, `ci-udi-*` service accounts, `box1-devtools` image project, workspace pull access | box1-gitops `platform/pipelines/ci/box1-devspaces.yaml` | Argo app `pipelines-ci` (manual sync) |
+| CheCluster `openVSXURL: https://open-vsx.org` | box1-gitops `platform/dev-spaces/instance/checluster.yaml` | Argo app `dev-spaces` (manual sync) |
+| Per-user sandbox namespace `<user>-sandbox` | box1-gitops `platform/dev-spaces/sandboxes/` | Argo app `dev-spaces` |
+| Opt-in JVM debug component | box1-workloads-dev `components/jvm-debug` | Argo, per service |
+| `devfile.yaml`, `.vscode/`, `deploy/remote-dev/` | box1-templates `quarkus-rest-service` skeleton; pilot in `fulfillment-adapter` | Each repository |
+| Hawtio Online | box1-gitops `platform/hawtio/` | Argo apps (manual sync) |
+
+The embedded Dev Spaces extension registry doesn't have Kaoto (`redhat.vscode-kaoto`) or Tekton (`redhat.vscode-tekton-pipelines`), which is why the CheCluster uses open-vsx.org.
+
+## Open a workspace
+
+1. In Developer Hub, open the component and choose **Open in Dev Spaces**. Or go to `https://devspaces.apps.ocp.box1.org/#https://github.com/box1-org/<repo>`.
+2. The workspace starts from the UDI image pinned by digest in `devfile.yaml`. It installs the extensions recommended in `.vscode/extensions.json`: Java, Java Debug, Quarkus, Kaoto, Tekton and Claude Code.
+3. Run commands from **Terminal → Run Task → devfile**, or run the `box1-*` helpers directly in a terminal.
+
+Check the toolchain with `cat /etc/box1-udi-release`, `java -version` (expect 21), `tkn version`, `tkn pac version`, `camel --version` and `claude --version`.
+
+## Claude Code
+
+The extension and the CLI are in every workspace. Never commit credentials. Pick one of these:
+
+- **Interactive login:** sign in from the Claude Code panel.
+- **API key:** create a Secret in your Dev Spaces namespace that is mounted as an environment variable in every workspace:
+
+  ```bash
+  oc create secret generic claude-api-key -n <user>-devspaces --from-literal=ANTHROPIC_API_KEY=<key>
+  oc label secret claude-api-key -n <user>-devspaces controller.devfile.io/mount-to-devworkspace=true controller.devfile.io/watch-secret=true
+  oc annotate secret claude-api-key -n <user>-devspaces controller.devfile.io/mount-as=env
+  ```
+
+  Restart the workspace to pick it up. Delete the Secret to revoke it.
+
+## Tekton pipelines
+
+| Command | Effect |
+| --- | --- |
+| `box1-pipeline validate` | Resolves `.tekton/pull-request.yaml` with `tkn pac resolve` for the **pushed** HEAD and creates the PipelineRun and a temporary git-auth Secret in `box1-ci`. It uses the GitHub token that Dev Spaces mounts, or `PAC_PROVIDER_TOKEN`. |
+| `box1-pipeline logs` / `list` | Follows or lists this repository's PipelineRuns. |
+
+- Pipelines fetch from GitHub, so uncommitted changes are never included. To try uncommitted code, use remote dev.
+- Releases aren't started from the workspace. They run from Pipelines as Code on push to `main`, and Argo CD remains the only deployer.
+- You need permission to create PipelineRuns and Secrets in `box1-ci`, which is limited to maintainers.
+
+## Remote dev: uncommitted code on the cluster
+
+```bash
+box1-remote-dev deploy   # mutable-jar image -> <user>-sandbox, applies deploy/remote-dev
+box1-remote-dev sync     # quarkus:remote-dev: pushes local changes as you save
+box1-remote-dev url      # sandbox Route
+box1-remote-dev delete   # removes the remote-dev resources, live-reload Secret and ImageStream
+```
+
+- Jib pushes the image to `registry.apps.ocp.box1.org/<user>-sandbox/<service>:remote-dev` using your own token. Nothing goes to `box1-ci`, and `<service>-dev` isn't touched.
+- The pod runs with `QUARKUS_LAUNCH_DEVMODE=true`. The live-reload password is a random value in the Secret `<service>-remote-dev-live-reload`.
+- **Deliberate difference from dev:** the root filesystem is writable, because remote dev rewrites the application jars in place.
+- Services with dependencies isolate them in their overlay. `fulfillment-adapter` runs a throwaway PostgreSQL (`emptyDir`, deleted along with the rest), disables Kafka input and uses an unreachable broker so it never takes orders from `fulfillment-adapter-dev` or publishes into shared topics, and leaves SFTP disabled.
+- To add a developer, copy `platform/dev-spaces/sandboxes/mike.yaml` in box1-gitops and sync `dev-spaces`.
+
+## JVM debugging
+
+JDWP always listens on `127.0.0.1:5005` inside the pod, so other pods and the mesh can't reach it. You attach only through `oc port-forward`.
+
+| Target | Steps |
+| --- | --- |
+| Workspace `quarkus:dev` | Run the **Quarkus dev** task, then start **Attach to JVM (localhost:5005)**. |
+| Sandbox remote-dev pod | Run `box1-debug sandbox`, then attach. |
+| `<service>-dev` | Open a box1-workloads-dev PR adding `components: [../../components/jvm-debug]` to `workloads/<service>/kustomization.yaml` and sync. Then run `box1-debug dev <service>` and attach. **Remove the component in a follow-up PR when you're done.** |
+
+A paused breakpoint stops request handling and can fail probes, so expect restarts during long pauses. Only one forward can use local port 5005 at a time. Set `BOX1_DEBUG_PORT` to use another port, and change `launch.json` to match.
+
+## Kaoto
+
+Kaoto opens Camel YAML/XML routes such as `src/main/resources/routes/*.camel.yaml`. The existing `fulfillment-adapter` routes are written in the Java DSL and **can't be opened in Kaoto** until they're converted ([#115](https://github.com/box1-org/box1-docs/issues/115)). Use `camel run <file>.camel.yaml` (Camel JBang) to try a route.
+
+## Hawtio
+
+The **Hawtio** devfile task prints the Hawtio Online URL from the `hawtio` namespace. Pods show up there when they expose a `jolokia` port. `fulfillment-adapter` is the first service set up for this (box1-gitops#117, fulfillment-adapter#8, box1-workloads-dev#178).
+
+## Updating the UDI
+
+1. Change `udi/Containerfile` or `udi/bin` in box1-devspaces with a PR. The PR pipeline builds the image without pushing.
+2. When the PR merges, the release run prints `…/box1-devtools/box1-udi@sha256:…`.
+3. Bump that digest in the template `devfile.yaml` and in each repository that uses it.
+4. When Dev Spaces is upgraded, bump `BASE_IMAGE`. The command for finding the new digest is in the Containerfile header.
+
+## Recovery
+
+| To undo | Do this |
+| --- | --- |
+| A repository's devfile | Revert its `devfile.yaml` and `.vscode/` files. Without a devfile, workspaces fall back to the operator defaults. |
+| The open-vsx.org registry | Revert the `openVSXURL` line and sync `dev-spaces`. Kaoto and Tekton then stop installing. |
+| A sandbox | Run `box1-remote-dev delete`. Removing its file from `sandboxes/` and syncing deletes the namespace. |
+| JVM debug on a dev service | Remove the component and sync. |
+
+None of these recovery steps has been exercised yet.
+
+## Related PRs
+
+- [box1-devspaces#1](https://github.com/box1-org/box1-devspaces/pull/1): UDI image, helpers and pipelines
+- [box1-gitops#118](https://github.com/box1-org/box1-gitops/pull/118): UDI build and pull access, open-vsx.org, sandbox
+- [box1-workloads-dev#179](https://github.com/box1-org/box1-workloads-dev/pull/179): `components/jvm-debug`
+- [box1-templates#32](https://github.com/box1-org/box1-templates/pull/32) (draft): skeleton devfile, VS Code config and remote-dev overlay
+- [fulfillment-adapter#9](https://github.com/box1-org/fulfillment-adapter/pull/9) (draft): pilot
+- Hawtio: [box1-gitops#117](https://github.com/box1-org/box1-gitops/pull/117), [fulfillment-adapter#8](https://github.com/box1-org/fulfillment-adapter/pull/8), [box1-workloads-dev#178](https://github.com/box1-org/box1-workloads-dev/pull/178)
