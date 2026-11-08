@@ -19,12 +19,12 @@ How to use the Box1 OpenShift Dev Spaces workspace. It covers running Tekton pip
 | `devfile.yaml`, `.vscode/`, `deploy/remote-dev/` | box1-templates `quarkus-rest-service` skeleton; pilot in `fulfillment-adapter` | Each repository |
 | Hawtio Online | box1-gitops `platform/hawtio/` | Argo apps (manual sync) |
 
-The embedded Dev Spaces extension registry doesn't have Kaoto (`redhat.vscode-kaoto`) or Tekton (`redhat.vscode-tekton-pipelines`), which is why the CheCluster uses open-vsx.org.
+The embedded Dev Spaces extension registry doesn't have Kaoto (`redhat.vscode-kaoto`), which is why the CheCluster uses open-vsx.org. The Tekton Pipelines extension was dropped on 2026-11-08: Tekton Hub is gone, and the extension is built around it. Run pipelines with the `box1-pipeline` commands below, which use `tkn` and `tkn pac` directly.
 
 ## Open a workspace
 
 1. In Developer Hub, open the component and choose **Open in Dev Spaces**. Or go to `https://devspaces.apps.ocp.box1.org/#https://github.com/box1-org/<repo>`.
-2. The workspace starts from the UDI image pinned by digest in `devfile.yaml`. It installs the extensions recommended in `.vscode/extensions.json`: Java, Java Debug, Quarkus, Kaoto, Tekton and Claude Code.
+2. The workspace starts from the UDI image pinned by digest in `devfile.yaml`. It installs the extensions recommended in `.vscode/extensions.json`: Java, Java Debug, Quarkus, Kaoto and Claude Code.
 3. Run commands from **Terminal → Run Task → devfile**, or run the `box1-*` helpers directly in a terminal.
 
 Check the toolchain with `cat /etc/box1-udi-release`, `java -version` (expect 21), `tkn version`, `tkn pac version`, `camel --version` and `claude --version`.
@@ -50,7 +50,7 @@ The extension and the CLI are in every workspace. Never commit credentials. Pick
 
 | Command | Effect |
 | --- | --- |
-| `box1-pipeline validate` | Resolves `.tekton/pull-request.yaml` with `tkn pac resolve` for the **pushed** HEAD and creates the PipelineRun and a temporary git-auth Secret in `box1-ci`. It uses the GitHub token that Dev Spaces mounts, or `PAC_PROVIDER_TOKEN`. |
+| `box1-pipeline validate` | Resolves `.tekton/pull-request.yaml` with `tkn pac resolve` for the **pushed** HEAD and creates the PipelineRun in `box1-ci`, plus a git-auth Secret owned by that run that's deleted when the run is pruned. It uses the GitHub token that Dev Spaces mounts, or `PAC_PROVIDER_TOKEN`. |
 | `box1-pipeline logs` / `list` | Follows or lists this repository's PipelineRuns. |
 
 - Pipelines fetch from GitHub, so uncommitted changes are never included. To try uncommitted code, use remote dev.
@@ -96,6 +96,16 @@ The **Hawtio** devfile task prints the Hawtio Online URL from the `hawtio` names
 
 Since box1-gitops#123, the CheCluster runs workspaces with container run enabled. It uses the built-in `nested-container` SCC, gives each workspace pod its own user namespace, and adds `/dev/fuse` and `/dev/net/tun`. Box1 devfiles put podman storage (`~/.local/share/containers`) on an ephemeral volume, so images and containers are discarded when the workspace stops.
 
+Workspace containers run as UID 1000. Both levels are set in the CheCluster: `containerRunConfiguration.containerSecurityContext.runAsUser` (box1-gitops#124) and `security.podSecurityContext.runAsUser` (box1-gitops#125). Without them, `nested-container` assigns UID 0, which either fails the start or leaves `/projects` owned by root.
+
+### Testcontainers (`-Pcontainers`)
+
+- A devfile postStart event runs `box1-podman-socket start`, which serves podman's Docker API at `/tmp/podman-run/podman.sock`.
+- The UDI sets `DOCKER_HOST` to that socket and `TESTCONTAINERS_RYUK_DISABLED=true`, so `./mvnw -Pcontainers test` works with no extra setup.
+- Check it with `box1-podman-socket status`.
+- **Verified by hand on 2026-11-08:** fulfillment-adapter ran 130 tests, `BUILD SUCCESS`, with `postgres:15-alpine` and `apache/kafka:4.2.0`.
+- Images come from docker.io, which applies anonymous pull rate limits. `registry.redhat.io` images need pull credentials, which workspaces don't have.
+
 ### Recovery: workspace deletion stuck on podman storage
 
 **Symptom:** the `cleanup-<workspace-id>` job in `<user>-devspaces` fails with `rm: cannot remove '…/persistent-home/.local/share/containers/storage/vfs/dir/…': Operation not permitted`, and the DevWorkspace stays in Error with a deletion timestamp. This happens when a workspace ran podman before the ephemeral volume was added. Image layers end up on the per-user PVC owned by sub-UIDs (for postgres, host UID 10069 = container UID 70), and the cleanup job runs as the plain user UID.
@@ -125,7 +135,7 @@ Since box1-gitops#123, the CheCluster runs workspaces with container run enabled
 | To undo | Do this |
 | --- | --- |
 | A repository's devfile | Revert its `devfile.yaml` and `.vscode/` files. Without a devfile, workspaces fall back to the operator defaults. |
-| The open-vsx.org registry | Revert the `openVSXURL` line and sync `dev-spaces`. Kaoto and Tekton then stop installing. |
+| The open-vsx.org registry | Revert the `openVSXURL` line and sync `dev-spaces`. Kaoto then stops installing. |
 | A sandbox | Run `box1-remote-dev delete`. Removing its file from `sandboxes/` and syncing deletes the namespace. |
 | JVM debug on a dev service | Remove the component and sync. |
 
