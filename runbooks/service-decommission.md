@@ -110,6 +110,95 @@ onboarding operation is active.
    scripts, but retain historical evidence with a clear `retired` label and a
    link to this runbook.
 
+## Virtual machines (`virtual-machine` and `vm-instance` profiles)
+
+Added 2026-11-09 (America/New_York) for
+[#138](https://github.com/box1-org/box1-docs/issues/138). Steps 1–6 above still apply,
+with the differences below. **Not yet exercised on the cluster**: no VM workload has been
+decommissioned with this section. Deleting a VM, a DataVolume or a Secret needs approval.
+
+Find the profile first. It is the `box1.org/workload-profile` label of
+`workloads/<name>/namespace.yaml`:
+
+- `virtual-machine` (template `rhel-image-vm`): a VM **with** its own source repository,
+  OS image and install disk (for example `legacy-erp`, `vm-golden-check`). It may be the
+  **source** of `vm-instance` workloads.
+- `vm-instance` (template `vm-instance`): one VM of another repository's OS image. It has
+  **no** source repository, no PAC Repository and no image stream of its own.
+
+### Never delete a source that is in use
+
+Before touching a `virtual-machine` workload, check whether it is a source:
+
+```sh
+grep -l "box1.org/source-image: <name>$" box1-workloads-dev/workloads/*/virtualmachine.yaml
+```
+
+Every instance in that list boots `box1-ci/<name>-disk` and pins `box1-ci/<name>@sha256:…`.
+While any instance, or the source VM itself, uses them:
+
+- do **not** delete the `box1-ci/<name>` or `box1-ci/<name>-disk` image streams or their
+  tags (step 5), the `box1-ci/<name>:<channel>` tags, or the source repository (step 4);
+- decommission or re-point the instances first. Removing `<name>` from
+  `VM_INSTANCE_SOURCES` in `box1-gitops` `platform/pipelines/tasks/gitops-validate.yaml`
+  makes every remaining instance fail `box1-gitops-validate`, so do it last.
+
+Decommissioning an **instance** never touches the source's image streams, tags,
+repository, workload or Application, or another instance.
+
+### What the cascade removes, and what it does not
+
+Step 2 (Application deleted with the resources finalizer) removes what the Application
+manages: the namespace and everything in it, plus the out-of-namespace RBAC in the
+bundle. For a VM that is:
+
+| Resource | Where | Removed by the step 2 cascade? |
+| --- | --- | --- |
+| VirtualMachine `<name>` and its VMI, virt-launcher pod | `<name>-dev` | Yes (namespace) |
+| DataVolume `<name>-root` and the root PVC (`lvms-vg1`, reclaim `Delete`, so the PV and its logical volume are destroyed) | `<name>-dev` | Yes (namespace). The guest disk is lost; back up first if it matters |
+| Data PVCs with `argocd.argoproj.io/sync-options: Prune=false,Delete=false` (today only `legacy-erp-data` in `legacy-erp/erp-data.yaml`) | `<name>-dev` | Argo does not delete them, but deleting the namespace does. Copy the data out before step 2 if it must survive |
+| `<name>-updater` ServiceAccount, `<name>-updater-token`, `<name>-admin-ssh` (and `legacy-erp-deploy-ssh`) | `<name>-dev` | Yes (namespace) |
+| `<name>-site` ConfigMap (`vm-instance`) | `<name>-dev` | Yes (namespace) |
+| `<name>-cloud-init` Secret (`vm-instance`; created **outside Git**, not managed by Argo) | `<name>-dev` | Yes, but only because the namespace goes. Check it is gone |
+| `<name>-release-observer`, `<name>-cloud-init-observer`, `<name>-status-reader`, `<name>-deployer` Roles and bindings | `<name>-dev` | Yes (namespace) |
+| `<name>-release-observer` Role and RoleBinding | `openshift-gitops` | Yes (managed by the Application). Verify |
+| `<name>-image-puller` RoleBinding (Group `system:serviceaccounts:<name>-dev`) | `box1-ci` | Yes (managed by the Application). Verify; a leftover binding would grant pulls to any future namespace of that name |
+| PAC Repository `<name>` (`virtual-machine` only) | `box1-ci` | Yes, after the finalizer step above |
+| Catalog Location, onboarding ConfigMap and Lease | RHDH, `rhdh` | No: step 3 |
+| Image streams `<name>`, `<name>-disk` and PipelineRuns (`virtual-machine` only) | `box1-ci` | No: step 5, and only if no instance uses them |
+| `onb-<name>-boot-*` booted-digest PipelineRuns (`vm-instance`) | `box1-ci` | No: step 5 (`-l backstage.io/kubernetes-id=<name>`) |
+
+If the namespace sticks in `Terminating`, look for a VMI or DataVolume finalizer and wait
+for virt-controller and CDI before forcing anything.
+
+### `vm-instance` specifics
+
+- **Catalog (step 3):** the Location target is
+  `https://github.com/box1-org/box1-workloads-dev/blob/main/workloads/<name>/catalog-info.yaml`,
+  not a repository of its own. Delete that Location; then
+  `GET /api/catalog/entities/by-name/component/default/<name>` must return 404. There is no
+  API entity.
+- **Repository (step 4):** none. Skip it.
+- **CI leftovers (step 5):** only the `onb-<name>-boot-*` PipelineRuns. Never the source's
+  image streams.
+- **Credentials:** disable or delete the site's Keycloak client (#131) so the credential in
+  the deleted Secret, and in any guest copy, stops working. Deleting the VM does not revoke it.
+- **Verify the source and the other instances, before and after:** record
+  `box1.org/os-image-digest` of each remaining instance and of the source,
+  `oc get is <source> <source>-disk -n box1-ci`, and that their Applications stay
+  `Synced`/`Healthy` and their VMs `Ready`.
+
+Example inventory for an instance (read-only):
+
+```sh
+NAME=site-west NS=site-west-dev
+oc get vm,vmi,dv,pvc,configmap,secret,sa,role,rolebinding -n $NS
+oc get rolebinding $NAME-image-puller -n box1-ci
+oc get role,rolebinding $NAME-release-observer -n openshift-gitops
+oc get pipelineruns -n box1-ci -l backstage.io/kubernetes-id=$NAME
+oc get configmap,lease box1-onboard-$NAME -n rhdh
+```
+
 ## Box1 execution on 2026-10-26
 
 The four requested services were:

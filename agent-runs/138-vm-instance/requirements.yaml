@@ -1,0 +1,71 @@
+# Requirement ledger, box1-docs#138. Status = highest level observed.
+- id: VMI-TPL-001
+  description: Template templates/vm-instance with instance, allowlisted source, site identity, SSH key and sizing inputs; no repository:ensure; catalog after provision; registered in catalog-info.yaml and validate.mjs
+  status: locally_tested
+  implementation: [box1-templates templates/vm-instance/, catalog-info.yaml, scripts/validate.mjs]
+  commands: ["npm run validate"]
+  evidence: [evidence/02-local-tests.md]
+  limitations: [Not installed in the Hub; plugin 1.5.0 not released]
+- id: VMI-PRF-001
+  description: vm-instance profile entry; bundle validation mirroring #139 + #140
+  status: locally_tested
+  implementation: [box1-templates plugins/box1-onboarding/workflow.cjs validateVmInstanceBundle]
+  tests: [scripts/test-onboarding-vm-instance.cjs, scripts/validate.mjs]
+  commands: ["npm run test:onboarding"]
+  evidence: [evidence/02-local-tests.md, evidence/03-cross-check.md]
+- id: VMI-PRF-002
+  description: No build; adopt the source's approved digests (sourceRevision semantics, disk for the approved revision)
+  status: locally_tested
+  implementation: [workflow.cjs vmInstanceResolveSource, approvedSource, vmInstanceInitialRecord, vmInstanceBuildResults]
+  evidence: [decisions/D-001-source-revision.md, decisions/D-002-disk-digest.md]
+  limitations: [Disk label and image stream reads were exercised against doubles; the shapes were observed on vm-golden-check]
+- id: VMI-PRF-003
+  description: Platform checks including the cloud-init Secret; the VM stays Halted until it exists
+  status: locally_tested
+  implementation: [workflow.cjs vmInstancePlatformChecks, Kube.metadata; template onboarding.yaml cloud-init-observer Role]
+  evidence: [decisions/D-003-cloud-init-secret-readiness.md]
+- id: VMI-PRF-004
+  description: First promotion through the #139 vm-instance contract, this instance only
+  status: locally_tested
+  implementation: [workflow.cjs vmInstancePromotionUpdates]
+  evidence: [evidence/03-cross-check.md]
+- id: VMI-PRF-005
+  description: Verify VM Ready, AgentConnected, Argo and booted digest == approved digest
+  status: locally_tested
+  implementation: [workflow.cjs vmInstanceVerify, vmInstanceBootedDigest; box1-gitops tasks/bootc-status.yaml]
+  evidence: [decisions/D-004-booted-digest-mechanism.md]
+  limitations: [Needs approval of Secret box1-ci/vm-instance-status-ssh and guest user box1-status in the source image; not live-tested]
+- id: VMI-PRF-006
+  description: Catalog entity for an instance with no repository
+  status: locally_tested
+  implementation: [workflow.cjs catalogEntity hook, vmInstanceCatalogEntity; template catalog-info.yaml]
+  evidence: [decisions/D-005-catalog-entity.md]
+- id: VMI-GIT-001
+  description: Reconcile #139 check_vm_instance with the #140 rules (box1-gitops#134)
+  status: locally_tested
+  implementation: [box1-gitops platform/pipelines/tasks/gitops-validate.yaml]
+  tests: [platform/pipelines/tasks/test-gitops-validate.py]
+  evidence: [decisions/D-007-validator-reconciliation.md, evidence/02-local-tests.md]
+- id: VMI-DOC-001
+  description: Decommission runbook updated for virtual-machine and vm-instance
+  status: implemented
+  implementation: [runbooks/service-decommission.md]
+  limitations: [Not exercised; needs a throwaway instance and approval]
+- id: VMI-ACC-001
+  description: Two instances from Developer Hub boot the same site-gateway-os digest with their own identities
+  status: blocked
+  limitations: [site-gateway-os does not exist; dependencies unmerged; onboarding, Secrets and Keycloak clients need approval]
+- id: VMI-ACC-002
+  description: Promoting a new digest to one instance leaves the other unchanged
+  status: blocked
+  evidence: [evidence/03-cross-check.md]
+  limitations: [File-level evidence only; needs a second approved source digest and two live instances]
+- id: VMI-ACC-003
+  description: Deleting an instance follows the updated runbook without affecting the source or other instances
+  status: blocked
+  limitations: [Runbook updated; live exercise needs a throwaway instance and approval]
+- id: VMI-ACC-004
+  description: rhel-image-vm onboarding still passes its regression run
+  status: locally_tested
+  evidence: [evidence/02-local-tests.md]
+  limitations: [Characterisation and render tests only; a live regression VM on the 1.5.0 digest is not run]
