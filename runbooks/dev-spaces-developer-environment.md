@@ -2,22 +2,22 @@
 
 How to use the Box1 OpenShift Dev Spaces workspace. It covers running Tekton pipelines, editing Camel routes in Kaoto, using Claude Code, debugging JVMs, running uncommitted code on the cluster with Quarkus remote dev, and opening Hawtio. Tracking issue: [#114](https://github.com/box1-org/box1-docs/issues/114).
 
-> **Status (2026-11-08, America/New_York):**
-> - **Merged and synced:** the UDI (box1-devspaces, image `sha256:c3d29a29…`), the box1-gitops CheCluster, CI and sandbox changes, Hawtio, the box1-templates skeleton and the Dev Spaces files in every service repository.
-> - **Verified in a live `fulfillment-adapter` workspace:** the toolchain, the extensions from open-vsx.org, `oc` as the user, `box1-pipeline validate` and `logs`, remote-dev deploy and sync, `-Pcontainers` through the podman socket, and a VS Code debugger attach to the sandbox and to `inventory-service-dev` and `order-service-dev` with the debug component. JDWP refuses connections on the pod IP.
-> - **Not yet verified:** Claude Code sign-in, editing an existing route in Kaoto, and remote dev for services other than `fulfillment-adapter`.
+> **Status (2026-11-08, America/New_York): delivered.** [#114](https://github.com/box1-org/box1-docs/issues/114) is closed; the full record is the [achievement log](https://github.com/box1-org/box1-docs/blob/main/achievements/2026/2026-11-08-dev-spaces-developer-environment.md).
+> - **In place:** the UDI (box1-devspaces, image `sha256:c3d29a29…`), the CheCluster, CI and sandbox changes in box1-gitops, Hawtio, the box1-templates skeleton and the Dev Spaces files in every service repository. JVM debug is enabled in `inventory-service-dev` and `order-service-dev`.
+> - **Verified in a live `fulfillment-adapter` workspace:** the toolchain, the extensions from open-vsx.org, `oc` as the user, `box1-pipeline validate` and `logs`, remote-dev deploy and sync, nested podman and `-Pcontainers` through the podman socket, and a VS Code debugger attach to the sandbox and to `inventory-service-dev` and `order-service-dev`. JDWP refuses connections on the pod IP.
+> - **Not verified:** Claude Code sign-in; opening or editing a route in Kaoto (only the extension install is recorded); remote dev for services other than `fulfillment-adapter`; the postStart event starting the podman socket on its own; and a workspace created from the current devfile deleting without help.
 > - **Known problems:** workspace cleanup jobs are rejected when other workspaces exist ([#120](https://github.com/box1-org/box1-docs/issues/120)); `-Pcontainers` doesn't run in CI ([#121](https://github.com/box1-org/box1-docs/issues/121)).
 
 ## Pieces and where they live
 
 | Piece | Repository / path | Managed by |
 | --- | --- | --- |
-| Box1 UDI image and the `box1-pipeline`, `box1-remote-dev` and `box1-debug` helpers | [box1-devspaces](https://github.com/box1-org/box1-devspaces) `udi/` | PaC release builds the image on push to `main` → `box1-devtools/box1-udi` |
+| Box1 UDI image and the `box1-pipeline`, `box1-remote-dev`, `box1-debug` and `box1-podman-socket` helpers | [box1-devspaces](https://github.com/box1-org/box1-devspaces) `udi/` | PaC release builds the image on push to `main` → `box1-devtools/box1-udi` |
 | PaC Repository, `ci-udi-*` service accounts, `box1-devtools` image project, workspace pull access | box1-gitops `platform/pipelines/ci/box1-devspaces.yaml` | Argo app `pipelines-ci` (manual sync) |
-| CheCluster `openVSXURL: https://open-vsx.org` | box1-gitops `platform/dev-spaces/instance/checluster.yaml` | Argo app `dev-spaces` (manual sync) |
+| CheCluster: `openVSXURL: https://open-vsx.org`, container run with the `nested-container` SCC, `runAsUser: 1000` | box1-gitops `platform/dev-spaces/instance/checluster.yaml` | Argo app `dev-spaces` (manual sync) |
 | Per-user sandbox namespace `<user>-sandbox` | box1-gitops `platform/dev-spaces/sandboxes/` | Argo app `dev-spaces` |
-| Opt-in JVM debug component | box1-workloads-dev `components/jvm-debug` | Argo, per service |
-| `devfile.yaml`, `.vscode/`, `deploy/remote-dev/` | box1-templates `quarkus-rest-service` skeleton; pilot in `fulfillment-adapter` | Each repository |
+| Opt-in JVM debug component (enabled for `inventory-service` and `order-service`) | box1-workloads-dev `components/jvm-debug` | Argo, per service |
+| `devfile.yaml`, `.vscode/`, `deploy/remote-dev/` | box1-templates `quarkus-rest-service` skeleton, and every Java service repository (agentic-operations, asset-service, fulfillment-adapter, inventory-service, notification-service, operations-console, order-service, quarkus-reference, scenario-controller) | Each repository |
 | Hawtio Online | box1-gitops `platform/hawtio/` | Argo apps (manual sync) |
 
 The embedded Dev Spaces extension registry doesn't have Kaoto (`redhat.vscode-kaoto`), which is why the CheCluster uses open-vsx.org. The Tekton Pipelines extension was dropped on 2026-11-08: Tekton Hub is gone, and the extension is built around it. Run pipelines with the `box1-pipeline` commands below, which use `tkn` and `tkn pac` directly.
@@ -81,13 +81,15 @@ JDWP always listens on `127.0.0.1:5005` inside the pod, so other pods and the me
 | --- | --- |
 | Workspace `quarkus:dev` | Run the **Quarkus dev** task, then start **Attach to JVM (localhost:5005)**. |
 | Sandbox remote-dev pod | Run `box1-debug sandbox`, then attach. |
-| `<service>-dev` | Open a box1-workloads-dev PR adding `components: [../../components/jvm-debug]` to `workloads/<service>/kustomization.yaml` and sync. Then run `box1-debug dev <service>` and attach. **Remove the component in a follow-up PR when you're done.** |
+| `<service>-dev` | Open a box1-workloads-dev PR adding `components: [../../components/jvm-debug]` to `workloads/<service>/kustomization.yaml` and sync. Then run `box1-debug dev <service>` and attach. Remove the component when you no longer need it. `inventory-service` and `order-service` keep it enabled on purpose (box1-workloads-dev#185). |
 
 A paused breakpoint stops request handling and can fail probes, so expect restarts during long pauses. Only one forward can use local port 5005 at a time. Set `BOX1_DEBUG_PORT` to use another port, and change `launch.json` to match.
 
 ## Kaoto
 
-Kaoto opens Camel YAML/XML routes such as `src/main/resources/routes/*.camel.yaml`. The existing `fulfillment-adapter` routes are written in the Java DSL and **can't be opened in Kaoto** until they're converted ([#115](https://github.com/box1-org/box1-docs/issues/115)). Use `camel run <file>.camel.yaml` (Camel JBang) to try a route.
+Kaoto opens Camel YAML/XML routes. `fulfillment-adapter`'s routes were converted to the YAML DSL in fulfillment-adapter#10 ([#115](https://github.com/box1-org/box1-docs/issues/115)) and live in `src/main/resources/routes/*.camel.yaml` (`erp1-exchange`, `fulfillment`, `rest-api`). Open one of those files to edit it in Kaoto. Use `camel run <file>.camel.yaml` (Camel JBang) to try a route on its own.
+
+Using Kaoto inside a workspace hasn't been verified yet: only the extension install is recorded.
 
 ## Hawtio
 
@@ -139,6 +141,10 @@ Workspace containers run as UID 1000. Both levels are set in the CheCluster: `co
 
 The kubelet then finishes deleting the pod within about a minute, the old PVC and PV are deleted, and the next workspace start creates a new PVC. Since box1-devspaces#4 nothing is mounted inside the home, so this shouldn't recur.
 
+### Known problem: deletion stuck on "Cleaning up resources for deletion"
+
+If you delete a workspace while you still have others, its `cleanup-<workspace-id>` job can fail with `FailedCreate … restricted-v2: … runAsUser: Invalid value: 1000`. The pod-level `runAsUser: 1000` from box1-gitops#125 also applies to cleanup jobs, which `restricted-v2` rejects. There is no config fix yet ([#120](https://github.com/box1-org/box1-docs/issues/120)). To work around it, either delete your other workspaces too, which lets the operator remove the whole per-user PVC, or remove the workspace's directory from the PVC with a helper pod as described in the podman-storage recovery above.
+
 **Also expected:** when you delete your last workspace, the DevWorkspace operator deletes the per-user `claim-devworkspace`, and the persistent home (including `~/.m2`) goes with it.
 
 ## Updating the UDI
@@ -156,14 +162,15 @@ The kubelet then finishes deleting the pod within about a minute, the old PVC an
 | The open-vsx.org registry | Revert the `openVSXURL` line and sync `dev-spaces`. Kaoto then stops installing. |
 | A sandbox | Run `box1-remote-dev delete`. Removing its file from `sandboxes/` and syncing deletes the namespace. |
 | JVM debug on a dev service | Remove the component and sync. |
+| Containers in workspaces | Revert box1-gitops #123, #124 and #125 and sync `dev-spaces`. Workspaces lose podman and Testcontainers; `box1-podman-socket` fails harmlessly at postStart. |
+| A UDI release | Pin an earlier digest in `devfile.yaml`. Every released image stays tagged in `box1-devtools`. |
 
-None of these recovery steps has been exercised yet.
+None of these recovery steps has been exercised yet. The two stuck-deletion recoveries above were used on 2026-11-08.
 
 ## Related PRs
 
-- [box1-devspaces#1](https://github.com/box1-org/box1-devspaces/pull/1): UDI image, helpers and pipelines
-- [box1-gitops#118](https://github.com/box1-org/box1-gitops/pull/118): UDI build and pull access, open-vsx.org, sandbox
-- [box1-workloads-dev#179](https://github.com/box1-org/box1-workloads-dev/pull/179): `components/jvm-debug`
-- [box1-templates#32](https://github.com/box1-org/box1-templates/pull/32) (draft): skeleton devfile, VS Code config and remote-dev overlay
-- [fulfillment-adapter#9](https://github.com/box1-org/fulfillment-adapter/pull/9) (draft): pilot
+- UDI: [box1-devspaces#1](https://github.com/box1-org/box1-devspaces/pull/1) (image, helpers, pipelines), [#2](https://github.com/box1-org/box1-devspaces/pull/2) (pipeline git-auth, `gh`), [#3](https://github.com/box1-org/box1-devspaces/pull/3) (podman socket), [#4](https://github.com/box1-org/box1-devspaces/pull/4) (storage outside the home)
+- GitOps: [box1-gitops#118](https://github.com/box1-org/box1-gitops/pull/118) (UDI build and pull, open-vsx.org, sandbox), [#123](https://github.com/box1-org/box1-gitops/pull/123), [#124](https://github.com/box1-org/box1-gitops/pull/124), [#125](https://github.com/box1-org/box1-gitops/pull/125) (containers in workspaces)
+- JVM debug: [box1-workloads-dev#179](https://github.com/box1-org/box1-workloads-dev/pull/179) (component), [#185](https://github.com/box1-org/box1-workloads-dev/pull/185) (inventory-service, order-service)
+- Devfiles: [box1-templates#32](https://github.com/box1-org/box1-templates/pull/32) (skeleton); pilot [fulfillment-adapter#9](https://github.com/box1-org/fulfillment-adapter/pull/9), [#11](https://github.com/box1-org/fulfillment-adapter/pull/11), [#12](https://github.com/box1-org/fulfillment-adapter/pull/12); and one PR per service ([agentic-operations#7](https://github.com/box1-org/agentic-operations/pull/7), [asset-service#7](https://github.com/box1-org/asset-service/pull/7), [inventory-service#6](https://github.com/box1-org/inventory-service/pull/6), [notification-service#6](https://github.com/box1-org/notification-service/pull/6), [operations-console#16](https://github.com/box1-org/operations-console/pull/16), [order-service#8](https://github.com/box1-org/order-service/pull/8), [quarkus-reference#8](https://github.com/box1-org/quarkus-reference/pull/8), [scenario-controller#5](https://github.com/box1-org/scenario-controller/pull/5))
 - Hawtio: [box1-gitops#117](https://github.com/box1-org/box1-gitops/pull/117), [fulfillment-adapter#8](https://github.com/box1-org/fulfillment-adapter/pull/8), [box1-workloads-dev#178](https://github.com/box1-org/box1-workloads-dev/pull/178)
