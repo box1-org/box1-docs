@@ -1,0 +1,32 @@
+{
+  "issue": "box1-org/box1-docs#136",
+  "title": "Onboarding plugin profile dispatch table",
+  "profile": "frontier",
+  "prompt": "box1_operations_agent_prompts/03-golden-path/01_onboarding_profile_dispatch.md@3928e84",
+  "started": "2026-11-08T23:00-05:00",
+  "current_phase": "5 Review complete; stopped before 6 GitOps delivery (merge, tag release, pin and Hub sync need the user)",
+  "repositories": [
+    {
+      "name": "box1-org/box1-templates",
+      "role": "target",
+      "base": "5663eb3",
+      "branch": "golden-path/136-profile-dispatch",
+      "commit": "d8e853318046ab0544fac95330d20d525c964e9b",
+      "characterisation_commit": "b0e65d80d8190474635e81dc812a379a99b3b350",
+      "pr": "https://github.com/box1-org/box1-templates/pull/33",
+      "ci": "box1-onboarding-plugin-pr-65wx6 Succeeded on d8e8533",
+      "merged": null
+    },
+    {
+      "name": "box1-org/box1-docs",
+      "role": "run state",
+      "branch": "agent-run/136-onboarding-profile-dispatch"
+    }
+  ],
+  "plugin_version": "1.3.0",
+  "deployed_plugin": {"version": "1.2.0", "digest": "sha256:98506a25f4adc6ef01934e77dc09510ce0d77ea0331e5fbabeb5058a0410bb8b", "revision": "8537ec131d6afc49bde020f6e110aa9073bdb0ac"},
+  "image_digest": null,
+  "gitops_commit": null,
+  "review_passes_completed": ["release+operations+architecture (combined, fresh subagent)"],
+  "open_decisions": ["Approval of live regression onboardings regress136-svc and regress136-vm (D-005)"]
+}
