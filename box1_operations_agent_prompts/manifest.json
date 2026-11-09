@@ -1,6 +1,6 @@
 {
   "project": "box1 Operations",
-  "version": "1.10",
+  "version": "1.11",
   "created_on": "2026-10-25",
   "nominal_model_context_tokens": 65536,
   "gpu": {
@@ -53,6 +53,7 @@
         "03-golden-path/03_vm_cloud_init_nocloud.md",
         "03-golden-path/04_artifact_profile_quarkus_monorepo.md",
         "03-golden-path/05_vm_instance_profile_template.md",
+        "03-golden-path/06_staged_site_rollout.md",
         "04-edge-sites/01_site_foundation.md",
         "04-edge-sites/02_site_forwarder_outbox.md",
         "04-edge-sites/03_site_machine_identity.md",
@@ -91,7 +92,8 @@
     "03-golden-path/02_gitops_vm_instance_validate_promote.md",
     "03-golden-path/03_vm_cloud_init_nocloud.md",
     "03-golden-path/04_artifact_profile_quarkus_monorepo.md",
-    "03-golden-path/05_vm_instance_profile_template.md"
+    "03-golden-path/05_vm_instance_profile_template.md",
+    "03-golden-path/06_staged_site_rollout.md"
   ],
   "golden_path_dependencies": {
     "03-golden-path/01_onboarding_profile_dispatch.md": [],
@@ -105,6 +107,11 @@
       "03-golden-path/01_onboarding_profile_dispatch.md",
       "03-golden-path/02_gitops_vm_instance_validate_promote.md",
       "03-golden-path/03_vm_cloud_init_nocloud.md"
+    ],
+    "03-golden-path/06_staged_site_rollout.md": [
+      "03-golden-path/02_gitops_vm_instance_validate_promote.md",
+      "03-golden-path/05_vm_instance_profile_template.md",
+      "04-edge-sites/01_site_foundation.md"
     ]
   },
   "edge_sites_workstreams": [
@@ -156,7 +163,8 @@
       "04-edge-sites/04_site_status_sites_map.md",
       "03-golden-path/04_artifact_profile_quarkus_monorepo.md",
       "03-golden-path/05_vm_instance_profile_template.md",
-      "03-golden-path/02_gitops_vm_instance_validate_promote.md"
+      "03-golden-path/02_gitops_vm_instance_validate_promote.md",
+      "03-golden-path/06_staged_site_rollout.md"
     ],
     "04-edge-sites/09_edge_sites_acceptance.md": [
       "04-edge-sites/01_site_foundation.md",
@@ -166,7 +174,8 @@
       "04-edge-sites/05_asset_site_ingestion_stale_alert.md",
       "04-edge-sites/06_site_pick_lists_reconciliation.md",
       "04-edge-sites/07_site_otel_collector.md",
-      "04-edge-sites/08_site_greenboot_rollback.md"
+      "04-edge-sites/08_site_greenboot_rollback.md",
+      "03-golden-path/06_staged_site_rollout.md"
     ]
   },
   "edge_sites_issues": {
@@ -205,12 +214,8 @@
     "04-edge-sites/03_site_machine_identity.md": [
       "#71 (Kafka half only)"
     ],
-    "04-edge-sites/08_site_greenboot_rollback.md": [
-      "#141 (staged rollout; no prompt yet)"
-    ],
     "04-edge-sites/09_edge_sites_acceptance.md": [
-      "#71",
-      "#141"
+      "#71"
     ]
   },
   "build_order": [
@@ -242,6 +247,7 @@
     "04-edge-sites/05_asset_site_ingestion_stale_alert.md",
     "04-edge-sites/06_site_pick_lists_reconciliation.md",
     "04-edge-sites/07_site_otel_collector.md",
+    "03-golden-path/06_staged_site_rollout.md",
     "04-edge-sites/08_site_greenboot_rollback.md",
     "04-edge-sites/09_edge_sites_acceptance.md"
   ],

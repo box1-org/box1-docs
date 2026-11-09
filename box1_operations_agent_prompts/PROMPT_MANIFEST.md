@@ -22,17 +22,18 @@ All implementation prompts are standalone Markdown. See `manifest.json` for mach
 
 ## Golden-path changes for the edge sites (#126)
 
-Run in this order. `02` and `03` may run in parallel with `01`; `04` needs `01` and `02`; `05` needs `01`, `02` and `03`. All five carry a `frontier` section.
+Run in this order. `02` and `03` may run in parallel with `01`; `04` needs `01` and `02`; `05` needs `01`, `02` and `03`; `06` is listed below. All six carry a `frontier` section.
 
 - `03-golden-path/01_onboarding_profile_dispatch.md` (#136)
 - `03-golden-path/02_gitops_vm_instance_validate_promote.md` (#139)
 - `03-golden-path/03_vm_cloud_init_nocloud.md` (#140)
 - `03-golden-path/04_artifact_profile_quarkus_monorepo.md` (#137)
 - `03-golden-path/05_vm_instance_profile_template.md` (#138)
+- `03-golden-path/06_staged_site_rollout.md` (#141): needs `02` and `05`, and a `site-gateway-os` from `04-edge-sites/01`, so it runs after that prompt
 
 ## Edge sites (#126–#133)
 
-Run after the golden-path changes above. `02` and `03` may run in parallel once `01` is delivered; `04` needs `01`–`03`; `06` needs `01` and `02`; `05` needs `02` and `04`; `07` needs `02` and `05`; `08` needs `04` and #141, which has no prompt yet; `09` closes the epic. All nine carry a `frontier` section. The Kafka identity parts of `03` and `09` are blocked on #71.
+Run after the golden-path changes above. `02` and `03` may run in parallel once `01` is delivered; `04` needs `01`–`03`; `06` needs `01` and `02`; `05` needs `02` and `04`; `07` needs `02` and `05`; `08` needs `04` and `03-golden-path/06` (#141); `09` closes the epic. All nine carry a `frontier` section. The Kafka identity parts of `03` and `09` are blocked on #71.
 
 - `04-edge-sites/01_site_foundation.md` (#126: contracts and `site-gateway-os`)
 - `04-edge-sites/02_site_forwarder_outbox.md` (#127)

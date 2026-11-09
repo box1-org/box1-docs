@@ -9,7 +9,7 @@
 
 **Issue:** [box1-docs#126](https://github.com/box1-org/box1-docs/issues/126) (epic): the work items "egress NetworkPolicy" and "Runbooks", and every acceptance criterion.
 
-**Dependencies:** `01`–`08` in this directory, golden-path #136–#140 (`../03-golden-path/`), and [#141](https://github.com/box1-org/box1-docs/issues/141). Criteria that depend on undelivered work are recorded as blocked, not claimed. The per-site Kafka identity criterion is blocked on [#71](https://github.com/box1-org/box1-docs/issues/71).
+**Dependencies:** `01`–`08` in this directory, and golden-path #136–#141 (`../03-golden-path/`, with #141 in `06_staged_site_rollout.md`). Criteria that depend on undelivered work are recorded as blocked, not claimed. The per-site Kafka identity criterion is blocked on [#71](https://github.com/box1-org/box1-docs/issues/71).
 
 ## Mission
 
@@ -17,7 +17,7 @@ Close the epic with evidence: every #126 acceptance criterion observed on the cl
 
 ## Verified baseline (observed 2026-11-09; verify before relying)
 
-- Nothing in the epic is implemented. The golden-path runs are stopped before merge (open PRs [#145](https://github.com/box1-org/box1-docs/pull/145)–[#148](https://github.com/box1-org/box1-docs/pull/148)).
+- Nothing in the epic's own scope is implemented. The golden-path code for #136–#140 merged on 2026-11-09, but those issues are open and not live-verified (run-state PRs [#145](https://github.com/box1-org/box1-docs/pull/145)–[#148](https://github.com/box1-org/box1-docs/pull/148) and [#150](https://github.com/box1-org/box1-docs/pull/150)). #141 has `../03-golden-path/06_staged_site_rollout.md`.
 - **NetworkPolicies in `box1-org` are ingress-only.** No repository has an `egress:` rule. VM precedent: `box1-workloads-dev/workloads/legacy-erp/sftp.yaml` L8–47 selects `vm.kubevirt.io/name`; port 22 stays open for `virtctl ssh`.
 - The sites stay outside the ambient mesh, as `legacy-erp` does (no `istio-discovery` / `istio.io/dataplane-mode` labels on the namespace).
 - `box1-docs/runbooks/` has `service-decommission.md` and others; there is no site or VM-rebuild runbook. #138 updates the decommission runbook for `vm-instance`.

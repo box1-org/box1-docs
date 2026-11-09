@@ -27,7 +27,14 @@ Make "a site" a real operating environment that the later prompts can fill in:
 
 ## Verified baseline (observed 2026-11-09; verify before relying)
 
-**Golden-path state.** The #136, #137, #139 and #140 runs all stopped after review, before merge and live verification (open PRs [#145](https://github.com/box1-org/box1-docs/pull/145)–[#148](https://github.com/box1-org/box1-docs/pull/148)). `box1-templates#33`, `#34`, `#35` and `box1-gitops#132`, `#133` are unmerged. `site-gateway` and `site-gateway-os` do not exist (404), and `site-gateway-dev` is NotFound.
+**Golden-path state.** The golden-path code merged on 2026-11-09: `box1-templates#33`–`#37` (profile dispatch, cloud-init, `quarkus-monorepo`, `vm-instance`) and `box1-gitops#132`–`#134` and `#136` (validate and promote for `vm-instance`, bundle Tasks, `box1-bootc-status`, onboarding plugin 1.5.0). Issues #136–#140 are still open, their run-state PRs ([#145](https://github.com/box1-org/box1-docs/pull/145)–[#148](https://github.com/box1-org/box1-docs/pull/148), [#150](https://github.com/box1-org/box1-docs/pull/150)) are unmerged, and nothing is live-verified. `site-gateway` and `site-gateway-os` do not exist (404).
+
+**Guest contracts `site-gateway-os` must provide**, from the merged golden path:
+- user `box1-status`, with its key forced to `sudo /usr/bin/bootc status --format json`, for `box1-bootc-status` (`box1-gitops/platform/pipelines/GOLDEN-PATH.md`, "Booted-digest check");
+- the digest-pinned switch user and wrapper that `../03-golden-path/06_staged_site_rollout.md` (#141) defines;
+- cloud-init on, reading `/etc/box1/site.env`. The `vm-instance` template's `<instance>-site` ConfigMap carries `siteId`, the Keycloak client ID and token URL, and optional asset-service URL, Kafka bootstrap and OTLP endpoint.
+
+**A repository created from `rhel-image-vm` also gets its own VM** (`<source>` in `<source>-dev`, promoted by its release pipeline). For `site-gateway-os` that is a third VM, unless it is excluded; decide with #141.
 
 **Contracts** (`box1-ops-contracts` main `7b7fbac5`)
 - Envelope (`events/v1/envelope.schema.json` L7–18): `eventId` (uuid), `eventType`, `schemaVersion` (const 1), `aggregateId`, `occurredAt`, `correlationId`, `causationId`, `payload` are required; `traceparent`, `tracestate` are optional.
