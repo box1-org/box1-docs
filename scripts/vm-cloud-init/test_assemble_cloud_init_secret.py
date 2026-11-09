@@ -28,7 +28,7 @@ FAKE_OC = textwrap.dedent("""\
     log = os.environ["FAKE_OC_LOG"]
     stdin = sys.stdin.read() if "-f" in sys.argv else ""
     with open(log, "a") as f:
-        f.write(json.dumps({"argv": sys.argv[1:], "stdin": stdin}) + "\\n")
+        f.write(json.dumps({"argv": sys.argv[1:], "stdin": stdin, "env_has_secret": "SITE_SECRET" in os.environ}) + "\\n")
     if sys.argv[1:3] == ["get", "configmap"]:
         sys.stdout.write(open(os.environ["FAKE_OC_CONFIGMAP"]).read())
         sys.exit(0)
@@ -144,7 +144,7 @@ class AssembleTest(unittest.TestCase):
         self.assertIn("<redacted>", out)
         self.assertIn('"name": "site-west-cloud-init"', out)
         self.assertIn("bytes, not shown", out)
-        self.assertIn("Would run (manifest on stdin): %s apply --server-side --field-manager=box1-cloud-init-assembler -f -" % self.oc, out)
+        self.assertIn("Would run (manifest on stdin): %s apply --server-side --force-conflicts --field-manager=box1-cloud-init-assembler -f -" % self.oc, out)
         self.assertNotIn("warning", err)
 
     def test_plan_reads_configmap_from_cluster_read_only(self):
@@ -153,13 +153,19 @@ class AssembleTest(unittest.TestCase):
         self.assertEqual([c["argv"] for c in self.oc_calls()],
                          [["get", "configmap", "site-west-site", "-n", "site-west-dev", "-o", "json"]])
 
-    def test_untracked_configmap_warns(self):
+    def test_untracked_configmap_is_refused_unless_allowed(self):
         cm = site_configmap()
         del cm["metadata"]["annotations"]
-        code, _, err = self.run_script("--instance", "site-west", "--site-configmap-file", self.write_cm(cm),
-                                       "--client-secret-file", self.secret_file)
-        self.assertEqual(code, 0)
+        cm_file = self.write_cm(cm)
+        code, _, err = self.run_script("--instance", "site-west", "--site-configmap-file", cm_file,
+                                       "--client-secret-file", self.secret_file, "--apply")
+        self.assertEqual(code, 2)
         self.assertIn("no Argo CD tracking annotation", err)
+        self.assertEqual(self.oc_calls(), [])
+        code, _, err = self.run_script("--instance", "site-west", "--site-configmap-file", cm_file,
+                                       "--client-secret-file", self.secret_file, "--allow-untracked", "--apply")
+        self.assertEqual(code, 0, err)
+        self.assertIn("not tracked by Argo CD", err)
 
     # --- apply ----------------------------------------------------------------------
 
@@ -168,7 +174,7 @@ class AssembleTest(unittest.TestCase):
         self.assertEqual(code, 0, err)
         self.assertIn("secret/site-west-cloud-init serverside-applied", out)
         call, manifest, userdata = self.applied_userdata()
-        self.assertEqual(call["argv"], ["apply", "--server-side", "--field-manager=box1-cloud-init-assembler", "-f", "-"])
+        self.assertEqual(call["argv"], ["apply", "--server-side", "--force-conflicts", "--field-manager=box1-cloud-init-assembler", "-f", "-"])
         self.assertEqual(manifest["metadata"]["name"], "site-west-cloud-init")
         self.assertEqual(manifest["metadata"]["namespace"], "site-west-dev")
         self.assertEqual(manifest["metadata"]["labels"], {"box1.org/instance": "site-west", "box1.org/cloud-init": "userdata"})
@@ -209,6 +215,7 @@ class AssembleTest(unittest.TestCase):
         code, _, err = self.run_script("--instance", "site-west", "--client-secret-env", "SITE_SECRET", "--apply",
                                        env={"SITE_SECRET": self.secret})
         self.assertEqual(code, 0, err)
+        self.assertFalse(any(c["env_has_secret"] for c in self.oc_calls()), "the secret variable must not reach oc")
         _, second, _ = self.applied_userdata()
         self.assertEqual(first, second, "the Secret is a pure function of the ConfigMap and the credential")
 
@@ -247,7 +254,7 @@ class AssembleTest(unittest.TestCase):
         elif secret_mode != 0o600:
             os.chmod(secret_file, secret_mode)
         argv = list(args) or ["--instance", "site-west"]
-        if "--client-secret-env" not in argv:
+        if "--client-secret-env" not in argv and "--client-secret-file" not in argv:
             argv += ["--client-secret-file", secret_file]
         cm_file = self.write_cm(cm, "refused.json") if cm is not None else self.cm_file
         code, out, err = self.run_script(*argv, "--site-configmap-file", cm_file, "--apply")
@@ -294,6 +301,19 @@ class AssembleTest(unittest.TestCase):
         self.refused(secret_text="x" * 4097, message="longer than")
         self.refused(secret_text="café", message="printable ASCII")
         self.refused(args=["--instance", "site-west", "--client-secret-env", "UNSET_FOR_TEST"], message="is not set")
+        link = os.path.join(self.dir, "link-to-secret")
+        os.symlink(self.secret_file, link)
+        self.refused(args=["--instance", "site-west", "--client-secret-file", link], message="symlinks are refused")
+        self.refused(args=["--instance", "site-west", "--client-secret-file", os.path.join(self.dir, "missing")], message="cannot open")
+
+    def test_refuses_unreadable_or_malformed_configmap_cleanly(self):
+        code, _, err = self.run_script("--instance", "site-west", "--site-configmap-file", os.path.join(self.dir, "nope.json"),
+                                       "--client-secret-file", self.secret_file)
+        self.assertEqual(code, 2)
+        self.assertIn("cannot read --site-configmap-file", err)
+        self.assertNotIn("Traceback", err)
+        self.refused(site_configmap(data=["siteId"]), message="must be a mapping")
+        self.refused(site_configmap(metadata={"labels": None}), message="box1.org/instance")
 
     def test_refuses_bad_instance_names(self):
         for name in ["Site-West", "a", "site_west", "-x", "x" * 41, "../etc"]:

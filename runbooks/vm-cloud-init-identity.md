@@ -27,20 +27,23 @@ At each VM start, KubeVirt builds a NoCloud disk (label `cidata`) from the Secre
 
 Site services run as `User=box1-site` and read the settings with `EnvironmentFile=/etc/box1/site.env`. They read the credential from the file named in `BOX1_KEYCLOAK_CLIENT_SECRET_FILE`, never from an environment variable. Services that use `DynamicUser=` can get the file through `LoadCredential=` instead.
 
-### What cloud-init may do in the image
+### What cloud-init does in the image
 
-The `rhel-image-vm` template adds cloud-init only when `cloudInit: true` (default `false`). The image's `/etc/cloud/cloud.cfg.d/90-box1.cfg` limits it to this:
+The `rhel-image-vm` template adds cloud-init only when `cloudInit: true` (default `false`). The image's files come from the template's `rootfs-cloud-init/` tree:
 
 | Setting | Effect |
 | --- | --- |
 | `datasource_list: [ NoCloud, None ]` | Never probes network metadata services. Without a NoCloud disk, it falls back to `None` and writes nothing |
-| `network: {config: disabled}` | NetworkManager keeps DHCP on the pod network, as before |
-| `users: []`, no `users_groups` or `set_passwords` module | No account, group, sudo rule or password is created or changed. `cloud-user` and its keys stay with the disk build and qemu-guest-agent `accessCredentials` |
-| `allow_public_ssh_keys: false` | User-data or metadata keys are never installed |
-| `ssh` module with `ssh_deletekeys: false` | Generates missing SSH host keys only. It is kept because upstream cloud-init ships a drop-in that stops `sshd-keygen` while cloud-init is active (whether the RHEL 10 package installs it is not verified) |
-| `cloud_init_modules: [[write_files, always], ssh]`, empty config and final lists | No commands (`bootcmd`, `runcmd`, scripts), packages, subscriptions, disks, mounts, growpart or hostname changes. `write_files` runs on every boot |
+| `network: {config: disabled}`, `vendor_data: {enabled: false}` | NetworkManager keeps DHCP on the pod network, as before. Vendor-data is ignored |
+| `users: []`, `allow_public_ssh_keys: false`, `ssh_pwauth: false` | No default user. With the modules below, no account, group, sudo rule, password or SSH key is created or changed. `cloud-user` and its keys stay with the disk build and qemu-guest-agent `accessCredentials` |
+| `cloud_init_modules: [[write_files, always]]`, empty config and final lists | Only `write_files` runs, on every boot. No `ssh`, `users_groups`, `set_passwords`, `bootcmd`, `runcmd`, scripts, packages, subscriptions, disks, mounts, growpart or hostname changes |
+| `sshd-keygen@.service.d/zz-box1-keygen.conf` | Upstream cloud-init ships a drop-in that stops `sshd-keygen` while cloud-init is active. This override restores the stock condition, so `sshd-keygen` still creates missing host keys and never replaces existing ones |
+| `tmpfiles.d/box1-site.conf` | Creates `/etc/box1/credentials` as `0750 root:box1-site` at boot |
+| `sysusers.d/box1-site.conf` | The `box1-site` system user, with no login shell |
 
-The image also defines the `box1-site` system user (`/usr/lib/sysusers.d/box1-site.conf`, no login shell), and its build fails if the image ships `/etc/box1/site.env` or `/etc/box1/credentials`.
+The image build fails if the image ships anything under `/etc/box1`.
+
+**This is not a security boundary.** The module lists shape what Box1-generated user-data does. Other user-data can override them, and `#cloud-boothook` or part-handler parts run as root before any module list applies. Anyone who can write the `<instance>-cloud-init` Secret is root in that guest, as anyone who can edit `<instance>-admin-ssh` already is. Only the assembly script below should write the Secret. A check that the Secret's user-data contains only the two `write_files` entries (for example an admission policy on Secrets labelled `box1.org/cloud-init`) is a possible follow-up for #138/#139.
 
 ## Instance bundle specification (for #138 and #139)
 
@@ -108,9 +111,11 @@ Prerequisites:
 
    ```sh
    umask 077
-   SECRET_FILE=$(mktemp)          # fill it from the approved source; never `echo` the value
-   # or: read -rs SITE_CLIENT_SECRET && export SITE_CLIENT_SECRET
+   SECRET_FILE=$(mktemp)
+   read -rs V && printf '%s' "$V" > "$SECRET_FILE"; unset V   # paste at the silent prompt; printf is a shell builtin
    ```
+
+   The file must be a regular file you own with mode 0600; symlinks are refused. `--client-secret-env NAME` also works, and the script never passes that variable on to `oc`, but an exported variable reaches every other child of your shell, so prefer the file.
 
 2. Review the plan. The script reads the ConfigMap from the cluster and contacts nothing else:
 
@@ -119,11 +124,11 @@ Prerequisites:
      --instance site-west --client-secret-file "$SECRET_FILE"
    ```
 
-   Check that `site.env` shows the expected `BOX1_SITE_ID` and endpoints, that the credential is `<redacted>`, and that the target is `site-west-dev/site-west-cloud-init`. A warning that the ConfigMap has no Argo CD tracking annotation means it did not come from Git; stop and find out why.
+   Check that `site.env` shows the expected `BOX1_SITE_ID` and endpoints, that the credential is `<redacted>`, and that the target is `site-west-dev/site-west-cloud-init`. The script refuses a ConfigMap without an Argo CD tracking annotation, because it did not come from Git (`--allow-untracked` exists for test namespaces only). Also confirm the instance's Argo CD Application is `Synced`, so the live ConfigMap matches Git: the token URL decides where the guest sends its credential.
 
 3. Optionally, validate on the server without storing anything: add `--server-dry-run`.
-4. Apply: add `--apply`. The script runs `oc apply --server-side --field-manager=box1-cloud-init-assembler -f -` with the manifest on stdin. Server-side apply leaves no `last-applied-configuration` copy of the data in an annotation.
-5. Delete the temporary file (`rm -f "$SECRET_FILE"`) or `unset SITE_CLIENT_SECRET`.
+4. Apply: add `--apply`. The script runs `oc apply --server-side --force-conflicts --field-manager=box1-cloud-init-assembler -f -` with the manifest on stdin. It takes back any field changed by hand. Server-side apply leaves no `last-applied-configuration` copy of the data in an annotation; if an old Secret has one (from a client-side `oc apply`), remove it with `oc annotate secret <instance>-cloud-init kubectl.kubernetes.io/last-applied-configuration-`, because it holds the old credential.
+5. Delete the temporary file: `rm -f "$SECRET_FILE"`.
 6. Start the VM through its normal GitOps path (the first promotion sets `runStrategy: Always`).
 
 The Secret is labelled `box1.org/instance: <instance>` and `box1.org/cloud-init: userdata`, and annotated with `box1.org/site-config-sha256`, a hash of the ConfigMap data only. It carries no Argo CD tracking label, so Argo neither manages nor prunes it.
@@ -134,13 +139,15 @@ The Secret is labelled `box1.org/instance: <instance>` and `box1.org/cloud-init:
 virtctl ssh -n <instance>-dev cloud-user@vm/<instance>
 sudo cloud-init status --long          # expect "status: done", datasource DataSourceNoCloud
 cat /etc/box1/site.env                 # the expected BOX1_SITE_ID
-sudo stat -c '%a %U:%G' /etc/box1/credentials/keycloak-client-secret   # expect 400 box1-site:box1-site
-cat /etc/box1/credentials/keycloak-client-secret    # as cloud-user: expect "Permission denied"
+sudo stat -c '%a %U:%G %n' /etc/box1/credentials /etc/box1/credentials/keycloak-client-secret   # expect 750 root:box1-site, 400 box1-site:box1-site
+test -r /etc/box1/credentials/keycloak-client-secret && echo READABLE || echo denied             # as cloud-user: expect denied
 sudo -u box1-site test -r /etc/box1/credentials/keycloak-client-secret && echo readable-by-box1-site
 sudo bootc status                      # booted image digest
 ```
 
-Never `cat` the credential as root or `box1-site` in a shared terminal or a recorded session.
+Never `cat` the credential, as any user, in a shared terminal or a recorded session; test access with `test -r`.
+
+cloud-init also keeps root-only copies of the raw user-data, which include the credential: `/var/lib/cloud/instances/<instance-id>/user-data.txt*`, `cloud-config.txt` and `obj.pkl`, and `/run/cloud-init/` while running. An old instance-id directory keeps the old credential after a VM re-create. They are readable only by root, which meets the requirement, but they matter for revocation (below).
 
 ## Rotate the credential
 
@@ -153,22 +160,22 @@ This works without a new instance-id because the image runs `write_files` on eve
 
 ## Re-create, rebuild and upgrade
 
-KubeVirt 1.9 (OpenShift Virtualization 5.0.0, observed on the cluster) sets the NoCloud `instance-id` to the VM's firmware UUID. The VM webhook assigns a random `spec.template.spec.domain.firmware.uuid` when the VirtualMachine object is created, and the VM keeps it from then on.
+The cluster runs OpenShift Virtualization 5.0.0 with KubeVirt operator v1.9.0 (observed). In the KubeVirt `release-1.9` source, the NoCloud `instance-id` is the VMI's firmware UUID, and the VM webhook assigns a random `spec.template.spec.domain.firmware.uuid` when a VirtualMachine is created; the VM keeps it from then on. On the cluster, `vm-golden-check` has a stored firmware UUID that is not the legacy name-derived value. **The guest-visible instance-id and the re-create behavior are not verified yet** (test plan step 4).
 
-| Event | instance-id | `write_files` (identity files) | `ssh` (host keys) |
+| Event | instance-id | `write_files` (identity files) | SSH host keys (`sshd-keygen`) |
 | --- | --- | --- | --- |
-| Guest reboot | Same | Rewritten from the same NoCloud disk | Not run |
-| VM restart (stop and start) | Same | Rewritten from the Secret's current content | Not run |
-| VirtualMachine deleted and re-created, root disk kept | New (new firmware UUID), unless the manifest pins `firmware.uuid` | Rewritten | Runs; existing host keys are kept |
-| Root disk rebuilt (new DataVolume) | New | Written | Runs; new host keys |
-| `bootc upgrade` or `bootc rollback` | Same | Rewritten at the next boot | Not run |
-| NoCloud disk or Secret removed | Datasource `None` (`iid-datasource-none`) | Nothing written; **old files stay** | Runs; keys kept |
+| Guest reboot | Same | Rewritten from the same NoCloud disk | Kept |
+| VM restart (stop and start) | Same | Rewritten from the Secret's current content | Kept |
+| VirtualMachine deleted and re-created, root disk kept | New (new firmware UUID), unless the manifest pins `firmware.uuid` | Rewritten | Kept |
+| Root disk rebuilt (new DataVolume) | New | Written | New keys generated |
+| `bootc upgrade` or `bootc rollback` | Same | Rewritten at the next boot | Kept |
+| NoCloud disk removed | Datasource `None` (`iid-datasource-none`) | Nothing written; **old files stay** | Kept |
 
 Consequences:
 
 - Identity always follows the Secret at the last VM start. Local edits to `/etc/box1/site.env` are overwritten at the next boot.
 - `/etc/box1/` is not in the image, so the bootc `/etc` three-way merge keeps it across upgrades and rollbacks. An image must never ship files under `/etc/box1/site.env` or `/etc/box1/credentials/`; the template's build check refuses them.
-- Removing the disk does not revoke anything. To revoke a credential, disable or rotate the client in Keycloak, then delete the file in the guest.
+- Removing the disk does not revoke anything. To revoke a credential, disable or rotate the client in Keycloak first. Then, in the guest, delete the file and cloud-init's copies: `sudo rm -f /etc/box1/credentials/keycloak-client-secret && sudo cloud-init clean` (this also resets the instance state; the next boot runs as a new instance).
 - If the Secret is missing when the VM starts, the VM is expected not to start, because the Secret is mounted into its virt-launcher pod. The exact status KubeVirt reports has not been observed; it is in the test plan.
 
 ## Data disk

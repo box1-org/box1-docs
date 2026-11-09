@@ -40,7 +40,7 @@ MAX_SECRET_LENGTH = 4096
 INSTANCE_RE = re.compile(r"[a-z][a-z0-9]*(?:-[a-z0-9]+)*")
 # site.env must stay safe for systemd EnvironmentFile= and for `. site.env`: values carry
 # no quotes, spaces, `$`, `;`, `&`, user info (`@`) or query strings (`?`).
-_PATH = r"(?:/[A-Za-z0-9._~%+:-]*)*"
+_PATH = r"(?:/[A-Za-z0-9._%+:-]*)*"
 HTTPS_URL_RE = re.compile(r"https://[A-Za-z0-9.-]+(?::[0-9]{1,5})?" + _PATH)
 HTTP_URL_RE = re.compile(r"https?://[A-Za-z0-9.-]+(?::[0-9]{1,5})?" + _PATH)
 HOST_PORTS_RE = re.compile(r"[A-Za-z0-9.-]+:[0-9]{1,5}(?:,[A-Za-z0-9.-]+:[0-9]{1,5})*")
@@ -80,6 +80,8 @@ def parse_args(argv):
     mode.add_argument("--server-dry-run", action="store_true",
                       help="validate the Secret on the API server without storing it")
     mode.add_argument("--apply", action="store_true", help="create or update the Secret")
+    p.add_argument("--allow-untracked", action="store_true",
+                   help="accept a ConfigMap without an Argo CD tracking annotation (test namespaces only)")
     p.add_argument("--oc", default=os.environ.get("OC", "oc"), help="oc binary (default: $OC or oc)")
     args = p.parse_args(argv)
     if not INSTANCE_RE.fullmatch(args.instance) or not 3 <= len(args.instance) <= 40:
@@ -92,15 +94,19 @@ def parse_args(argv):
 
 def read_secret(args):
     if args.client_secret_file:
+        # Open once without following symlinks, then check what was actually opened.
         try:
-            st = os.stat(args.client_secret_file)
+            fd = os.open(args.client_secret_file, os.O_RDONLY | os.O_NOFOLLOW | getattr(os, "O_CLOEXEC", 0))
         except OSError as e:
-            raise UsageError("cannot read --client-secret-file: %s" % e.strerror)
-        if not stat.S_ISREG(st.st_mode):
-            raise UsageError("--client-secret-file must be a regular file")
-        if st.st_mode & 0o077:
-            raise UsageError("--client-secret-file is readable by group or others; chmod 600 it first")
-        with open(args.client_secret_file, "rb") as f:
+            raise UsageError("cannot open --client-secret-file (symlinks are refused): %s" % e.strerror)
+        with os.fdopen(fd, "rb") as f:
+            st = os.fstat(f.fileno())
+            if not stat.S_ISREG(st.st_mode):
+                raise UsageError("--client-secret-file must be a regular file")
+            if st.st_uid != os.getuid():
+                raise UsageError("--client-secret-file must be owned by the user running this script")
+            if st.st_mode & 0o077:
+                raise UsageError("--client-secret-file is readable by group or others; chmod 600 it first")
             raw = f.read(MAX_SECRET_LENGTH + 3)
         try:
             value = raw.decode("ascii")
@@ -127,26 +133,41 @@ def read_secret(args):
 def read_configmap(args):
     name = args.instance + "-site"
     if args.site_configmap_file:
-        with open(args.site_configmap_file, encoding="utf-8") as f:
-            text = f.read()
+        try:
+            with open(args.site_configmap_file, encoding="utf-8") as f:
+                text = f.read()
+        except (OSError, UnicodeDecodeError) as e:
+            raise UsageError("cannot read --site-configmap-file: %s" % (getattr(e, "strerror", None) or e))
     else:
-        proc = subprocess.run([args.oc, "get", "configmap", name, "-n", args.namespace, "-o", "json"],
-                              stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        try:
+            proc = subprocess.run([args.oc, "get", "configmap", name, "-n", args.namespace, "-o", "json"],
+                                  stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=child_env(args))
+        except OSError as e:
+            raise UsageError("cannot run %s: %s" % (args.oc, e.strerror))
         if proc.returncode != 0:
             raise UsageError("could not read ConfigMap %s/%s: %s"
                              % (args.namespace, name, proc.stderr.decode("utf-8", "replace").strip()))
-        text = proc.stdout.decode("utf-8")
+        text = proc.stdout.decode("utf-8", "replace")
     try:
         cm = json.loads(text)
     except ValueError:
         raise UsageError("the ConfigMap must be JSON (oc get configmap %s -o json)" % name)
+    if not isinstance(cm, dict):
+        raise UsageError("the ConfigMap must be a JSON object")
     return cm
+
+
+def child_env(args):
+    """Environment for oc: never pass the client secret on to oc, its plugins or credential helpers."""
+    return {k: v for k, v in os.environ.items() if k != args.client_secret_env}
 
 
 def site_settings(cm, instance, namespace):
     """Validate the <instance>-site ConfigMap and return the ordered site.env pairs."""
     name = instance + "-site"
     meta = cm.get("metadata") or {}
+    if not isinstance(meta, dict):
+        raise UsageError("expected ConfigMap %s" % name)
     if cm.get("kind") != "ConfigMap" or meta.get("name") != name:
         raise UsageError("expected ConfigMap %s" % name)
     if meta.get("namespace", namespace) != namespace:
@@ -156,6 +177,8 @@ def site_settings(cm, instance, namespace):
     if cm.get("binaryData"):
         raise UsageError("ConfigMap %s must not have binaryData" % name)
     data = cm.get("data") or {}
+    if not isinstance(data, dict):
+        raise UsageError("ConfigMap %s data must be a mapping" % name)
     unknown = sorted(set(data) - set(SITE_KEYS))
     if unknown:
         raise UsageError("ConfigMap %s has keys outside the allowlist (%s): %s. Credentials never go in "
@@ -223,7 +246,9 @@ def scrubber(secret, userdata):
 
 
 def oc_apply_command(args, dry_run):
-    cmd = [args.oc, "apply", "--server-side", "--field-manager=" + FIELD_MANAGER, "-f", "-"]
+    # This script is the only intended writer of the Secret, so it takes the fields back
+    # from any manual edit (oc edit, oc replace) instead of failing on a conflict.
+    cmd = [args.oc, "apply", "--server-side", "--force-conflicts", "--field-manager=" + FIELD_MANAGER, "-f", "-"]
     if dry_run:
         cmd.insert(2, "--dry-run=server")
     return cmd
@@ -241,8 +266,13 @@ def main(argv=None):
     manifest = secret_manifest(args.instance, args.namespace, digest, userdata)
     scrub = scrubber(secret, userdata)
     if not tracked:
-        print("warning: ConfigMap %s-site has no Argo CD tracking annotation; site settings should come "
-              "from Git (box1-workloads-dev)" % args.instance, file=sys.stderr)
+        if not args.allow_untracked:
+            print("error: ConfigMap %s-site has no Argo CD tracking annotation, so it did not come from Git "
+                  "(box1-workloads-dev). Use --allow-untracked only in a test namespace." % args.instance,
+                  file=sys.stderr)
+            return 2
+        print("warning: ConfigMap %s-site is not tracked by Argo CD (--allow-untracked)" % args.instance,
+              file=sys.stderr)
 
     if not (args.apply or args.server_dry_run):
         shown = dict(manifest, data={USERDATA_KEY: "<%d bytes, not shown>" % len(manifest["data"][USERDATA_KEY])})
@@ -256,8 +286,12 @@ def main(argv=None):
 
     cmd = oc_apply_command(args, args.server_dry_run)
     print("# Running (manifest on stdin, not shown): %s" % " ".join(cmd), file=sys.stderr)
-    proc = subprocess.run(cmd, input=json.dumps(manifest).encode("utf-8"),
-                          stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    try:
+        proc = subprocess.run(cmd, input=json.dumps(manifest).encode("utf-8"),
+                              stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=child_env(args))
+    except OSError as e:
+        print("error: cannot run %s: %s" % (args.oc, e.strerror), file=sys.stderr)
+        return 2
     sys.stdout.write(scrub(proc.stdout.decode("utf-8", "replace")))
     sys.stderr.write(scrub(proc.stderr.decode("utf-8", "replace")))
     return proc.returncode

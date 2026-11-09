@@ -22,10 +22,12 @@ Then, on the VM without a NoCloud disk (scenarios: *boot without NoCloud disk*, 
 ```sh
 virtctl ssh -n cloudinit-check-dev cloud-user@vm/cloudinit-check -c '
   systemctl is-system-running; rpm -q cloud-init
-  sudo cloud-init status --long              # expect done, DataSourceNone
+  sudo cloud-init status --long              # expect done (or "degraded done" for the None fallback), DataSourceNone
   sudo cloud-init schema --system            # expect valid
   ls /etc/box1 2>&1                          # expect: No such file or directory
-  ls /etc/ssh/ssh_host_*_key.pub             # host keys exist
+  ls /etc/ssh/ssh_host_*_key.pub             # host keys exist (made by sshd-keygen, not cloud-init)
+  systemctl status sshd-keygen@ed25519 --no-pager | head -5
+  sudo ls -la /root/.ssh 2>&1                # expect no cloud-init changes
   systemctl is-active sshd qemu-guest-agent box1-registry-setup
   sudo ls -l /run/ostree/auth.json /etc/pki/ca-trust/source/anchors/
   sudo bootc upgrade --check
@@ -34,7 +36,7 @@ virtctl ssh -n cloudinit-check-dev cloud-user@vm/cloudinit-check -c '
   systemd-analyze blame | grep -i cloud | head'
 ```
 
-Expected: the system is `running` with no failed units, cloud-init reports `DataSourceNone` and changed nothing, SSH through the guest agent works, `cloud-user` is unchanged (no `90-cloud-init-users` sudoers file), and the registry token and CA are installed. Record `DISK_DIGEST` from `oc -n cloudinit-check-dev get vm cloudinit-check -o jsonpath='{.metadata.annotations.box1\.org/os-image-digest}'` and the matching `cloudinit-check-disk` digest from the DataVolume URL.
+Expected: the system is `running` with no failed units, host keys exist although cloud-init is active, cloud-init reports `DataSourceNone` and changed nothing, SSH through the guest agent works, `cloud-user` is unchanged (no `90-cloud-init-users` sudoers file), and the registry token and CA are installed. Record `DISK_DIGEST` from `oc -n cloudinit-check-dev get vm cloudinit-check -o jsonpath='{.metadata.annotations.box1\.org/os-image-digest}'` and the matching `cloudinit-check-disk` digest from the DataVolume URL.
 
 ## 2. Two identities from one digest (approval: namespace, box1-ci RoleBinding, Secrets, VMs)
 
@@ -56,8 +58,8 @@ Create both Secrets with a throwaway placeholder credential. It is a random stri
 ```sh
 umask 077; F=$(mktemp); python3 -c 'import secrets; print("fake-" + secrets.token_urlsafe(32))' > "$F"
 for i in ci-west ci-east; do
-  python3 -I scripts/vm-cloud-init/assemble_cloud_init_secret.py --instance $i --namespace cloudinit-test --client-secret-file "$F"          # review the plan
-  python3 -I scripts/vm-cloud-init/assemble_cloud_init_secret.py --instance $i --namespace cloudinit-test --client-secret-file "$F" --apply
+  python3 -I scripts/vm-cloud-init/assemble_cloud_init_secret.py --instance $i --namespace cloudinit-test --allow-untracked --client-secret-file "$F"          # review the plan
+  python3 -I scripts/vm-cloud-init/assemble_cloud_init_secret.py --instance $i --namespace cloudinit-test --allow-untracked --client-secret-file "$F" --apply
 done
 tr -d '\n' < "$F" | sha256sum > /tmp/140-fake-secret.sha256; rm -f "$F"
 virtctl start ci-west -n cloudinit-test; virtctl start ci-east -n cloudinit-test
@@ -72,12 +74,20 @@ virtctl ssh -n cloudinit-test cloud-user@vm/<i> -c '
   sudo bootc status | grep -i digest
   cat /etc/box1/site.env
   sudo cloud-init status --long; sudo cloud-init query instance-id
-  sudo stat -c "%a %U:%G %n" /etc/box1/credentials/keycloak-client-secret
-  cat /etc/box1/credentials/keycloak-client-secret; echo "exit=$?"     # as cloud-user: Permission denied
+  sudo stat -c "%a %U:%G %n" /etc/box1/credentials /etc/box1/credentials/keycloak-client-secret
+  test -r /etc/box1/credentials/keycloak-client-secret && echo READABLE || echo denied   # as cloud-user
   sudo -u box1-site sha256sum /etc/box1/credentials/keycloak-client-secret'
 ```
 
-Expected: the same booted digest on both; `BOX1_SITE_ID=site_ds9` on `ci-west` and `site_spacedock` on `ci-east`; `400 box1-site:box1-site`; `cloud-user` gets `Permission denied`; `box1-site` reads a file whose `sha256sum` matches `/tmp/140-fake-secret.sha256`. Record hashes only.
+Expected: the same booted digest on both; `BOX1_SITE_ID=site_ds9` on `ci-west` and `site_spacedock` on `ci-east`; `750 root:box1-site` and `400 box1-site:box1-site`; `cloud-user` gets `denied`; `box1-site` reads a file whose `sha256sum` matches `/tmp/140-fake-secret.sha256`. Record hashes only.
+
+Copies of the credential (security pass): count files that contain the fake secret and are readable by anyone other than root. Only the count is recorded; it must be 0.
+
+```sh
+virtctl ssh -n cloudinit-test cloud-user@vm/ci-west -c 'sudo find /var/lib/cloud /run/cloud-init /var/log /etc -xdev -type f -perm /o=r,g=r -print0 2>/dev/null | sudo xargs -0 grep -lF -f /root/fake 2>/dev/null | wc -l'
+```
+
+First, in an interactive SSH session, put the fake value in a root-only file without echoing it: `sudo sh -c 'umask 077; stty -echo; read -r V; stty echo; printf %s "$V" > /root/fake'`, then paste at the silent prompt. Delete `/root/fake` afterwards. Also check `sudo grep -cF -f /root/fake /var/log/cloud-init.log` is 0.
 
 ## 3. Rotation (approval: Secret update)
 
@@ -96,11 +106,11 @@ oc -n cloudinit-test get dv ci-west-root ci-west-data                   # both m
 oc apply -f /tmp/140-instances.yaml && virtctl start ci-west -n cloudinit-test   # the original manifest, not the dump, which pins firmware.uuid
 ```
 
-Expected after the re-create: a new firmware UUID and `instance-id`; `site.env` identical; the marker file and its hash unchanged; the SSH host key fingerprint unchanged (`ssh_deletekeys: false`). Then rebuild the root disk (delete `ci-west` and `ci-west-root`, re-create both) and expect identity re-applied, new host keys, and the data marker still intact.
+Expected after the re-create: a new firmware UUID and `instance-id` (this verifies the KubeVirt behavior the runbook takes from source); `site.env` identical; the marker file and its hash unchanged; the SSH host key fingerprint unchanged. Then rebuild the root disk (delete `ci-west` and `ci-west-root`, re-create both) and expect identity re-applied, new host keys, and the data marker still intact.
 
 ## 5. Malformed user-data, upgrade and rollback
 
-- **Malformed user-data:** replace `ci-east-cloud-init` with one whose `userdata` is invalid YAML and holds no credential: `oc -n cloudinit-test create secret generic ci-east-cloud-init --from-literal=userdata=$'#cloud-config\nwrite_files: [' --dry-run=client -o yaml | oc replace -f -`, restart `ci-east`, and record that the VM still boots, SSH works, `cloud-init status` reports the error, and the previous `site.env` remains. Re-assemble the real Secret afterwards.
+- **Malformed user-data:** replace `ci-east-cloud-init` with one whose `userdata` is invalid YAML and holds no credential: `oc -n cloudinit-test create secret generic ci-east-cloud-init --from-literal=userdata=$'#cloud-config\nwrite_files: [' --dry-run=client -o yaml | oc replace -f -`, restart `ci-east`, and record that the VM still boots, SSH works, `cloud-init status` reports the error, and the previous `site.env` remains. Re-assemble the real Secret afterwards; `--force-conflicts` lets the script take the field back from `oc replace`.
 - **bootc upgrade keeps identity:** merge a trivial change to `cloudinit-check`, let it promote, then on `ci-west` run `sudo bootc switch --apply image-registry.openshift-image-registry.svc:5000/box1-ci/cloudinit-check@<new digest>` (or `bootc upgrade --apply` on the `:development` channel). Expect the new digest booted and `site.env` and the credential unchanged.
 - **bootc rollback:** `sudo bootc rollback --apply`. Expect the old digest and the same identity.
 
