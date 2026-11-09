@@ -1,6 +1,6 @@
 {
   "project": "box1 Operations",
-  "version": "1.8",
+  "version": "1.9",
   "created_on": "2026-10-25",
   "nominal_model_context_tokens": 65536,
   "gpu": {
@@ -47,7 +47,12 @@
         "01-services/08_operator_console.md",
         "01-services/06_notification_service.md",
         "01-services/09_scenario_controller.md",
-        "01-services/10_ai_operations.md"
+        "01-services/10_ai_operations.md",
+        "03-golden-path/01_onboarding_profile_dispatch.md",
+        "03-golden-path/02_gitops_vm_instance_validate_promote.md",
+        "03-golden-path/03_vm_cloud_init_nocloud.md",
+        "03-golden-path/04_artifact_profile_quarkus_monorepo.md",
+        "03-golden-path/05_vm_instance_profile_template.md"
       ]
     }
   },
@@ -72,6 +77,27 @@
     "02-platform/06_ai_inference_hosting.md",
     "02-platform/07_developer_portal_onboarding.md"
   ],
+  "golden_path_workstreams": [
+    "03-golden-path/01_onboarding_profile_dispatch.md",
+    "03-golden-path/02_gitops_vm_instance_validate_promote.md",
+    "03-golden-path/03_vm_cloud_init_nocloud.md",
+    "03-golden-path/04_artifact_profile_quarkus_monorepo.md",
+    "03-golden-path/05_vm_instance_profile_template.md"
+  ],
+  "golden_path_dependencies": {
+    "03-golden-path/01_onboarding_profile_dispatch.md": [],
+    "03-golden-path/02_gitops_vm_instance_validate_promote.md": [],
+    "03-golden-path/03_vm_cloud_init_nocloud.md": [],
+    "03-golden-path/04_artifact_profile_quarkus_monorepo.md": [
+      "03-golden-path/01_onboarding_profile_dispatch.md",
+      "03-golden-path/02_gitops_vm_instance_validate_promote.md"
+    ],
+    "03-golden-path/05_vm_instance_profile_template.md": [
+      "03-golden-path/01_onboarding_profile_dispatch.md",
+      "03-golden-path/02_gitops_vm_instance_validate_promote.md",
+      "03-golden-path/03_vm_cloud_init_nocloud.md"
+    ]
+  },
   "build_order": [
     "02-platform/01_contracts_and_data_foundation.md",
     "01-services/01_order_service.md",
@@ -88,7 +114,12 @@
     "02-platform/04_trusted_delivery.md",
     "02-platform/07_developer_portal_onboarding.md",
     "02-platform/06_ai_inference_hosting.md",
-    "01-services/10_ai_operations.md"
+    "01-services/10_ai_operations.md",
+    "03-golden-path/01_onboarding_profile_dispatch.md",
+    "03-golden-path/02_gitops_vm_instance_validate_promote.md",
+    "03-golden-path/03_vm_cloud_init_nocloud.md",
+    "03-golden-path/04_artifact_profile_quarkus_monorepo.md",
+    "03-golden-path/05_vm_instance_profile_template.md"
   ],
   "superseded": {
     "01-services/07_experience_bff.md": "01-services/08_operator_console.md"

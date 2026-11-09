@@ -19,3 +19,13 @@ All implementation prompts are standalone Markdown. See `manifest.json` for mach
 - `02-platform/07_developer_portal_onboarding.md`
 - `02-platform/06_ai_inference_hosting.md`
 - `01-services/10_ai_operations.md`
+
+## Golden-path changes for the edge sites (#126)
+
+Run in this order. `02` and `03` may run in parallel with `01`; `04` needs `01` and `02`; `05` needs `01`, `02` and `03`. All five carry a `frontier` section.
+
+- `03-golden-path/01_onboarding_profile_dispatch.md` (#136)
+- `03-golden-path/02_gitops_vm_instance_validate_promote.md` (#139)
+- `03-golden-path/03_vm_cloud_init_nocloud.md` (#140)
+- `03-golden-path/04_artifact_profile_quarkus_monorepo.md` (#137)
+- `03-golden-path/05_vm_instance_profile_template.md` (#138)
