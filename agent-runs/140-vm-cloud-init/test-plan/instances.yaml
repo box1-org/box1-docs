@@ -1,0 +1,261 @@
+# Live test instances for box1-docs#140. NOT APPLIED. Applying needs approval:
+# it creates a namespace, a RoleBinding in the shared box1-ci namespace, and VMs.
+#
+# Render with the digest of the cloud-init-enabled test disk (see README.md step 1):
+#   sed -e "s/@DISK_DIGEST@/sha256:<64 hex>/" -e "s|@SSH_PUBLIC_KEY@|$(cat ~/.ssh/id_ed25519.pub)|" instances.yaml > /tmp/instances.yaml
+# Each instance mirrors the vm-instance bundle shape in runbooks/vm-cloud-init-identity.md,
+# plus a small blank data disk for the re-create test. The <instance>-cloud-init Secrets are
+# NOT here: they are assembled outside Git with scripts/vm-cloud-init/assemble_cloud_init_secret.py.
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cloudinit-test
+  labels:
+    box1.org/purpose: box1-docs-140-test
+---
+# Lets the test VMs import the disk from box1-ci, as the golden path's onboarding.yaml does.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cloudinit-test-image-puller
+  namespace: box1-ci
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:image-puller
+subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: Group
+    name: system:serviceaccounts:cloudinit-test
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ci-admin-ssh
+  namespace: cloudinit-test
+type: Opaque
+stringData:
+  key1: "@SSH_PUBLIC_KEY@"
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ci-updater
+  namespace: cloudinit-test
+automountServiceAccountToken: false
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ci-updater-token
+  namespace: cloudinit-test
+  annotations:
+    kubernetes.io/service-account.name: ci-updater
+type: kubernetes.io/service-account-token
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ci-west-site
+  namespace: cloudinit-test
+  labels:
+    box1.org/instance: ci-west
+data:
+  siteId: site_ds9
+  keycloakClientId: ci-west-placeholder
+  keycloakTokenUrl: https://keycloak.invalid/realms/box1/protocol/openid-connect/token
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ci-east-site
+  namespace: cloudinit-test
+  labels:
+    box1.org/instance: ci-east
+data:
+  siteId: site_spacedock
+  keycloakClientId: ci-east-placeholder
+  keycloakTokenUrl: https://keycloak.invalid/realms/box1/protocol/openid-connect/token
+---
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataVolume
+metadata:
+  name: ci-west-root
+  namespace: cloudinit-test
+spec:
+  source:
+    registry:
+      url: docker://image-registry.openshift-image-registry.svc:5000/box1-ci/cloudinit-check-disk@@DISK_DIGEST@
+      pullMethod: node
+  storage:
+    storageClassName: lvms-vg1
+    volumeMode: Block
+    accessModes: [ReadWriteOnce]
+    resources:
+      requests:
+        storage: 12Gi
+---
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataVolume
+metadata:
+  name: ci-east-root
+  namespace: cloudinit-test
+spec:
+  source:
+    registry:
+      url: docker://image-registry.openshift-image-registry.svc:5000/box1-ci/cloudinit-check-disk@@DISK_DIGEST@
+      pullMethod: node
+  storage:
+    storageClassName: lvms-vg1
+    volumeMode: Block
+    accessModes: [ReadWriteOnce]
+    resources:
+      requests:
+        storage: 12Gi
+---
+# Blank data disk for ci-west only: it must survive deleting and re-creating the VM.
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataVolume
+metadata:
+  name: ci-west-data
+  namespace: cloudinit-test
+spec:
+  source:
+    blank: {}
+  storage:
+    storageClassName: lvms-vg1
+    volumeMode: Block
+    accessModes: [ReadWriteOnce]
+    resources:
+      requests:
+        storage: 1Gi
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: ci-west
+  namespace: cloudinit-test
+spec:
+  runStrategy: Halted
+  template:
+    metadata:
+      labels:
+        kubevirt.io/domain: ci-west
+    spec:
+      accessCredentials:
+        - sshPublicKey:
+            source:
+              secret:
+                secretName: ci-admin-ssh
+            propagationMethod:
+              qemuGuestAgent:
+                users: [cloud-user]
+      domain:
+        cpu:
+          cores: 1
+        memory:
+          guest: 2Gi
+        firmware:
+          bootloader:
+            efi:
+              secureBoot: false
+        devices:
+          autoattachSerialConsole: true
+          rng: {}
+          disks:
+            - name: root
+              bootOrder: 1
+              disk: {bus: virtio}
+            - name: serviceca
+              serial: serviceca
+              disk: {bus: virtio}
+            - name: regtoken
+              serial: regtoken
+              disk: {bus: virtio}
+            - name: data
+              serial: data
+              disk: {bus: virtio}
+            - name: cloudinitdisk
+              disk: {bus: virtio}
+          interfaces:
+            - name: default
+              masquerade: {}
+      networks:
+        - name: default
+          pod: {}
+      volumes:
+        - name: root
+          dataVolume: {name: ci-west-root}
+        - name: serviceca
+          configMap: {name: openshift-service-ca.crt}
+        - name: regtoken
+          secret: {secretName: ci-updater-token}
+        - name: data
+          dataVolume: {name: ci-west-data}
+        - name: cloudinitdisk
+          cloudInitNoCloud:
+            secretRef:
+              name: ci-west-cloud-init
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: ci-east
+  namespace: cloudinit-test
+spec:
+  runStrategy: Halted
+  template:
+    metadata:
+      labels:
+        kubevirt.io/domain: ci-east
+    spec:
+      accessCredentials:
+        - sshPublicKey:
+            source:
+              secret:
+                secretName: ci-admin-ssh
+            propagationMethod:
+              qemuGuestAgent:
+                users: [cloud-user]
+      domain:
+        cpu:
+          cores: 1
+        memory:
+          guest: 2Gi
+        firmware:
+          bootloader:
+            efi:
+              secureBoot: false
+        devices:
+          autoattachSerialConsole: true
+          rng: {}
+          disks:
+            - name: root
+              bootOrder: 1
+              disk: {bus: virtio}
+            - name: serviceca
+              serial: serviceca
+              disk: {bus: virtio}
+            - name: regtoken
+              serial: regtoken
+              disk: {bus: virtio}
+            - name: cloudinitdisk
+              disk: {bus: virtio}
+          interfaces:
+            - name: default
+              masquerade: {}
+      networks:
+        - name: default
+          pod: {}
+      volumes:
+        - name: root
+          dataVolume: {name: ci-east-root}
+        - name: serviceca
+          configMap: {name: openshift-service-ca.crt}
+        - name: regtoken
+          secret: {secretName: ci-updater-token}
+        - name: cloudinitdisk
+          cloudInitNoCloud:
+            secretRef:
+              name: ci-east-cloud-init
