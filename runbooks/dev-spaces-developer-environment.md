@@ -3,9 +3,10 @@
 How to use the Box1 OpenShift Dev Spaces workspace. It covers running Tekton pipelines, editing Camel routes in Kaoto, using Claude Code, debugging JVMs, running uncommitted code on the cluster with Quarkus remote dev, and opening Hawtio. Tracking issue: [#114](https://github.com/box1-org/box1-docs/issues/114).
 
 > **Status (2026-11-08, America/New_York):**
-> - **Merged and synced:** the UDI (box1-devspaces `ad6020a`, image `sha256:ba61eab4…`), box1-gitops#118 (`pipelines-ci` and `dev-spaces`) and Hawtio.
-> - **Verified in a live `fulfillment-adapter` workspace:** the toolchain, the extensions from open-vsx.org, `oc` as the user, remote-dev deploy and sync, and a JDWP handshake over port-forward. JDWP refuses connections on the pod IP.
-> - **Not yet verified:** `box1-pipeline validate`, the `<service>-dev` debug component, a VS Code debugger attach, Claude Code sign-in and editing a route in Kaoto.
+> - **Merged and synced:** the UDI (box1-devspaces, image `sha256:c3d29a29…`), the box1-gitops CheCluster, CI and sandbox changes, Hawtio, the box1-templates skeleton and the Dev Spaces files in every service repository.
+> - **Verified in a live `fulfillment-adapter` workspace:** the toolchain, the extensions from open-vsx.org, `oc` as the user, `box1-pipeline validate` and `logs`, remote-dev deploy and sync, `-Pcontainers` through the podman socket, and a VS Code debugger attach to the sandbox and to `inventory-service-dev` and `order-service-dev` with the debug component. JDWP refuses connections on the pod IP.
+> - **Not yet verified:** Claude Code sign-in, editing an existing route in Kaoto, and remote dev for services other than `fulfillment-adapter`.
+> - **Known problems:** workspace cleanup jobs are rejected when other workspaces exist ([#120](https://github.com/box1-org/box1-docs/issues/120)); `-Pcontainers` doesn't run in CI ([#121](https://github.com/box1-org/box1-docs/issues/121)).
 
 ## Pieces and where they live
 

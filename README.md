@@ -171,7 +171,6 @@ How they interact (HTTP calls and Kafka topics) is in the
 
 | Repository | Role |
 | --- | --- |
-| [demo-day](https://github.com/box1-org/demo-day) | Quarkus REST service created from the Quarkus golden path |
 | [vm-golden-check](https://github.com/box1-org/vm-golden-check) | RHEL 10 image mode VM created from the VM golden path |
 | [rhel-image-poc](https://github.com/box1-org/rhel-image-poc) | Archived RHEL image mode proof of concept that led to the VM golden path |
 
