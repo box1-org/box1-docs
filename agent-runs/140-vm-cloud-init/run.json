@@ -1,0 +1,36 @@
+{
+  "issue": "box1-org/box1-docs#140",
+  "title": "Golden path 03: VM cloud-init (NoCloud) for per-instance identity",
+  "profile": "frontier",
+  "prompt": "box1_operations_agent_prompts/03-golden-path/03_vm_cloud_init_nocloud.md@3928e84",
+  "started": "2026-11-08T22:50-05:00",
+  "authority": "Unattended overnight run: read-only cluster inspection, local tests, feature branches, PRs. No merges, no cluster mutation, no Keycloak, no issue edits.",
+  "current_phase": "5 Review complete; stopped at the authorization boundary before 6/7 (needs merges and approved live tests)",
+  "repositories": [
+    {
+      "name": "box1-org/box1-templates",
+      "role": "target (rhel-image-vm cloudInit parameter)",
+      "base": "5663eb3",
+      "branch": "golden-path/140-cloud-init",
+      "commit": "390cd7949ca724b4e9c4947918a4e85ca30a1ba7",
+      "pr": "https://github.com/box1-org/box1-templates/pull/34"
+    },
+    {
+      "name": "box1-org/box1-docs",
+      "role": "assembly script, runbook, run state",
+      "base": "3928e84",
+      "branch": "golden-path/140-cloud-init-runbook",
+      "pr": "https://github.com/box1-org/box1-docs/pull/147"
+    }
+  ],
+  "cluster_observed": {
+    "openshift": "5.0.0-rc.7",
+    "openshift_virtualization": "kubevirt-hyperconverged-operator.v5.0.0",
+    "kubevirt_operator_version": "v1.9.0",
+    "cloudInitNoCloud_secretRef": true
+  },
+  "image_digest": null,
+  "gitops_commit": null,
+  "review_passes_completed": ["security"],
+  "open_decisions": ["Approve the live test plan (test-plan/README.md): cloudinit-check onboarding, cloudinit-test namespace, box1-ci RoleBinding, placeholder Secrets, VM deletion", "Confirm box1-site as the site service user name (#126)"]
+}
