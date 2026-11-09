@@ -1,0 +1,41 @@
+test_existing_service_workloads_still_validate (__main__.ServiceProfileRegression) ... test_container_workloads_are_rejected_in_vm_profile (__main__.VirtualMachineProfile) ... ok
+test_datavolume_templates_are_rejected (__main__.VirtualMachineProfile) ... ok
+test_missing_os_digest_annotation_is_rejected (__main__.VirtualMachineProfile) ... ok
+test_only_ssh_public_keys_may_be_stored (__main__.VirtualMachineProfile) ... ok
+test_promoted_vm_bundle_is_accepted (__main__.VirtualMachineProfile) ... ok
+test_promoted_vm_disk_must_be_digest_pinned_to_its_disk_image (__main__.VirtualMachineProfile) ... ok
+test_promoted_vm_needs_its_datavolume (__main__.VirtualMachineProfile) ... ok
+test_token_secret_must_not_carry_data (__main__.VirtualMachineProfile) ... ok
+test_unbuilt_vm_bundle_is_accepted (__main__.VirtualMachineProfile) ... ok
+test_unbuilt_vm_must_not_create_its_datavolume (__main__.VirtualMachineProfile) ... ok
+test_unbuilt_vm_must_stay_halted (__main__.VirtualMachineProfile) ... ok
+test_unknown_profile_is_rejected (__main__.VirtualMachineProfile) ... ok
+test_update_disks_are_required (__main__.VirtualMachineProfile) ... ok
+
+======================================================================
+FAIL: test_existing_service_workloads_still_validate (__main__.ServiceProfileRegression) (workload='legacy-erp')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 269, in test_existing_service_workloads_still_validate
+    self.assertEqual(v["validate"](target.parent.name, rendered), "service")
+AssertionError: 'virtual-machine' != 'service'
+- virtual-machine
++ service
+
+
+======================================================================
+FAIL: test_existing_service_workloads_still_validate (__main__.ServiceProfileRegression) (workload='vm-golden-check')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 269, in test_existing_service_workloads_still_validate
+    self.assertEqual(v["validate"](target.parent.name, rendered), "service")
+AssertionError: 'virtual-machine' != 'service'
+- virtual-machine
++ service
+
+
+----------------------------------------------------------------------
+Ran 14 tests in 0.804s
+
+FAILED (failures=2)
+EXIT=1

@@ -1,0 +1,34 @@
+{
+  "issue": "box1-org/box1-docs#139",
+  "profile": "frontier",
+  "current_phase": 6,
+  "phase_state": "waiting_on_owner_merge",
+  "updated_at": "2026-11-08T23:59:00-05:00",
+  "repositories": {
+    "box1-gitops": {
+      "base": "4bcc9078ae6d46cd7bdae4c7cec8214221ddcb52",
+      "branch": "golden-path/139-vm-instance-validate-promote",
+      "commits": ["57c171e (tests first)", "fade118 (implementation)", "147145f (review fixes)"],
+      "head": "147145f1771775a7f4d8e82dcaadd0a4eff4ce3f",
+      "pr": "https://github.com/box1-org/box1-gitops/pull/132",
+      "merged": false
+    },
+    "box1-workloads-dev": {
+      "main_checked": "b95b99b",
+      "open_prs_checked": ["#126 (head e0c5d72): passes new validator"],
+      "changed": false
+    },
+    "box1-docs": {
+      "branch": "agent-run/139-gitops-vm-instance",
+      "base": "3928e84"
+    }
+  },
+  "platform_observed": {
+    "openshift": "5.0.0-rc.7",
+    "openshift_virtualization": "kubevirt-hyperconverged-operator.v5.0.0",
+    "cloudInitNoCloud_fields": ["networkData", "networkDataBase64", "networkDataSecretRef", "secretRef", "userData", "userDataBase64"],
+    "pipelines_ci_application": "Synced at 4bcc907, no automated sync"
+  },
+  "review_passes_completed": ["R-001 fresh subagent (correctness, requirements, security, operations)"],
+  "open_decisions": ["D-006 day-2 DataVolume swap (owner)", "D-005 CI wiring follow-up issue (coordinator)"]
+}

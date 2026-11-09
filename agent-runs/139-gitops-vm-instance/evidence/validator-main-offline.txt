@@ -1,0 +1,104 @@
+### variant=valid (box1-gitops 147145f; tree = box1-workloads-dev main b95b99b + workloads/site-west, workloads/site-east, ci/site-gateway)
+PASS: Kustomize, resources, probes, immutable image: agentic-operations
+PASS: Kustomize, resources, probes, immutable image: asset-service
+PASS: Kustomize, resources, probes, immutable image: fulfillment-adapter
+PASS: Kustomize, resources, probes, immutable image: inventory-service
+PASS: Kustomize, VirtualMachine, pinned OS and disk digests, update disks: legacy-erp
+PASS: Kustomize, resources, probes, immutable image: notification-service
+PASS: Kustomize, resources, probes, immutable image: operations-console
+PASS: Kustomize, resources, probes, immutable image: order-service
+PASS: Kustomize, resources, probes, immutable image: quarkus-reference
+PASS: Kustomize, resources, probes, immutable image: scenario-controller
+PASS: Kustomize, VM instance of an allowlisted source, pinned OS and disk digests, cloud-init by reference: site-east
+PASS: Kustomize, VM instance of an allowlisted source, pinned OS and disk digests, cloud-init by reference: site-west
+PASS: Kustomize, VirtualMachine, pinned OS and disk digests, update disks: vm-golden-check
+PASS: Kustomize, PaC Repository and scoped box1-ci RBAC only: ci/site-gateway
+Validated 13 workloads at ffffffffffffffffffffffffffffffffffffffff
+Validated 1 CI bundles at ffffffffffffffffffffffffffffffffffffffff
+EXIT=0
+### variant=wrong-vm-name (box1-gitops 147145f; tree = box1-workloads-dev main b95b99b + workloads/site-west, workloads/site-east, ci/site-gateway)
+PASS: Kustomize, resources, probes, immutable image: agentic-operations
+PASS: Kustomize, resources, probes, immutable image: asset-service
+PASS: Kustomize, resources, probes, immutable image: fulfillment-adapter
+PASS: Kustomize, resources, probes, immutable image: inventory-service
+PASS: Kustomize, VirtualMachine, pinned OS and disk digests, update disks: legacy-erp
+PASS: Kustomize, resources, probes, immutable image: notification-service
+PASS: Kustomize, resources, probes, immutable image: operations-console
+PASS: Kustomize, resources, probes, immutable image: order-service
+PASS: Kustomize, resources, probes, immutable image: quarkus-reference
+PASS: Kustomize, resources, probes, immutable image: scenario-controller
+PASS: Kustomize, VM instance of an allowlisted source, pinned OS and disk digests, cloud-init by reference: site-east
+AssertionError: Exactly one VirtualMachine must be named after the instance site-west; found site-other
+EXIT=1
+### variant=tag-disk (box1-gitops 147145f; tree = box1-workloads-dev main b95b99b + workloads/site-west, workloads/site-east, ci/site-gateway)
+PASS: Kustomize, resources, probes, immutable image: agentic-operations
+PASS: Kustomize, resources, probes, immutable image: asset-service
+PASS: Kustomize, resources, probes, immutable image: fulfillment-adapter
+PASS: Kustomize, resources, probes, immutable image: inventory-service
+PASS: Kustomize, VirtualMachine, pinned OS and disk digests, update disks: legacy-erp
+PASS: Kustomize, resources, probes, immutable image: notification-service
+PASS: Kustomize, resources, probes, immutable image: operations-console
+PASS: Kustomize, resources, probes, immutable image: order-service
+PASS: Kustomize, resources, probes, immutable image: quarkus-reference
+PASS: Kustomize, resources, probes, immutable image: scenario-controller
+PASS: Kustomize, VM instance of an allowlisted source, pinned OS and disk digests, cloud-init by reference: site-east
+AssertionError: Root DataVolume must pull the digest-pinned site-gateway-os-disk image
+EXIT=1
+### variant=inline-userdata (box1-gitops 147145f; tree = box1-workloads-dev main b95b99b + workloads/site-west, workloads/site-east, ci/site-gateway)
+PASS: Kustomize, resources, probes, immutable image: agentic-operations
+PASS: Kustomize, resources, probes, immutable image: asset-service
+PASS: Kustomize, resources, probes, immutable image: fulfillment-adapter
+PASS: Kustomize, resources, probes, immutable image: inventory-service
+PASS: Kustomize, VirtualMachine, pinned OS and disk digests, update disks: legacy-erp
+PASS: Kustomize, resources, probes, immutable image: notification-service
+PASS: Kustomize, resources, probes, immutable image: operations-console
+PASS: Kustomize, resources, probes, immutable image: order-service
+PASS: Kustomize, resources, probes, immutable image: quarkus-reference
+PASS: Kustomize, resources, probes, immutable image: scenario-controller
+PASS: Kustomize, VM instance of an allowlisted source, pinned OS and disk digests, cloud-init by reference: site-east
+AssertionError: VM instances must not inline userData; reference the site-west-cloud-init Secret with cloudInitNoCloud.secretRef
+EXIT=1
+### variant=ci-deployment (box1-gitops 147145f; tree = box1-workloads-dev main b95b99b + workloads/site-west, workloads/site-east, ci/site-gateway)
+PASS: Kustomize, resources, probes, immutable image: agentic-operations
+PASS: Kustomize, resources, probes, immutable image: asset-service
+PASS: Kustomize, resources, probes, immutable image: fulfillment-adapter
+PASS: Kustomize, resources, probes, immutable image: inventory-service
+PASS: Kustomize, VirtualMachine, pinned OS and disk digests, update disks: legacy-erp
+PASS: Kustomize, resources, probes, immutable image: notification-service
+PASS: Kustomize, resources, probes, immutable image: operations-console
+PASS: Kustomize, resources, probes, immutable image: order-service
+PASS: Kustomize, resources, probes, immutable image: quarkus-reference
+PASS: Kustomize, resources, probes, immutable image: scenario-controller
+PASS: Kustomize, VM instance of an allowlisted source, pinned OS and disk digests, cloud-init by reference: site-east
+PASS: Kustomize, VM instance of an allowlisted source, pinned OS and disk digests, cloud-init by reference: site-west
+PASS: Kustomize, VirtualMachine, pinned OS and disk digests, update disks: vm-golden-check
+AssertionError: CI bundle ci/site-gateway may contain only ImageStream, Repository, Role, RoleBinding, ServiceAccount; found Deployment site-gateway
+EXIT=1
+### unmodified box1-workloads-dev main, validator old-gitops-validate.yaml
+PASS: Kustomize, resources, probes, immutable image: agentic-operations
+PASS: Kustomize, resources, probes, immutable image: asset-service
+PASS: Kustomize, resources, probes, immutable image: fulfillment-adapter
+PASS: Kustomize, resources, probes, immutable image: inventory-service
+PASS: Kustomize, VirtualMachine, pinned OS and disk digests, update disks: legacy-erp
+PASS: Kustomize, resources, probes, immutable image: notification-service
+PASS: Kustomize, resources, probes, immutable image: operations-console
+PASS: Kustomize, resources, probes, immutable image: order-service
+PASS: Kustomize, resources, probes, immutable image: quarkus-reference
+PASS: Kustomize, resources, probes, immutable image: scenario-controller
+PASS: Kustomize, VirtualMachine, pinned OS and disk digests, update disks: vm-golden-check
+Validated 11 workloads at ffffffffffffffffffffffffffffffffffffffff
+EXIT=0
+### unmodified box1-workloads-dev main, validator <work>/box1-gitops/platform/pipelines/tasks/gitops-validate.yaml
+PASS: Kustomize, resources, probes, immutable image: agentic-operations
+PASS: Kustomize, resources, probes, immutable image: asset-service
+PASS: Kustomize, resources, probes, immutable image: fulfillment-adapter
+PASS: Kustomize, resources, probes, immutable image: inventory-service
+PASS: Kustomize, VirtualMachine, pinned OS and disk digests, update disks: legacy-erp
+PASS: Kustomize, resources, probes, immutable image: notification-service
+PASS: Kustomize, resources, probes, immutable image: operations-console
+PASS: Kustomize, resources, probes, immutable image: order-service
+PASS: Kustomize, resources, probes, immutable image: quarkus-reference
+PASS: Kustomize, resources, probes, immutable image: scenario-controller
+PASS: Kustomize, VirtualMachine, pinned OS and disk digests, update disks: vm-golden-check
+Validated 11 workloads at ffffffffffffffffffffffffffffffffffffffff
+EXIT=0

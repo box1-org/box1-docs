@@ -1,0 +1,7 @@
+test_existing_service_workloads_still_validate (__main__.ServiceProfileRegression.test_existing_service_workloads_still_validate) ... ok
+
+----------------------------------------------------------------------
+Ran 1 test in 0.418s
+
+OK
+EXIT=0
