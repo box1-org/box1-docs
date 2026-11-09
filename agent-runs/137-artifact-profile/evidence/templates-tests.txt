@@ -1,0 +1,29 @@
+# box1-templates 6d4eef4, 2026-11-08 23:57 EST
+$ npm run validate
+PASS orders-api: render, ownership, pipeline contract, namespaces, Kustomize
+PASS inventory-service: render, ownership, pipeline contract, namespaces, Kustomize
+PASS quarkus-golden-path-smoke: render, ownership, pipeline contract, namespaces, Kustomize
+PASS aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa: render, ownership, pipeline contract, namespaces, Kustomize
+PASS github-repository team-notes: render, ownership, no build or deployment files
+PASS github-repository box1-example-docs: render, ownership, no build or deployment files
+PASS github-repository aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa: render, ownership, no build or deployment files
+PASS github-repository rejected unsafe names
+PASS rejected unsafe/reserved names
+PASS rhel-image-vm vm-golden-check: render, plugin bundle check, Kustomize, Containerfile, pipeline contract, catalog
+PASS rhel-image-vm erp-appliance: render, plugin bundle check, Kustomize, Containerfile, pipeline contract, catalog
+PASS rhel-image-vm vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv: render, plugin bundle check, Kustomize, Containerfile, pipeline contract, catalog
+PASS rhel-image-vm rejected unsafe keys, packages, names and sizes
+PASS quarkus-monorepo site-gateway: render, modules, plugin ci/ bundle check, Kustomize, catalog, pipeline contract
+PASS quarkus-monorepo one-module: render, modules, plugin ci/ bundle check, Kustomize, catalog, pipeline contract
+PASS quarkus-monorepo mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm: render, modules, plugin ci/ bundle check, Kustomize, catalog, pipeline contract
+PASS quarkus-monorepo rejected unsafe modules, consumers, paths and names
+$ npm run test:onboarding
+ℹ tests 86
+ℹ pass 86
+ℹ fail 0
+$ npm run test:onboarding-oci
+ℹ tests 26
+ℹ pass 26
+ℹ fail 0
+$ git diff --stat origin/golden-path/136-profile-dispatch -- templates/quarkus-rest-service templates/rhel-image-vm templates/github-repository scripts/fixtures
+(empty: unchanged)
