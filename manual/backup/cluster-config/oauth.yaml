@@ -11,3 +11,21 @@ spec:
     mappingMethod: claim
     name: htpasswd
     type: HTPasswd
+  - mappingMethod: add
+    name: keycloak
+    openID:
+      claims:
+        email:
+        - email
+        name:
+        - name
+        preferredUsername:
+        - preferred_username
+      clientID: openshift
+      clientSecret:
+        name: keycloak-openshift-client
+      extraScopes:
+      - email
+      - profile
+      issuer: https://keycloak.apps.ocp.box1.org/auth/realms/box1
+    type: OpenID
