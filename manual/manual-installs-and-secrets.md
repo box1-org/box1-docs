@@ -14,6 +14,10 @@ document never records their values.
 - **Backup:** cleaned YAML exports of these objects are in
   [`backup/`](backup/README.md). Secrets there are redacted templates; read
   the backup README before applying anything.
+- **Updated:** 2026-11-08 22:30 EST: Keycloak OAuth identity provider and its
+  `openshift-config/keycloak-openshift-client` secret
+  ([achievement](../achievements/2026/2026-11-08-openshift-keycloak-identity-provider.md)).
+  The rest of the snapshot was not re-audited.
 
 ## How ownership was determined
 
@@ -179,6 +183,7 @@ MachineConfigs came from the installer. `90-worker-swap-online` and the
 | `Certificate/openshift-api` in `openshift-config` | console | Issues `openshift-api-tls`, referenced by `APIServer cluster` `servingCerts` for `api.ocp.box1.org` |
 | `Certificate/openshift-apps` in `openshift-ingress` | console | Issues `openshift-apps-tls`, the default IngressController certificate |
 | OAuth identity provider `htpasswd` | console | Backed by `openshift-config/htpasswd-xtglx` |
+| OAuth identity provider `keycloak` (OpenID, `mappingMethod: add`) | `oc patch` (2026-11-08) | Realm `box1`, client `openshift`; secret `openshift-config/keycloak-openshift-client`. Kept manual by user decision; the `KeycloakClient` itself is in `box1-gitops`. |
 | `Issuer/openshell-selfsigned`, `Issuer/openshell-ca-issuer` | Helm (`openshell`) | Not in GitOps |
 
 ## Secrets not managed by an operator
@@ -192,6 +197,7 @@ never contains the value.
 | --- | --- | --- | --- | --- |
 | `cert-manager` | `cloudflare-api-token` | Opaque | kubectl-create, console edit | Cloudflare API token for DNS-01 |
 | `openshift-config` | `htpasswd-xtglx` | Opaque | console | htpasswd identity provider users |
+| `openshift-config` | `keycloak-openshift-client` | Opaque | kubectl-create (2026-11-08) | Copy of `keycloak/keycloak-client-secret-openshift` `CLIENT_SECRET`, as key `clientSecret`, for the `keycloak` OAuth identity provider |
 | `openshift-devspaces` | `github-oauth-config` | Opaque | console | GitHub OAuth app for Dev Spaces |
 | `openshift-pipelines` | `pipelines-as-code-secret` | Opaque | console | Pipelines-as-Code GitHub App credentials and webhook secret |
 | `keycloak` | `keycloak-db-secret` | Opaque | kubectl-create | Keycloak PostgreSQL credentials |
@@ -288,11 +294,18 @@ as a full rebuild.
    - `pipelines-as-code-secret`, `github-oauth-config`
    - the `box1-ci` secrets
    - the database secrets for `asset-service` and `fulfillment-adapter`
-8. Generate a new ACS init bundle and apply it to `stackrox`. Create
+8. After Argo CD has synced the `keycloak` application and the operator has
+   created `keycloak/keycloak-client-secret-openshift`, copy its
+   `CLIENT_SECRET` into `openshift-config/keycloak-openshift-client` (key
+   `clientSecret`) and add the `keycloak` identity provider from
+   [`backup/cluster-config/oauth.yaml`](backup/cluster-config/oauth.yaml).
+   A rebuilt Keycloak generates a new client secret, so copy it again rather
+   than restoring an old value.
+9. Generate a new ACS init bundle and apply it to `stackrox`. Create
    `acs-oidc-config`. Run the TPA bootstrap so it creates `rhtpa-ci` and
    `rhtpa-database`, and the RHEL image bootstrap so it creates
    `etc-pki-entitlement`.
-9. Reinstall OpenShell with Helm using the preserved
+10. Reinstall OpenShell with Helm using the preserved
    `openshell-credential-storage-key-encryption-key`. Then install Web
    Terminal, Lightspeed, OpenShift Virtualization and the agent-sandbox
    controller as needed.
