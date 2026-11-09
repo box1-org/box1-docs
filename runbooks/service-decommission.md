@@ -177,3 +177,33 @@ recorded here.
 
 The onboarding plugin is not re-tested by this cleanup. Service names in earlier
 achievement logs are historical; those repositories no longer exist.
+
+## Box1 execution on 2026-11-08
+
+Scope: `demo-day`, a Quarkus golden-path demo service. Its Dev Spaces PR
+(`demo-day#2`) was retired instead of merged while closing
+[#114](https://github.com/box1-org/box1-docs/issues/114).
+
+- **GitOps:** [`box1-workloads-dev#194`](https://github.com/box1-org/box1-workloads-dev/pull/194)
+  merged as `937ccb3a79da39a0762bb504c27fef7745f3d160` with both checks passing.
+- **Cluster:** after the parent showed the commit and `demo-day` as
+  `requiresPruning`, the Application was deleted with the resources finalizer.
+  `demo-day-dev` was gone in about 45 seconds, together with the 5Gi
+  `demo-day-postgres-data` PVC and its PV, which was destroyed without a backup
+  at the owner's direction. The PAC Repository stopped on `foregroundDeletion`
+  as described above. It had no dependents, so its finalizer was cleared. No
+  release-observer RBAC remains.
+- **RHDH:** the onboarding ConfigMap and Lease were deleted. The catalog had a
+  location for `https://github.com/box1-org/demo-day/tree/main/catalog-info.yaml`.
+  Deleting it returned 204, and both entity lookups then returned 404 before
+  the repository was deleted, and again after it.
+- **CI leftovers:** the `demo-day` image stream and 3 PipelineRuns (with their
+  pods) were deleted from `box1-ci`. Nothing named `demo-day` remains there.
+- **GitHub:** `box1-org/demo-day` was deleted at 21:03 EST and returns 404. The
+  open `demo-day#2` went with it. Afterwards `box1-workloads-dev` was `Synced` and `Healthy`.
+
+**Calling the catalog API.** The `box1-automation` external-access entry is
+a `legacy` token. The token is an HS256 JWT signed with `BACKEND_SECRET`, decoded
+as base64 the way Node does it, which is lenient. Its `sub` claim must be
+`backstage-server`. The configured `subject` only names the principal. Any
+other `sub` returns 401. Keep the token short-lived and never print it.
