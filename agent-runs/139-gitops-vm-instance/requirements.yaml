@@ -1,0 +1,57 @@
+# Ledger for box1-docs#139. Highest observed status only. Tests are in
+# box1-gitops/platform/pipelines/tasks/ on branch golden-path/139-vm-instance-validate-promote @ 147145f.
+- id: GP139-VAL-001
+  description: Valid vm-instance bundle passes; wrong VM name, unpinned/tag disk, other source, inline secret/userData fail with readable reasons
+  status: locally_tested
+  implementation: [platform/pipelines/tasks/gitops-validate.yaml (check_vm_instance, PROFILE_CHECKS)]
+  tests: [test-gitops-validate.py VmInstanceProfile (27 cases)]
+  commands: ["BOX1_WORKLOADS_DEV=<box1-workloads-dev> python3.11 test-gitops-validate.py -v"]
+  evidence: [evidence/after-validate-py3.11.txt, evidence/after-validate-py3.9.txt, evidence/validator-main-offline.txt]
+  limitations:
+    - "Required evidence 'one real box1-gitops-validate PipelineRun on a draft box1-workloads-dev PR' NOT done: needs box1-gitops#132 merged and pipelines-ci synced (user action)."
+- id: GP139-VAL-002
+  description: cloud-init by secretRef only; Secret not rendered from Git; no credentials in site ConfigMap (with #140)
+  status: locally_tested
+  implementation: [gitops-validate.yaml check_vm_instance, credential_keys]
+  tests: [VmInstanceProfile inline/cloud-init/secret/configmap cases]
+  evidence: [evidence/after-validate-py3.11.txt]
+  limitations: ["KubeVirt secretRef support verified read-only from the installed CRD (OpenShift Virtualization 5.0.0); no VM booted with it in this run (#140)."]
+- id: GP139-VAL-003
+  description: ci/*/ bundles validated; Deployment and other kinds rejected; RBAC scoped (contract for #137)
+  status: locally_tested
+  implementation: [gitops-validate.yaml check_ci, check_ci_role, validation_targets, __main__]
+  tests: [CiBundle (22 cases), ValidationTargets (4)]
+  evidence: [evidence/after-validate-py3.11.txt, evidence/validator-main-offline.txt]
+  limitations: ["No ci/ directory exists in box1-workloads-dev yet; first real use is #137."]
+- id: GP139-PRO-001
+  description: Promotion for one instance changes only that instance's files; supersession on source repo
+  status: locally_tested
+  implementation: [platform/pipelines/tasks/gitops-promote.yaml (instance-name, plan_instance_updates)]
+  tests: [test-gitops-promote.py VmInstancePromotionPlan (8 cases, two instances of one source)]
+  evidence: [evidence/after-promote-py3.11.txt]
+  limitations: ["Live promotion is #138's acceptance.", "Day-2 DataVolume swap deliberately not implemented (D-006, owner decision pending)."]
+- id: GP139-REG-001
+  description: Existing service and virtual-machine workloads validate and promote unchanged
+  status: locally_tested
+  implementation: [unchanged plan_updates/candidate_paths/check_service; check_vm optional disk_image]
+  tests: [all pre-existing cases unchanged and passing; ServiceProfileRegression fixed]
+  commands: ["compare-validators.py old new box1-workloads-dev <60 main revs> pr-126"]
+  evidence: [evidence/baseline-validate-env.txt, evidence/after-validate-py3.11.txt, evidence/old-vs-new-validator.txt, evidence/after-regression-pr126-py3.11.txt]
+  limitations: ["'First real service and VM releases after the merge passing their required checks' not yet observable."]
+- id: GP139-TST-001
+  description: ServiceProfileRegression asserts each workload's declared profile
+  status: locally_tested
+  evidence: [evidence/baseline-validate-env.txt (2 failures before), evidence/after-validate-py3.11.txt]
+- id: GP139-TST-002
+  description: Python suites in a PR pipeline, or a filed backlog issue
+  status: proposed
+  limitations: ["Not wired (D-005). Backlog issue to be filed by the coordinator; this run may not create issues."]
+- id: GP139-DOC-001
+  description: Contracts documented in GOLDEN-PATH.md (rules/messages, allowlist, instance bundle, promote params + example, channels/bootc-disk requirement, ci/ contract)
+  status: implemented
+  implementation: [platform/pipelines/GOLDEN-PATH.md]
+- id: GP139-DEL-001
+  description: box1-gitops PR merged by the user; Argo shows the new Task revision
+  status: proposed
+  evidence: ["https://github.com/box1-org/box1-gitops/pull/132 (open)"]
+  limitations: ["Merging is the owner's action; pipelines-ci has no automated sync and must be synced."]

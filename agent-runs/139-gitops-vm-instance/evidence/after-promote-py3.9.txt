@@ -1,0 +1,38 @@
+test_diagnostics_report_the_observed_phase_and_drift (__main__.GeneratedConfigMapOrphans) ... ok
+test_observed_orphans_are_tolerated (__main__.GeneratedConfigMapOrphans) ... ok
+test_real_drift_still_fails (__main__.GeneratedConfigMapOrphans) ... ok
+test_smoke_uses_the_tolerance (__main__.GeneratedConfigMapOrphans) ... ok
+test_synced_is_unchanged (__main__.GeneratedConfigMapOrphans) ... ok
+test_unhealthy_or_wrong_revision_still_fails (__main__.GeneratedConfigMapOrphans) ... ok
+test_service_profile_edits_are_unchanged (__main__.PromotionPlan) ... ok
+test_vm_day2_promotion_only_changes_the_vm_annotations (__main__.PromotionPlan) ... ok
+test_vm_first_promotion_requires_a_disk_digest (__main__.PromotionPlan) ... ok
+test_vm_first_promotion_starts_the_vm_and_adds_its_disk (__main__.PromotionPlan) ... ok
+test_active_and_terminal_operation_states_are_handled (__main__.PromotionSyncContract) ... ok
+test_existing_expected_sync_is_accepted_but_stale_revision_is_rejected (__main__.PromotionSyncContract) ... ok
+test_merge_is_followed_by_sync_before_success_result (__main__.PromotionSyncContract) ... ok
+test_multi_source_and_expected_revision_are_handled (__main__.PromotionSyncContract) ... ok
+test_patch_is_kubernetes_operation_without_destructive_flags (__main__.PromotionSyncContract) ... ok
+test_rbac_is_limited_to_application_get_and_patch (__main__.PromotionSyncContract) ... ok
+test_all_success_passes (__main__.RequiredChecks) ... ok
+test_loop_rerequests_with_a_bound (__main__.RequiredChecks) ... ok
+test_missing_or_running_check_is_pending (__main__.RequiredChecks) ... ok
+test_other_apps_and_checks_are_ignored (__main__.RequiredChecks) ... ok
+test_real_failure_still_fails (__main__.RequiredChecks) ... ok
+test_rerequested_run_is_pending_until_superseded (__main__.RequiredChecks) ... ok
+test_start_failure_is_rerequested_not_failed (__main__.RequiredChecks) ... ok
+test_candidate_paths_are_the_instance_files (__main__.VmInstancePromotionPlan) ... ok
+test_day2_promotion_changes_only_the_instance_annotations (__main__.VmInstancePromotionPlan) ... ok
+test_existing_profiles_do_not_use_the_instance_plan (__main__.VmInstancePromotionPlan) ... ok
+test_first_promotion_of_one_instance_changes_only_that_instance (__main__.VmInstancePromotionPlan) ... ok
+test_first_promotion_requires_a_disk_digest (__main__.VmInstancePromotionPlan) ... ok
+test_source_annotation_must_match_the_promoting_repository (__main__.VmInstancePromotionPlan) ... ok
+test_task_contract_for_instance_promotions (__main__.VmInstancePromotionPlan) ... ok
+test_unbuilt_datavolume_must_reference_the_source_disk (__main__.VmInstancePromotionPlan) ... ok
+
+----------------------------------------------------------------------
+Ran 31 tests in 0.256s
+
+OK
+Tolerating generated ConfigMaps that await pruning (box1-docs#42): order-service/order-service-config-29d2hgcc29
+EXIT=0

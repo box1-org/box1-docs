@@ -1,0 +1,74 @@
+test_deployment_is_rejected (__main__.CiBundle) ... ok
+test_exactly_one_repository_named_after_the_directory (__main__.CiBundle) ... ok
+test_imagestream_must_be_the_bundle_stream (__main__.CiBundle) ... ok
+test_kind_from_another_api_group_is_rejected (__main__.CiBundle) ... ok
+test_names_must_carry_the_repository_prefix (__main__.CiBundle) ... ok
+test_namespace_is_rejected (__main__.CiBundle) ... ok
+test_repository_must_point_at_its_github_repository (__main__.CiBundle) ... ok
+test_repository_must_use_default_branch_provenance (__main__.CiBundle) ... ok
+test_repository_only_bundle_is_accepted (__main__.CiBundle) ... ok
+test_repository_settings_are_read_from_settings_only (__main__.CiBundle) ... ok
+test_repository_spec_and_settings_keys_are_allowlisted (__main__.CiBundle) ... ok
+test_repository_token_scope_excludes_the_gitops_repositories (__main__.CiBundle) ... ok
+test_resources_outside_box1_ci_are_rejected (__main__.CiBundle) ... ok
+test_role_on_secrets_is_rejected (__main__.CiBundle) ... ok
+test_role_resources_exclude_wildcard_and_proxy_subresources (__main__.CiBundle) ... ok
+test_role_without_resource_names_is_rejected (__main__.CiBundle) ... ok
+test_rolebinding_must_reference_a_role_from_the_bundle (__main__.CiBundle) ... ok
+test_rolebinding_subjects_are_bundle_accounts_or_ci_observe (__main__.CiBundle) ... ok
+test_secret_is_rejected (__main__.CiBundle) ... ok
+test_valid_ci_bundle_is_accepted (__main__.CiBundle) ... ok
+test_wildcard_role_is_rejected (__main__.CiBundle) ... ok
+test_write_verbs_are_limited_to_pushing_the_bundle_stream (__main__.CiBundle) ... ok
+test_existing_service_workloads_still_validate (__main__.ServiceProfileRegression) ... skipped 'set BOX1_WORKLOADS_DEV to a box1-workloads-dev checkout'
+test_tasks_kustomization_renders_both_tasks (__main__.TaskManifestsRender) ... ok
+test_ci_name_must_not_shadow_a_workload (__main__.ValidationTargets) ... ok
+test_missing_ci_directory_is_allowed (__main__.ValidationTargets) ... ok
+test_no_workloads_is_still_an_error (__main__.ValidationTargets) ... ok
+test_workload_and_ci_targets_are_listed (__main__.ValidationTargets) ... ok
+test_container_workloads_are_rejected_in_vm_profile (__main__.VirtualMachineProfile) ... ok
+test_datavolume_templates_are_rejected (__main__.VirtualMachineProfile) ... ok
+test_missing_os_digest_annotation_is_rejected (__main__.VirtualMachineProfile) ... ok
+test_only_ssh_public_keys_may_be_stored (__main__.VirtualMachineProfile) ... ok
+test_promoted_vm_bundle_is_accepted (__main__.VirtualMachineProfile) ... ok
+test_promoted_vm_disk_must_be_digest_pinned_to_its_disk_image (__main__.VirtualMachineProfile) ... ok
+test_promoted_vm_needs_its_datavolume (__main__.VirtualMachineProfile) ... ok
+test_token_secret_must_not_carry_data (__main__.VirtualMachineProfile) ... ok
+test_unbuilt_vm_bundle_is_accepted (__main__.VirtualMachineProfile) ... ok
+test_unbuilt_vm_must_not_create_its_datavolume (__main__.VirtualMachineProfile) ... ok
+test_unbuilt_vm_must_stay_halted (__main__.VirtualMachineProfile) ... ok
+test_unknown_profile_is_rejected (__main__.VirtualMachineProfile) ... ok
+test_update_disks_are_required (__main__.VirtualMachineProfile) ... ok
+test_allowlist_lives_in_the_validator_task (__main__.VmInstanceProfile) ... ok
+test_cloud_init_secret_must_not_be_rendered_from_git (__main__.VmInstanceProfile) ... ok
+test_cloud_init_secret_ref_must_name_the_instance_secret (__main__.VmInstanceProfile) ... ok
+test_cloud_init_volume_is_required (__main__.VmInstanceProfile) ... ok
+test_container_workloads_are_rejected (__main__.VmInstanceProfile) ... ok
+test_datavolume_must_be_named_after_the_instance (__main__.VmInstanceProfile) ... ok
+test_disk_from_another_source_is_rejected (__main__.VmInstanceProfile) ... ok
+test_inline_cloud_init_data_is_rejected (__main__.VmInstanceProfile) ... ok
+test_inline_cloud_init_in_a_config_drive_is_rejected (__main__.VmInstanceProfile) ... ok
+test_profile_table_lists_exactly_the_supported_profiles (__main__.VmInstanceProfile) ... ok
+test_promoted_instance_is_accepted (__main__.VmInstanceProfile) ... ok
+test_secret_with_data_in_git_is_rejected (__main__.VmInstanceProfile) ... ok
+test_site_configmap_must_not_hold_a_private_key_value (__main__.VmInstanceProfile) ... ok
+test_site_configmap_must_not_hold_credentials (__main__.VmInstanceProfile) ... ok
+test_site_configmap_settings_are_accepted (__main__.VmInstanceProfile) ... ok
+test_site_configmap_values_must_not_embed_credentials (__main__.VmInstanceProfile) ... ok
+test_source_annotation_is_required (__main__.VmInstanceProfile) ... ok
+test_source_outside_the_allowlist_is_rejected (__main__.VmInstanceProfile) ... ok
+test_tag_disk_is_rejected (__main__.VmInstanceProfile) ... ok
+test_two_instances_of_one_source_are_each_accepted (__main__.VmInstanceProfile) ... ok
+test_unbuilt_instance_is_accepted (__main__.VmInstanceProfile) ... ok
+test_unbuilt_instance_must_not_create_its_datavolume (__main__.VmInstanceProfile) ... ok
+test_update_disks_follow_the_vm_rules (__main__.VmInstanceProfile) ... ok
+test_virtual_machine_profile_ignores_instance_rules (__main__.VmInstanceProfile) ... ok
+test_vm_name_must_match_the_instance (__main__.VmInstanceProfile) ... ok
+test_zero_digest_while_always_is_rejected (__main__.VmInstanceProfile) ... ok
+test_zero_disk_digest_is_rejected_once_promoted (__main__.VmInstanceProfile) ... ok
+
+----------------------------------------------------------------------
+Ran 68 tests in 2.653s
+
+OK (skipped=1)
+EXIT=0

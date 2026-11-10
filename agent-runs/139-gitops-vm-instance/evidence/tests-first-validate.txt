@@ -1,0 +1,729 @@
+EEEEEEEEEEEEEEEEEEEEEEEEEEEE.............EFFFFFFFFFFFEFFFFFFFFFFFerror: accumulating resources: accumulating resources from 'virtualmachine.yaml': MalformedYAMLError: yaml: line 3: did not find expected key in File: virtualmachine.yaml
+EFFFFFF.FFF
+======================================================================
+ERROR: test_deployment_is_rejected (__main__.CiBundle.test_deployment_is_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 709, in test_deployment_is_rejected
+    self.rejects("CI bundle ci/site-gateway may contain only", *self.extra("""
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 694, in rejects
+    self.check(repo, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 690, in check
+    return self.v["check_ci"](repo, render(files))
+           ~~~~~~^^^^^^^^^^^^
+KeyError: 'check_ci'
+
+======================================================================
+ERROR: test_exactly_one_repository_named_after_the_directory (__main__.CiBundle.test_exactly_one_repository_named_after_the_directory)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 755, in test_exactly_one_repository_named_after_the_directory
+    self.rejects("exactly one PaC Repository named site-gateway", *ci_bundle(resources=["release.yaml"]))
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 694, in rejects
+    self.check(repo, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 690, in check
+    return self.v["check_ci"](repo, render(files))
+           ~~~~~~^^^^^^^^^^^^
+KeyError: 'check_ci'
+
+======================================================================
+ERROR: test_imagestream_must_be_the_bundle_stream (__main__.CiBundle.test_imagestream_must_be_the_bundle_stream)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 767, in test_imagestream_must_be_the_bundle_stream
+    self.rejects("ImageStream must be named site-gateway-bundle", repo, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 694, in rejects
+    self.check(repo, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 690, in check
+    return self.v["check_ci"](repo, render(files))
+           ~~~~~~^^^^^^^^^^^^
+KeyError: 'check_ci'
+
+======================================================================
+ERROR: test_kind_from_another_api_group_is_rejected (__main__.CiBundle.test_kind_from_another_api_group_is_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 748, in test_kind_from_another_api_group_is_rejected
+    self.rejects("apiVersion", *self.extra("""
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 694, in rejects
+    self.check(repo, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 690, in check
+    return self.v["check_ci"](repo, render(files))
+           ~~~~~~^^^^^^^^^^^^
+KeyError: 'check_ci'
+
+======================================================================
+ERROR: test_names_must_carry_the_repository_prefix (__main__.CiBundle.test_names_must_carry_the_repository_prefix)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 770, in test_names_must_carry_the_repository_prefix
+    self.rejects("must be named site-gateway-", *self.extra("""
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 694, in rejects
+    self.check(repo, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 690, in check
+    return self.v["check_ci"](repo, render(files))
+           ~~~~~~^^^^^^^^^^^^
+KeyError: 'check_ci'
+
+======================================================================
+ERROR: test_namespace_is_rejected (__main__.CiBundle.test_namespace_is_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 721, in test_namespace_is_rejected
+    self.rejects("found Namespace site-gateway-dev", *self.extra("""
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 694, in rejects
+    self.check(repo, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 690, in check
+    return self.v["check_ci"](repo, render(files))
+           ~~~~~~^^^^^^^^^^^^
+KeyError: 'check_ci'
+
+======================================================================
+ERROR: test_repository_must_point_at_its_github_repository (__main__.CiBundle.test_repository_must_point_at_its_github_repository)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 762, in test_repository_must_point_at_its_github_repository
+    self.rejects("must point at https://github.com/box1-org/site-gateway", repo, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 694, in rejects
+    self.check(repo, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 690, in check
+    return self.v["check_ci"](repo, render(files))
+           ~~~~~~^^^^^^^^^^^^
+KeyError: 'check_ci'
+
+======================================================================
+ERROR: test_repository_only_bundle_is_accepted (__main__.CiBundle.test_repository_only_bundle_is_accepted)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 706, in test_repository_only_bundle_is_accepted
+    self.check(*ci_bundle(resources=["repository.yaml"]))
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 690, in check
+    return self.v["check_ci"](repo, render(files))
+           ~~~~~~^^^^^^^^^^^^
+KeyError: 'check_ci'
+
+======================================================================
+ERROR: test_resources_outside_box1_ci_are_rejected (__main__.CiBundle.test_resources_outside_box1_ci_are_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 736, in test_resources_outside_box1_ci_are_rejected
+    self.rejects("must be in namespace box1-ci: Role/site-gateway-argo", *self.extra("""
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 694, in rejects
+    self.check(repo, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 690, in check
+    return self.v["check_ci"](repo, render(files))
+           ~~~~~~^^^^^^^^^^^^
+KeyError: 'check_ci'
+
+======================================================================
+ERROR: test_role_on_secrets_is_rejected (__main__.CiBundle.test_role_on_secrets_is_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 800, in test_role_on_secrets_is_rejected
+    self.rejects("must not grant access to Secrets", *self.extra("""
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 694, in rejects
+    self.check(repo, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 690, in check
+    return self.v["check_ci"](repo, render(files))
+           ~~~~~~^^^^^^^^^^^^
+KeyError: 'check_ci'
+
+======================================================================
+ERROR: test_role_without_resource_names_is_rejected (__main__.CiBundle.test_role_without_resource_names_is_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 789, in test_role_without_resource_names_is_rejected
+    self.rejects("must name its resources", *self.extra("""
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 694, in rejects
+    self.check(repo, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 690, in check
+    return self.v["check_ci"](repo, render(files))
+           ~~~~~~^^^^^^^^^^^^
+KeyError: 'check_ci'
+
+======================================================================
+ERROR: test_rolebinding_must_reference_a_role_from_the_bundle (__main__.CiBundle.test_rolebinding_must_reference_a_role_from_the_bundle)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 831, in test_rolebinding_must_reference_a_role_from_the_bundle
+    self.rejects("must reference a Role declared in ci/site-gateway", *self.extra("""
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 694, in rejects
+    self.check(repo, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 690, in check
+    return self.v["check_ci"](repo, render(files))
+           ~~~~~~^^^^^^^^^^^^
+KeyError: 'check_ci'
+
+======================================================================
+ERROR: test_rolebinding_subjects_are_bundle_accounts_or_ci_observe (__main__.CiBundle.test_rolebinding_subjects_are_bundle_accounts_or_ci_observe) (subject='{kind: ServiceAccount, name: pipeline, namespace: box1-ci}')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 845, in test_rolebinding_subjects_are_bundle_accounts_or_ci_observe
+    self.rejects("may bind only", *self.extra(f"""
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 694, in rejects
+    self.check(repo, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 690, in check
+    return self.v["check_ci"](repo, render(files))
+           ~~~~~~^^^^^^^^^^^^
+KeyError: 'check_ci'
+
+======================================================================
+ERROR: test_rolebinding_subjects_are_bundle_accounts_or_ci_observe (__main__.CiBundle.test_rolebinding_subjects_are_bundle_accounts_or_ci_observe) (subject='{kind: ServiceAccount, name: site-gateway-release, namespace: default}')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 845, in test_rolebinding_subjects_are_bundle_accounts_or_ci_observe
+    self.rejects("may bind only", *self.extra(f"""
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 694, in rejects
+    self.check(repo, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 690, in check
+    return self.v["check_ci"](repo, render(files))
+           ~~~~~~^^^^^^^^^^^^
+KeyError: 'check_ci'
+
+======================================================================
+ERROR: test_rolebinding_subjects_are_bundle_accounts_or_ci_observe (__main__.CiBundle.test_rolebinding_subjects_are_bundle_accounts_or_ci_observe) (subject="{kind: Group, name: 'system:authenticated', apiGroup: rbac.authorization.k8s.io}")
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 845, in test_rolebinding_subjects_are_bundle_accounts_or_ci_observe
+    self.rejects("may bind only", *self.extra(f"""
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 694, in rejects
+    self.check(repo, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 690, in check
+    return self.v["check_ci"](repo, render(files))
+           ~~~~~~^^^^^^^^^^^^
+KeyError: 'check_ci'
+
+======================================================================
+ERROR: test_rolebinding_subjects_are_bundle_accounts_or_ci_observe (__main__.CiBundle.test_rolebinding_subjects_are_bundle_accounts_or_ci_observe) (subject='{kind: User, name: mallory, apiGroup: rbac.authorization.k8s.io}')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 845, in test_rolebinding_subjects_are_bundle_accounts_or_ci_observe
+    self.rejects("may bind only", *self.extra(f"""
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 694, in rejects
+    self.check(repo, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 690, in check
+    return self.v["check_ci"](repo, render(files))
+           ~~~~~~^^^^^^^^^^^^
+KeyError: 'check_ci'
+
+======================================================================
+ERROR: test_secret_is_rejected (__main__.CiBundle.test_secret_is_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 728, in test_secret_is_rejected
+    self.rejects("found Secret site-gateway-token", *self.extra("""
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 694, in rejects
+    self.check(repo, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 690, in check
+    return self.v["check_ci"](repo, render(files))
+           ~~~~~~^^^^^^^^^^^^
+KeyError: 'check_ci'
+
+======================================================================
+ERROR: test_valid_ci_bundle_is_accepted (__main__.CiBundle.test_valid_ci_bundle_is_accepted)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 703, in test_valid_ci_bundle_is_accepted
+    self.check(*ci_bundle())
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 690, in check
+    return self.v["check_ci"](repo, render(files))
+           ~~~~~~^^^^^^^^^^^^
+KeyError: 'check_ci'
+
+======================================================================
+ERROR: test_wildcard_role_is_rejected (__main__.CiBundle.test_wildcard_role_is_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 777, in test_wildcard_role_is_rejected
+    self.rejects("Role site-gateway-wild", *self.extra("""
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 694, in rejects
+    self.check(repo, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 690, in check
+    return self.v["check_ci"](repo, render(files))
+           ~~~~~~^^^^^^^^^^^^
+KeyError: 'check_ci'
+
+======================================================================
+ERROR: test_write_verbs_are_limited_to_pushing_the_bundle_stream (__main__.CiBundle.test_write_verbs_are_limited_to_pushing_the_bundle_stream) (resources='[repositories]', names='[site-gateway]', verbs='[get, update]')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 819, in test_write_verbs_are_limited_to_pushing_the_bundle_stream
+    self.rejects("may only get, list or watch", *self.extra(f"""
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 694, in rejects
+    self.check(repo, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 690, in check
+    return self.v["check_ci"](repo, render(files))
+           ~~~~~~^^^^^^^^^^^^
+KeyError: 'check_ci'
+
+======================================================================
+ERROR: test_write_verbs_are_limited_to_pushing_the_bundle_stream (__main__.CiBundle.test_write_verbs_are_limited_to_pushing_the_bundle_stream) (resources='[imagestreams/layers]', names='[box1-ops-erp-simulator]', verbs='[get, update]')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 819, in test_write_verbs_are_limited_to_pushing_the_bundle_stream
+    self.rejects("may only get, list or watch", *self.extra(f"""
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 694, in rejects
+    self.check(repo, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 690, in check
+    return self.v["check_ci"](repo, render(files))
+           ~~~~~~^^^^^^^^^^^^
+KeyError: 'check_ci'
+
+======================================================================
+ERROR: test_write_verbs_are_limited_to_pushing_the_bundle_stream (__main__.CiBundle.test_write_verbs_are_limited_to_pushing_the_bundle_stream) (resources='[imagestreams/layers]', names='[site-gateway-bundle]', verbs='[get, update, delete]')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 819, in test_write_verbs_are_limited_to_pushing_the_bundle_stream
+    self.rejects("may only get, list or watch", *self.extra(f"""
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 694, in rejects
+    self.check(repo, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 690, in check
+    return self.v["check_ci"](repo, render(files))
+           ~~~~~~^^^^^^^^^^^^
+KeyError: 'check_ci'
+
+======================================================================
+ERROR: test_write_verbs_are_limited_to_pushing_the_bundle_stream (__main__.CiBundle.test_write_verbs_are_limited_to_pushing_the_bundle_stream) (resources='[imagestreams/layers]', names='[site-gateway-bundle]', verbs='[create]')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 819, in test_write_verbs_are_limited_to_pushing_the_bundle_stream
+    self.rejects("may only get, list or watch", *self.extra(f"""
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 694, in rejects
+    self.check(repo, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 690, in check
+    return self.v["check_ci"](repo, render(files))
+           ~~~~~~^^^^^^^^^^^^
+KeyError: 'check_ci'
+
+======================================================================
+ERROR: test_existing_service_workloads_still_validate (__main__.ServiceProfileRegression.test_existing_service_workloads_still_validate)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 921, in test_existing_service_workloads_still_validate
+    v["validation_targets"](checkout)
+    ~^^^^^^^^^^^^^^^^^^^^^^
+KeyError: 'validation_targets'
+
+======================================================================
+ERROR: test_ci_name_must_not_shadow_a_workload (__main__.ValidationTargets.test_ci_name_must_not_shadow_a_workload)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 884, in test_ci_name_must_not_shadow_a_workload
+    self.v["validation_targets"](self.tree(["order-service"], ["order-service"]))
+    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+KeyError: 'validation_targets'
+
+======================================================================
+ERROR: test_missing_ci_directory_is_allowed (__main__.ValidationTargets.test_missing_ci_directory_is_allowed)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 879, in test_missing_ci_directory_is_allowed
+    workloads, ci = self.v["validation_targets"](self.tree(["order-service"], []))
+                    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+KeyError: 'validation_targets'
+
+======================================================================
+ERROR: test_no_workloads_is_still_an_error (__main__.ValidationTargets.test_no_workloads_is_still_an_error)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 888, in test_no_workloads_is_still_an_error
+    self.v["validation_targets"](self.tree([], ["site-gateway"]))
+    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+KeyError: 'validation_targets'
+
+======================================================================
+ERROR: test_workload_and_ci_targets_are_listed (__main__.ValidationTargets.test_workload_and_ci_targets_are_listed)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 874, in test_workload_and_ci_targets_are_listed
+    workloads, ci = self.v["validation_targets"](root)
+                    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+KeyError: 'validation_targets'
+
+======================================================================
+ERROR: test_allowlist_lives_in_the_validator_task (__main__.VmInstanceProfile.test_allowlist_lives_in_the_validator_task)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 429, in test_allowlist_lives_in_the_validator_task
+    self.assertIn(SOURCE_IMAGE, self.v["VM_INSTANCE_SOURCES"])
+                                ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+KeyError: 'VM_INSTANCE_SOURCES'
+
+======================================================================
+ERROR: test_profile_table_lists_exactly_the_supported_profiles (__main__.VmInstanceProfile.test_profile_table_lists_exactly_the_supported_profiles)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 426, in test_profile_table_lists_exactly_the_supported_profiles
+    self.assertEqual(sorted(self.v["PROFILE_CHECKS"]), ["service", "virtual-machine", "vm-instance"])
+                            ~~~~~~^^^^^^^^^^^^^^^^^^
+KeyError: 'PROFILE_CHECKS'
+
+======================================================================
+ERROR: test_source_annotation_is_required (__main__.VmInstanceProfile.test_source_annotation_is_required)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 471, in test_source_annotation_is_required
+    self.rejects("box1.org/source-image", name, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 421, in rejects
+    self.check(name, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 417, in check
+    return self.v["validate"](name, render(files))
+                                    ^^^^^^^^^^^^^
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 159, in render
+    return subprocess.check_output([KUSTOMIZE, "kustomize", tmp], text=True)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.11/3.11.14_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/subprocess.py", line 466, in check_output
+    return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.11/3.11.14_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/usr/local/bin/kubectl', 'kustomize', '<tmp>']' returned non-zero exit status 1.
+
+======================================================================
+FAIL: test_cloud_init_secret_must_not_be_rendered_from_git (__main__.VmInstanceProfile.test_cloud_init_secret_must_not_be_rendered_from_git)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 529, in test_cloud_init_secret_must_not_be_rendered_from_git
+    self.rejects("Secret site-west-cloud-init must be created outside Git", name, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 422, in rejects
+    self.assertIn(message, str(raised.exception))
+AssertionError: 'Secret site-west-cloud-init must be created outside Git' not found in 'Unknown workload profile vm-instance'
+
+======================================================================
+FAIL: test_cloud_init_secret_ref_must_name_the_instance_secret (__main__.VmInstanceProfile.test_cloud_init_secret_ref_must_name_the_instance_secret)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 517, in test_cloud_init_secret_ref_must_name_the_instance_secret
+    self.rejects("secretRef.name: site-west-cloud-init", name, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 422, in rejects
+    self.assertIn(message, str(raised.exception))
+AssertionError: 'secretRef.name: site-west-cloud-init' not found in 'Unknown workload profile vm-instance'
+
+======================================================================
+FAIL: test_cloud_init_volume_is_required (__main__.VmInstanceProfile.test_cloud_init_volume_is_required)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 512, in test_cloud_init_volume_is_required
+    self.rejects("exactly one cloudInitNoCloud volume", name, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 422, in rejects
+    self.assertIn(message, str(raised.exception))
+AssertionError: 'exactly one cloudInitNoCloud volume' not found in 'Unknown workload profile vm-instance'
+
+======================================================================
+FAIL: test_container_workloads_are_rejected (__main__.VmInstanceProfile.test_container_workloads_are_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 576, in test_container_workloads_are_rejected
+    self.rejects("must not include Deployment", name, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 422, in rejects
+    self.assertIn(message, str(raised.exception))
+AssertionError: 'must not include Deployment' not found in 'Unknown workload profile vm-instance'
+
+======================================================================
+FAIL: test_datavolume_must_be_named_after_the_instance (__main__.VmInstanceProfile.test_datavolume_must_be_named_after_the_instance)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 486, in test_datavolume_must_be_named_after_the_instance
+    self.rejects("Root DataVolume must be named site-west-root", name, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 422, in rejects
+    self.assertIn(message, str(raised.exception))
+AssertionError: 'Root DataVolume must be named site-west-root' not found in 'Unknown workload profile vm-instance'
+
+======================================================================
+FAIL: test_disk_from_another_source_is_rejected (__main__.VmInstanceProfile.test_disk_from_another_source_is_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 462, in test_disk_from_another_source_is_rejected
+    self.rejects("digest-pinned site-gateway-os-disk", name, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 422, in rejects
+    self.assertIn(message, str(raised.exception))
+AssertionError: 'digest-pinned site-gateway-os-disk' not found in 'Unknown workload profile vm-instance'
+
+======================================================================
+FAIL: test_inline_cloud_init_data_is_rejected (__main__.VmInstanceProfile.test_inline_cloud_init_data_is_rejected) (key='userData')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 499, in test_inline_cloud_init_data_is_rejected
+    self.rejects("must not inline " + key, name, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 422, in rejects
+    self.assertIn(message, str(raised.exception))
+AssertionError: 'must not inline userData' not found in 'Unknown workload profile vm-instance'
+
+======================================================================
+FAIL: test_inline_cloud_init_data_is_rejected (__main__.VmInstanceProfile.test_inline_cloud_init_data_is_rejected) (key='userDataBase64')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 499, in test_inline_cloud_init_data_is_rejected
+    self.rejects("must not inline " + key, name, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 422, in rejects
+    self.assertIn(message, str(raised.exception))
+AssertionError: 'must not inline userDataBase64' not found in 'Unknown workload profile vm-instance'
+
+======================================================================
+FAIL: test_inline_cloud_init_data_is_rejected (__main__.VmInstanceProfile.test_inline_cloud_init_data_is_rejected) (key='networkData')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 499, in test_inline_cloud_init_data_is_rejected
+    self.rejects("must not inline " + key, name, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 422, in rejects
+    self.assertIn(message, str(raised.exception))
+AssertionError: 'must not inline networkData' not found in 'Unknown workload profile vm-instance'
+
+======================================================================
+FAIL: test_inline_cloud_init_data_is_rejected (__main__.VmInstanceProfile.test_inline_cloud_init_data_is_rejected) (key='networkDataBase64')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 499, in test_inline_cloud_init_data_is_rejected
+    self.rejects("must not inline " + key, name, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 422, in rejects
+    self.assertIn(message, str(raised.exception))
+AssertionError: 'must not inline networkDataBase64' not found in 'Unknown workload profile vm-instance'
+
+======================================================================
+FAIL: test_inline_cloud_init_in_a_config_drive_is_rejected (__main__.VmInstanceProfile.test_inline_cloud_init_in_a_config_drive_is_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 505, in test_inline_cloud_init_in_a_config_drive_is_rejected
+    self.rejects("must not inline userData", name, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 422, in rejects
+    self.assertIn(message, str(raised.exception))
+AssertionError: 'must not inline userData' not found in 'Unknown workload profile vm-instance'
+
+======================================================================
+FAIL: test_promoted_instance_is_accepted (__main__.VmInstanceProfile.test_promoted_instance_is_accepted)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 437, in test_promoted_instance_is_accepted
+    self.assertEqual(self.check(*instance_bundle(promoted=True)), "vm-instance")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 417, in check
+    return self.v["validate"](name, render(files))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<work>/box1-gitops/platform/pipelines/tasks/gitops-validate.yaml", line 90, in validate
+    assert len(os_digest)==1, 'VirtualMachine must record box1.org/os-image-digest exactly once'
+      ^^^^^^^^^^^^^^^^^^^^
+  File "<work>/box1-gitops/platform/pipelines/tasks/gitops-validate.yaml", line 35, in profile_of
+    headers={'Authorization':'Bearer '+os.environ['GITHUB_TOKEN'],
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Unknown workload profile vm-instance
+
+======================================================================
+FAIL: test_secret_with_data_in_git_is_rejected (__main__.VmInstanceProfile.test_secret_with_data_in_git_is_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 543, in test_secret_with_data_in_git_is_rejected
+    self.rejects("Only SSH public keys may be stored in Secrets", name, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 422, in rejects
+    self.assertIn(message, str(raised.exception))
+AssertionError: 'Only SSH public keys may be stored in Secrets' not found in 'Unknown workload profile vm-instance'
+
+======================================================================
+FAIL: test_site_configmap_must_not_hold_a_private_key_value (__main__.VmInstanceProfile.test_site_configmap_must_not_hold_a_private_key_value)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 556, in test_site_configmap_must_not_hold_a_private_key_value
+    self.rejects("ConfigMap site-west-site must not hold credentials", name, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 422, in rejects
+    self.assertIn(message, str(raised.exception))
+AssertionError: 'ConfigMap site-west-site must not hold credentials' not found in 'Unknown workload profile vm-instance'
+
+======================================================================
+FAIL: test_site_configmap_must_not_hold_credentials (__main__.VmInstanceProfile.test_site_configmap_must_not_hold_credentials) (key='clientSecret')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 550, in test_site_configmap_must_not_hold_credentials
+    self.rejects("ConfigMap site-west-site must not hold credentials", name, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 422, in rejects
+    self.assertIn(message, str(raised.exception))
+AssertionError: 'ConfigMap site-west-site must not hold credentials' not found in 'Unknown workload profile vm-instance'
+
+======================================================================
+FAIL: test_site_configmap_must_not_hold_credentials (__main__.VmInstanceProfile.test_site_configmap_must_not_hold_credentials) (key='password')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 550, in test_site_configmap_must_not_hold_credentials
+    self.rejects("ConfigMap site-west-site must not hold credentials", name, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 422, in rejects
+    self.assertIn(message, str(raised.exception))
+AssertionError: 'ConfigMap site-west-site must not hold credentials' not found in 'Unknown workload profile vm-instance'
+
+======================================================================
+FAIL: test_site_configmap_must_not_hold_credentials (__main__.VmInstanceProfile.test_site_configmap_must_not_hold_credentials) (key='admin_password')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 550, in test_site_configmap_must_not_hold_credentials
+    self.rejects("ConfigMap site-west-site must not hold credentials", name, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 422, in rejects
+    self.assertIn(message, str(raised.exception))
+AssertionError: 'ConfigMap site-west-site must not hold credentials' not found in 'Unknown workload profile vm-instance'
+
+======================================================================
+FAIL: test_site_configmap_must_not_hold_credentials (__main__.VmInstanceProfile.test_site_configmap_must_not_hold_credentials) (key='registry-token')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 550, in test_site_configmap_must_not_hold_credentials
+    self.rejects("ConfigMap site-west-site must not hold credentials", name, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 422, in rejects
+    self.assertIn(message, str(raised.exception))
+AssertionError: 'ConfigMap site-west-site must not hold credentials' not found in 'Unknown workload profile vm-instance'
+
+======================================================================
+FAIL: test_site_configmap_must_not_hold_credentials (__main__.VmInstanceProfile.test_site_configmap_must_not_hold_credentials) (key='apiKey')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 550, in test_site_configmap_must_not_hold_credentials
+    self.rejects("ConfigMap site-west-site must not hold credentials", name, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 422, in rejects
+    self.assertIn(message, str(raised.exception))
+AssertionError: 'ConfigMap site-west-site must not hold credentials' not found in 'Unknown workload profile vm-instance'
+
+======================================================================
+FAIL: test_site_configmap_must_not_hold_credentials (__main__.VmInstanceProfile.test_site_configmap_must_not_hold_credentials) (key='private.key')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 550, in test_site_configmap_must_not_hold_credentials
+    self.rejects("ConfigMap site-west-site must not hold credentials", name, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 422, in rejects
+    self.assertIn(message, str(raised.exception))
+AssertionError: 'ConfigMap site-west-site must not hold credentials' not found in 'Unknown workload profile vm-instance'
+
+======================================================================
+FAIL: test_site_configmap_must_not_hold_credentials (__main__.VmInstanceProfile.test_site_configmap_must_not_hold_credentials) (key='KEYCLOAK_CLIENT_SECRET')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 550, in test_site_configmap_must_not_hold_credentials
+    self.rejects("ConfigMap site-west-site must not hold credentials", name, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 422, in rejects
+    self.assertIn(message, str(raised.exception))
+AssertionError: 'ConfigMap site-west-site must not hold credentials' not found in 'Unknown workload profile vm-instance'
+
+======================================================================
+FAIL: test_site_configmap_settings_are_accepted (__main__.VmInstanceProfile.test_site_configmap_settings_are_accepted)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 562, in test_site_configmap_settings_are_accepted
+    self.assertEqual(self.check(name, files), "vm-instance")
+                     ^^^^^^^^^^^^^^^^^^^^^^^
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 417, in check
+    return self.v["validate"](name, render(files))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<work>/box1-gitops/platform/pipelines/tasks/gitops-validate.yaml", line 90, in validate
+    assert len(os_digest)==1, 'VirtualMachine must record box1.org/os-image-digest exactly once'
+      ^^^^^^^^^^^^^^^^^^^^
+  File "<work>/box1-gitops/platform/pipelines/tasks/gitops-validate.yaml", line 35, in profile_of
+    headers={'Authorization':'Bearer '+os.environ['GITHUB_TOKEN'],
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Unknown workload profile vm-instance
+
+======================================================================
+FAIL: test_source_outside_the_allowlist_is_rejected (__main__.VmInstanceProfile.test_source_outside_the_allowlist_is_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 466, in test_source_outside_the_allowlist_is_rejected
+    self.rejects("Source image rogue-os is not on the vm-instance allowlist", name, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 422, in rejects
+    self.assertIn(message, str(raised.exception))
+AssertionError: 'Source image rogue-os is not on the vm-instance allowlist' not found in 'Unknown workload profile vm-instance'
+
+======================================================================
+FAIL: test_tag_disk_is_rejected (__main__.VmInstanceProfile.test_tag_disk_is_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 452, in test_tag_disk_is_rejected
+    self.rejects("Root DataVolume must pull the digest-pinned site-gateway-os-disk image", name, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 422, in rejects
+    self.assertIn(message, str(raised.exception))
+AssertionError: 'Root DataVolume must pull the digest-pinned site-gateway-os-disk image' not found in 'Unknown workload profile vm-instance'
+
+======================================================================
+FAIL: test_two_instances_of_one_source_are_each_accepted (__main__.VmInstanceProfile.test_two_instances_of_one_source_are_each_accepted)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 441, in test_two_instances_of_one_source_are_each_accepted
+    self.assertEqual(self.check(*instance_bundle(instance, promoted=True)), "vm-instance")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 417, in check
+    return self.v["validate"](name, render(files))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<work>/box1-gitops/platform/pipelines/tasks/gitops-validate.yaml", line 90, in validate
+    assert len(os_digest)==1, 'VirtualMachine must record box1.org/os-image-digest exactly once'
+      ^^^^^^^^^^^^^^^^^^^^
+  File "<work>/box1-gitops/platform/pipelines/tasks/gitops-validate.yaml", line 35, in profile_of
+    headers={'Authorization':'Bearer '+os.environ['GITHUB_TOKEN'],
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Unknown workload profile vm-instance
+
+======================================================================
+FAIL: test_unbuilt_instance_is_accepted (__main__.VmInstanceProfile.test_unbuilt_instance_is_accepted)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 434, in test_unbuilt_instance_is_accepted
+    self.assertEqual(self.check(*instance_bundle()), "vm-instance")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 417, in check
+    return self.v["validate"](name, render(files))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<work>/box1-gitops/platform/pipelines/tasks/gitops-validate.yaml", line 90, in validate
+    assert len(os_digest)==1, 'VirtualMachine must record box1.org/os-image-digest exactly once'
+      ^^^^^^^^^^^^^^^^^^^^
+  File "<work>/box1-gitops/platform/pipelines/tasks/gitops-validate.yaml", line 35, in profile_of
+    headers={'Authorization':'Bearer '+os.environ['GITHUB_TOKEN'],
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Unknown workload profile vm-instance
+
+======================================================================
+FAIL: test_unbuilt_instance_must_not_create_its_datavolume (__main__.VmInstanceProfile.test_unbuilt_instance_must_not_create_its_datavolume)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 481, in test_unbuilt_instance_must_not_create_its_datavolume
+    self.rejects("must not create their DataVolume", name, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 422, in rejects
+    self.assertIn(message, str(raised.exception))
+AssertionError: 'must not create their DataVolume' not found in 'Unknown workload profile vm-instance'
+
+======================================================================
+FAIL: test_update_disks_follow_the_vm_rules (__main__.VmInstanceProfile.test_update_disks_follow_the_vm_rules)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 491, in test_update_disks_follow_the_vm_rules
+    self.rejects("serviceca", name, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 422, in rejects
+    self.assertIn(message, str(raised.exception))
+AssertionError: 'serviceca' not found in 'Unknown workload profile vm-instance'
+
+======================================================================
+FAIL: test_vm_name_must_match_the_instance (__main__.VmInstanceProfile.test_vm_name_must_match_the_instance)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 446, in test_vm_name_must_match_the_instance
+    message = self.rejects("VirtualMachine must be named after the instance site-west", name, files)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 422, in rejects
+    self.assertIn(message, str(raised.exception))
+AssertionError: 'VirtualMachine must be named after the instance site-west' not found in 'Unknown workload profile vm-instance'
+
+======================================================================
+FAIL: test_zero_digest_while_always_is_rejected (__main__.VmInstanceProfile.test_zero_digest_while_always_is_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 476, in test_zero_digest_while_always_is_rejected
+    self.rejects("Unbuilt virtual machines must stay Halted", name, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 422, in rejects
+    self.assertIn(message, str(raised.exception))
+AssertionError: 'Unbuilt virtual machines must stay Halted' not found in 'Unknown workload profile vm-instance'
+
+======================================================================
+FAIL: test_zero_disk_digest_is_rejected_once_promoted (__main__.VmInstanceProfile.test_zero_disk_digest_is_rejected_once_promoted)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 457, in test_zero_disk_digest_is_rejected_once_promoted
+    self.rejects("digest-pinned site-gateway-os-disk", name, files)
+  File "<work>/box1-gitops/platform/pipelines/tasks/test-gitops-validate.py", line 422, in rejects
+    self.assertIn(message, str(raised.exception))
+AssertionError: 'digest-pinned site-gateway-os-disk' not found in 'Unknown workload profile vm-instance'
+
+----------------------------------------------------------------------
+Ran 61 tests in 1.877s
+
+FAILED (failures=31, errors=31)
+EXIT=1
