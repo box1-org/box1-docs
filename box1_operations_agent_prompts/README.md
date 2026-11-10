@@ -34,7 +34,8 @@ The sizing above describes the default `qwen-64k` profile. A long-horizon model 
 - `00-shared/` — non-negotiable architectural rules, event schemas, GitOps conventions, acceptance policy, and handoff pattern.
 - `01-services/` — independent prompts for each deployable business component.
 - `02-platform/` — independent prompts for the platform workstreams those services require.
-- `03-golden-path/` — golden-path changes for the edge-sites epic ([box1-docs#126](https://github.com/box1-org/box1-docs/issues/126)): onboarding profiles, GitOps validation and promotion, VM cloud-init, and the `artifact` and `vm-instance` paths (#136–#140). Numbered in run order; 02 and 03 may run in parallel with 01.
+- `03-golden-path/` — golden-path changes for the edge-sites epic ([box1-docs#126](https://github.com/box1-org/box1-docs/issues/126)): onboarding profiles, GitOps validation and promotion, VM cloud-init, the `artifact` and `vm-instance` paths, and the staged per-site rollout (#136–#141). Numbered in run order; 02 and 03 may run in parallel with 01.
+- `04-edge-sites/` — the edge-sites epic itself ([box1-docs#126](https://github.com/box1-org/box1-docs/issues/126)–#133): site contracts and the `site-gateway-os` image, the forwarder and buffer, per-site identity, site status and the Sites map, asset-service ingestion, pick lists and reconciliation, the in-guest collector, greenboot rollback, and epic acceptance. Numbered in run order after `03-golden-path/`.
 - `manifest.json` — machine-readable prompt index, dependencies and suggested order.
 
 ## Suggested start order
