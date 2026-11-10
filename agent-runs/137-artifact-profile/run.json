@@ -1,0 +1,14 @@
+{
+  "issue": "box1-org/box1-docs#137",
+  "prompt": "box1_operations_agent_prompts/03-golden-path/04_artifact_profile_quarkus_monorepo.md",
+  "profile": "frontier",
+  "current_phase": "5 Review complete; stopped before 6 GitOps delivery (merge, release, onboarding need approval)",
+  "updated": "2026-11-09 America/New_York",
+  "repositories": [
+    {"name": "box1-org/box1-templates", "branch": "golden-path/137-artifact-profile", "base": "golden-path/136-profile-dispatch (box1-templates#33, head d8e8533)", "commit": "6d4eef4a25500e7dc91616f416f9cca308660a01", "pr": "https://github.com/box1-org/box1-templates/pull/35"},
+    {"name": "box1-org/box1-gitops", "branch": "golden-path/137-maven-bundle", "base": "golden-path/139-vm-instance-validate-promote (box1-gitops#132, head 147145f)", "commit": "59e1ef0f13722d983d4070378faddfcd5faf20d8", "pr": "https://github.com/box1-org/box1-gitops/pull/133"},
+    {"name": "box1-org/box1-docs", "branch": "agent-run/137-artifact-profile", "base": "main"}
+  ],
+  "plugin_version": "1.4.0",
+  "template": "templates/quarkus-monorepo 1.0.0"
+}

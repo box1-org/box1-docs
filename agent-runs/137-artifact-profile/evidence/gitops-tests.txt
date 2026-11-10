@@ -1,0 +1,71 @@
+# box1-gitops 59e1ef0, 2026-11-08 23:57 EST
+$ Python 3.9.6 platform/pipelines/tasks/test-maven-bundle.py -v
+test_a_bad_consumer_file_writes_nothing (__main__.ConsumerPullRequestTask) ... ok
+test_a_consumer_already_pinning_the_digest_gets_no_pr_and_stale_ones_close (__main__.ConsumerPullRequestTask) ... ok
+test_a_foreign_pr_on_the_branch_is_not_touched (__main__.ConsumerPullRequestTask) ... ok
+test_a_leftover_branch_is_reused_only_if_its_tip_is_a_bump_commit (__main__.ConsumerPullRequestTask) ... ok
+test_a_rerun_of_the_same_revision_is_idempotent (__main__.ConsumerPullRequestTask) ... ok
+test_a_superseded_revision_proposes_nothing (__main__.ConsumerPullRequestTask) ... ok
+test_an_open_bump_pr_against_another_base_is_refused (__main__.ConsumerPullRequestTask) ... ok
+test_an_open_pr_for_an_older_digest_is_updated_not_duplicated (__main__.ConsumerPullRequestTask) ... ok
+test_another_reference_to_the_bundle_fails_even_with_one_copy_line (__main__.ConsumerPullRequestTask) ... ok
+test_crlf_and_extra_flags_are_preserved (__main__.ConsumerPullRequestTask) ... ok
+test_gate_failure_proposes_nothing_and_calls_nothing (__main__.ConsumerPullRequestTask) ... ok
+test_missing_consumer_or_file_fails_clearly (__main__.ConsumerPullRequestTask) ... ok
+test_new_bump_opens_one_pr_with_a_one_line_change_and_never_merges (__main__.ConsumerPullRequestTask) ... ok
+test_rewrite_changes_exactly_one_line_and_only_the_digest (__main__.ConsumerPullRequestTask) ... ok
+test_task_has_no_merge_call_and_reads_the_token_from_the_pipelinerun_secret (__main__.ConsumerPullRequestTask) ... ok
+test_unsafe_inputs_are_rejected_before_any_call (__main__.ConsumerPullRequestTask) ... ok
+test_zero_or_two_copy_lines_fail_clearly (__main__.ConsumerPullRequestTask) ... ok
+test_a_module_without_a_fast_jar_fails (__main__.MavenBundleTask) ... ok
+test_invalid_parent_poms_fail_clearly (__main__.MavenBundleTask) ... ok
+test_layout_is_one_scratch_layer_with_module_fast_jars (__main__.MavenBundleTask) ... ok
+test_main_runs_multi_module_verify_and_publishes_only_on_push (__main__.MavenBundleTask) ... ok
+test_modules_come_from_the_parent_pom_in_order (__main__.MavenBundleTask) ... ok
+test_push_is_unprivileged_digest_checked_and_skipped_for_pull_requests (__main__.MavenBundleTask) ... ok
+test_quarkus_maven_is_unchanged_for_services (__main__.MavenBundleTask) ... ok
+test_same_output_gives_same_digest_and_a_change_does_not (__main__.MavenBundleTask) ... ok
+test_symlinks_in_build_output_are_refused (__main__.MavenBundleTask) ... ok
+Ran 26 tests in 0.071s
+OK
+$ Python 3.11.14 platform/pipelines/tasks/test-maven-bundle.py -v
+test_a_bad_consumer_file_writes_nothing (__main__.ConsumerPullRequestTask.test_a_bad_consumer_file_writes_nothing) ... ok
+test_a_consumer_already_pinning_the_digest_gets_no_pr_and_stale_ones_close (__main__.ConsumerPullRequestTask.test_a_consumer_already_pinning_the_digest_gets_no_pr_and_stale_ones_close) ... ok
+test_a_foreign_pr_on_the_branch_is_not_touched (__main__.ConsumerPullRequestTask.test_a_foreign_pr_on_the_branch_is_not_touched) ... ok
+test_a_leftover_branch_is_reused_only_if_its_tip_is_a_bump_commit (__main__.ConsumerPullRequestTask.test_a_leftover_branch_is_reused_only_if_its_tip_is_a_bump_commit) ... ok
+test_a_rerun_of_the_same_revision_is_idempotent (__main__.ConsumerPullRequestTask.test_a_rerun_of_the_same_revision_is_idempotent) ... ok
+test_a_superseded_revision_proposes_nothing (__main__.ConsumerPullRequestTask.test_a_superseded_revision_proposes_nothing) ... ok
+test_an_open_bump_pr_against_another_base_is_refused (__main__.ConsumerPullRequestTask.test_an_open_bump_pr_against_another_base_is_refused) ... ok
+test_an_open_pr_for_an_older_digest_is_updated_not_duplicated (__main__.ConsumerPullRequestTask.test_an_open_pr_for_an_older_digest_is_updated_not_duplicated) ... ok
+test_another_reference_to_the_bundle_fails_even_with_one_copy_line (__main__.ConsumerPullRequestTask.test_another_reference_to_the_bundle_fails_even_with_one_copy_line) ... ok
+test_crlf_and_extra_flags_are_preserved (__main__.ConsumerPullRequestTask.test_crlf_and_extra_flags_are_preserved) ... ok
+test_gate_failure_proposes_nothing_and_calls_nothing (__main__.ConsumerPullRequestTask.test_gate_failure_proposes_nothing_and_calls_nothing) ... ok
+test_missing_consumer_or_file_fails_clearly (__main__.ConsumerPullRequestTask.test_missing_consumer_or_file_fails_clearly) ... ok
+test_new_bump_opens_one_pr_with_a_one_line_change_and_never_merges (__main__.ConsumerPullRequestTask.test_new_bump_opens_one_pr_with_a_one_line_change_and_never_merges) ... ok
+test_rewrite_changes_exactly_one_line_and_only_the_digest (__main__.ConsumerPullRequestTask.test_rewrite_changes_exactly_one_line_and_only_the_digest) ... ok
+test_task_has_no_merge_call_and_reads_the_token_from_the_pipelinerun_secret (__main__.ConsumerPullRequestTask.test_task_has_no_merge_call_and_reads_the_token_from_the_pipelinerun_secret) ... ok
+test_unsafe_inputs_are_rejected_before_any_call (__main__.ConsumerPullRequestTask.test_unsafe_inputs_are_rejected_before_any_call) ... ok
+test_zero_or_two_copy_lines_fail_clearly (__main__.ConsumerPullRequestTask.test_zero_or_two_copy_lines_fail_clearly) ... ok
+test_a_module_without_a_fast_jar_fails (__main__.MavenBundleTask.test_a_module_without_a_fast_jar_fails) ... ok
+test_invalid_parent_poms_fail_clearly (__main__.MavenBundleTask.test_invalid_parent_poms_fail_clearly) ... ok
+test_layout_is_one_scratch_layer_with_module_fast_jars (__main__.MavenBundleTask.test_layout_is_one_scratch_layer_with_module_fast_jars) ... ok
+test_main_runs_multi_module_verify_and_publishes_only_on_push (__main__.MavenBundleTask.test_main_runs_multi_module_verify_and_publishes_only_on_push) ... ok
+test_modules_come_from_the_parent_pom_in_order (__main__.MavenBundleTask.test_modules_come_from_the_parent_pom_in_order) ... ok
+test_push_is_unprivileged_digest_checked_and_skipped_for_pull_requests (__main__.MavenBundleTask.test_push_is_unprivileged_digest_checked_and_skipped_for_pull_requests) ... ok
+test_quarkus_maven_is_unchanged_for_services (__main__.MavenBundleTask.test_quarkus_maven_is_unchanged_for_services) ... ok
+test_same_output_gives_same_digest_and_a_change_does_not (__main__.MavenBundleTask.test_same_output_gives_same_digest_and_a_change_does_not) ... ok
+test_symlinks_in_build_output_are_refused (__main__.MavenBundleTask.test_symlinks_in_build_output_are_refused) ... ok
+Ran 26 tests in 0.071s
+OK
+$ BOX1_WORKLOADS_DEV=<box1-workloads-dev main clone> python3 platform/pipelines/tasks/test-gitops-validate.py
+Ran 68 tests in 2.802s
+OK
+$ python3 platform/pipelines/tasks/test-gitops-promote.py
+Ran 31 tests in 0.139s
+OK
+$ git diff origin/main -- platform/pipelines/tasks/quarkus-maven.yaml | wc -l
+       0
+$ python3 evidence/scripts/check-ci-bundles.py <box1-gitops> <box1-templates>
+PASS check_ci and target discovery: ci/mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm
+PASS check_ci and target discovery: ci/one-module
+PASS check_ci and target discovery: ci/site-gateway

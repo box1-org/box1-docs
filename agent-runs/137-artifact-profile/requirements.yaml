@@ -1,0 +1,62 @@
+# Ledger for box1-docs#137. Status = highest level actually observed.
+- id: ART-TEMPLATE-001
+  description: quarkus-monorepo template (parent POM, modules, Java 21, Quarkus BOM as quarkus-rest-service, tests, docs, catalog without k8s/argocd annotations, PR and release pipelines), registered in the Location and validate.mjs
+  status: locally_tested
+  implementation: [box1-templates templates/quarkus-monorepo/, catalog-info.yaml, scripts/validate.mjs]
+  commands: ["npm run validate"]
+  evidence: [evidence/templates-tests.txt]
+  limitations: ["Not loaded by the Hub; `each` step support on RHDH 1.9.7 not verified"]
+- id: ART-PR-CHECK-001
+  description: A PR runs the multi-module mvn verify as a required check
+  status: locally_tested
+  implementation: [templates/quarkus-monorepo/skeleton/.tekton/pull-request.yaml, box1-gitops tasks/maven-bundle.yaml]
+  commands: ["mvn -B -ntp verify (rendered site-gateway)"]
+  evidence: [evidence/local-maven-bundle.md]
+  limitations: ["No PR check run observed; required-check branch protection is set on the created repo by the user/onboarding, not verified"]
+- id: ART-MODULE-FAIL-001
+  description: One module failing its tests publishes nothing
+  status: locally_tested
+  evidence: [evidence/local-maven-bundle.md#2]
+  limitations: ["In-cluster TaskRun not observed; Task runs mvn with check=True before staging/push"]
+- id: ART-BUNDLE-001
+  description: Merge to main publishes a deterministic FROM-scratch bundle by digest to box1-ci/<repo>-bundle
+  status: locally_tested
+  implementation: [box1-gitops tasks/maven-bundle.yaml]
+  tests: [box1-gitops tasks/test-maven-bundle.py]
+  evidence: [evidence/local-maven-bundle.md, evidence/gitops-tests.txt]
+  limitations: ["No registry push (not authorised); layout, skopeo copy flags and digest preservation checked locally"]
+- id: ART-GATE-001
+  description: Bundle passes box1-security-gates in gate mode before any consumer PR; a policy failure proposes nothing
+  status: locally_tested
+  implementation: [release.yaml enforcement gate, bundle-consumer-pr gate-policy check, artifactBuildResults]
+  tests: [test-maven-bundle.py test_gate_failure_proposes_nothing_and_calls_nothing, test-onboarding-artifact.cjs build results]
+  limitations: ["Gate outcome for a FROM-scratch JAR-only image unknown; throwaway policy-failure run needs approval"]
+- id: ART-CONSUMER-PR-001
+  description: Digest-bump PR in the declared consumer (one line; 0/2 lines fail; older PR updated not duplicated; rerun idempotent; never merged)
+  status: locally_tested
+  implementation: [box1-gitops tasks/bundle-consumer-pr.yaml]
+  tests: [box1-gitops tasks/test-maven-bundle.py ConsumerPullRequestTask]
+  evidence: [evidence/gitops-tests.txt]
+  limitations: ["site-gateway-os does not exist; no real PR opened"]
+- id: ART-PROFILE-001
+  description: artifact profile handlers (bundle validation, no-workload flow, build, verify, catalog) in the #136 table without profile-name branches
+  status: locally_tested
+  implementation: [box1-templates plugins/box1-onboarding/workflow.cjs]
+  tests: [scripts/test-onboarding-artifact.cjs]
+  commands: ["npm run test:onboarding"]
+  evidence: [evidence/templates-tests.txt]
+  limitations: ["Plugin 1.4.0 not released"]
+- id: ART-CI-RULE-001
+  description: Rendered ci/<repo> bundle passes the #139 gitops-validate ci/ rule
+  status: locally_tested
+  commands: ["python3 evidence/scripts/check-ci-bundles.py <box1-gitops> <box1-templates>"]
+  evidence: [evidence/gitops-tests.txt]
+- id: ART-REGRESSION-001
+  description: quarkus-rest-service and rhel-image-vm unchanged; characterisation passes; box1-quarkus-maven byte-identical
+  status: locally_tested
+  evidence: [evidence/templates-tests.txt, evidence/gitops-tests.txt]
+  limitations: ["Regression onboardings on the new plugin digest not run (need release and approval)"]
+- id: ART-ONBOARD-001
+  description: Creating site-gateway from the Hub gives repo, catalog entry, pipelines, ci/ Application, no namespace/Deployment/workload Application
+  status: implemented
+  limitations: ["Blocked on merges, plugin release and Hub sync, and onboarding approval"]
