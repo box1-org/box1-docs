@@ -1,0 +1,81 @@
+# Requirement ledger for box1-docs#136 (frontier). Status = highest level actually observed.
+# AC* = issue/prompt acceptance items; VS-* = prompt verification scenarios; PX-* = phase exit additions.
+- id: DISPATCH-EQUIV-001
+  description: service and virtual-machine produce identical bundles, PRs, records, markers, PipelineRuns and phase results before and after the refactor; plugin tests cover both
+  source: AC1; PX-3; PX-5
+  status: ci_verified
+  implementation: [plugins/box1-onboarding/workflow.cjs, plugins/box1-onboarding/index.cjs]
+  tests: [scripts/test-onboarding-characterisation.cjs (committed b0e65d8 on old code, unchanged since), scripts/fixtures/onboarding-profiles-characterisation.json, scripts/test-onboarding-sync-equivalence.cjs (passes on 5663eb3 and d8e8533), scripts/test-onboarding.cjs, scripts/test-onboarding-vm.cjs]
+  commands: ["npm ci && npm run validate && npm run test:onboarding && npm run test:onboarding-oci (local, d8e8533: 75/75, 26/26)", "PaC box1-onboarding-plugin-pr-65wx6 on d8e8533: Succeeded, 75/75, 26/26"]
+  evidence: [evidence/02-local-tests.md, evidence/03-ci.md, review-findings/01-release-operations-architecture.md]
+  deployment: {image_digest: null, gitops_commit: null}
+  limitations: [Not released or deployed; live behaviour on the new digest not established]
+- id: DISPATCH-LIVE-001
+  description: Live regression onboarding of one Quarkus service and one RHEL image-mode VM succeeds on the new plugin digest; resources decommissioned or kept as references
+  source: AC2; PX-7
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: [decisions/D-005-regression-names.md]
+  limitations: [Requires merge, release, pin, Hub sync and onboarding approval - all outside this run's authority]
+- id: DISPATCH-RELEASE-001
+  description: Plugin published as a new OCI digest (1.3.0) and pinned in box1-gitops platform/developer-hub/dynamic-plugins.yaml; Hub restarted on it
+  source: AC3; PX-6
+  status: implemented
+  implementation: [plugins/box1-onboarding/package.json 1.3.0, scripts/test-onboarding-oci.mjs fixture, plugins/box1-onboarding/README.md]
+  tests: [scripts/test-onboarding-oci.mjs]
+  commands: ["PR pipeline packaged 1.3.0 locally in CI (not published)"]
+  evidence: [evidence/03-ci.md, decisions/D-004-version-and-release.md]
+  limitations: [No tag pushed, no release PipelineRun, no digest, no pin PR - user action after merging box1-templates#33]
+- id: DISPATCH-EXT-001
+  description: Adding a profile needs only a table entry plus its handlers; documented in the plugin README
+  source: AC4
+  status: ci_verified
+  implementation: [plugins/box1-onboarding/workflow.cjs PROFILES contract L20-75, plugins/box1-onboarding/README.md "Adding an onboarding profile (1.3.0)"]
+  tests: [scripts/test-onboarding-profiles.cjs]
+  commands: ["npm run test:onboarding (local and CI)"]
+  evidence: [evidence/02-local-tests.md, evidence/03-ci.md, decisions/D-001-handler-interface.md, decisions/D-002-optional-phases.md]
+  limitations: [README lists 1.3.0 limits that #137/#138 extend with new handlers (Application name, non-workloads promotion, catalog target, catalog order without source repo)]
+- id: VS-UNKNOWN-001
+  description: An unknown profile is rejected
+  source: verification scenario
+  status: ci_verified
+  tests: ["test-onboarding-profiles.cjs: an unknown profile is rejected before any work", characterisation profileChecks.unknownProfile]
+  evidence: [evidence/03-ci.md]
+  limitations: []
+- id: VS-MISMATCH-001
+  description: A profile mismatch with the stored record is rejected
+  source: verification scenario
+  status: ci_verified
+  tests: ["test-onboarding-profiles.cjs: a profile that differs from the stored record is rejected...", characterisation profileChecks]
+  evidence: [evidence/03-ci.md]
+  limitations: [verify has never checked the profile (unchanged from 1.2.0)]
+- id: VS-RESUME-001
+  description: Resume after PLATFORM_READY and IMAGE_BUILT for both profiles
+  source: verification scenario
+  status: ci_verified
+  tests: ["test-onboarding-profiles.cjs: <profile>: resume after PLATFORM_READY and IMAGE_BUILT...", characterisation resume.afterPlatformReady / afterImageBuilt]
+  evidence: [evidence/03-ci.md]
+  limitations: []
+- id: VS-CATALOG-001
+  description: A service catalog step without a profile input still succeeds
+  source: verification scenario; D-003
+  status: ci_verified
+  tests: ["test-onboarding-profiles.cjs: <profile>: a catalog step without a profile input completes from the stored record", characterisation catalog.complete]
+  evidence: [evidence/03-ci.md, decisions/D-003-catalog-profile-lookup.md]
+  limitations: []
+- id: VS-TESTPROFILE-001
+  description: Test-only profile with no GitOps workload skips provision and its catalog predicate passes without deploymentImage
+  source: verification scenario
+  status: ci_verified
+  tests: ["test-onboarding-profiles.cjs: a profile without a GitOps workload skips provision and promotion...", "...without a source repository or build...", "a profile with no build at all never starts one"]
+  evidence: [evidence/03-ci.md]
+  limitations: []
+- id: SCHEMA-001
+  description: index.cjs profile enum generated from Object.keys(PROFILES), default service; Hub action schemas unchanged
+  source: decided design; discovery item
+  status: ci_verified
+  tests: [characterisation actionSchemas (stub-loaded index.cjs), "test-onboarding-vm.cjs: the VM template runs the same delivery phases..."]
+  evidence: [evidence/01-discovery-baseline.md, evidence/03-ci.md]
+  limitations: [Compared against the stub-loaded module, not ACTION_SCHEMAS fetched from the live Hub (needs authenticated Hub API)]
