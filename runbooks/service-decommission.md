@@ -114,8 +114,10 @@ onboarding operation is active.
 
 Added 2026-11-09 (America/New_York) for
 [#138](https://github.com/box1-org/box1-docs/issues/138). Steps 1–6 above still apply,
-with the differences below. **Not yet exercised on the cluster**: no VM workload has been
-decommissioned with this section. Deleting a VM, a DataVolume or a Secret needs approval.
+with the differences below. The `virtual-machine` path was first exercised on 2026-11-09
+with `regression-vm` (see [the execution record](#box1-execution-on-2026-11-09)). The
+`vm-instance` path has **not** been exercised yet. Deleting a VM, a DataVolume or a Secret
+needs approval.
 
 Find the profile first. It is the `box1.org/workload-profile` label of
 `workloads/<name>/namespace.yaml`:
@@ -296,3 +298,59 @@ a `legacy` token. The token is an HS256 JWT signed with `BACKEND_SECRET`, decode
 as base64 the way Node does it, which is lenient. Its `sub` claim must be
 `backstage-server`. The configured `subject` only names the principal. Any
 other `sub` returns 401. Keep the token short-lived and never print it.
+
+The secret is the `BACKEND_SECRET` key of Secret `developer-hub-secrets` in `rhdh`.
+Its length is not a valid strict base64 length, so a strict decoder (Python's
+`base64.b64decode`) fails. To match Node: map `-`/`_` to `+`/`/`, drop any
+other non-alphabet characters, drop a single dangling final character
+(length ≡ 1 mod 4), then pad and decode. Read the value straight into the
+process environment (`BS=$(oc -n rhdh get secret … | base64 -d) python3 …`)
+rather than into a file.
+
+## Box1 execution on 2026-11-09
+
+Scope: `regression-service` (Quarkus service profile) and `regression-vm`
+(`virtual-machine` profile), both created on 2026-11-09 by golden-path onboarding
+regression runs. This was the first use of the VM section above on the cluster.
+Times are EST.
+
+- **Pre-checks:** no `vm-instance` workload named `regression-vm` as its
+  `box1.org/source-image`. Neither repository had open pull requests. No other repository
+  (`box1-gitops`, `box1-templates`, `box1-docs`) referenced either name.
+  `regression-service` had no PostgreSQL PVC.
+- **GitOps:** [`box1-workloads-dev#202`](https://github.com/box1-org/box1-workloads-dev/pull/202)
+  merged at 21:04 as `5b634936fb1649cb724f6acd9c543f80ff308811`. `box1-gitops-validate`
+  passed on the PR. The PR's `box1-phase1-smoke` check is reported as failed, but its
+  PipelineRun (`box1-phase1-smoke-cv2xp`) never started and was still `PipelineRunPending`
+  afterwards. The push-event smoke run on the merge commit (`box1-phase1-smoke-9x7z7`)
+  succeeded.
+- **Cluster:** after a hard refresh the parent was on the merge commit and both
+  children were `requiresPruning`. Both Applications were deleted with the
+  resources finalizer. `regression-service-dev` and `regression-vm-dev` were gone in
+  about 10 seconds. The VM, its VMI and the 12Gi `regression-vm-root` DataVolume went
+  with the namespace, and its PV no longer exists. The guest disk was destroyed
+  without a backup at the owner's direction. No VMI or DataVolume finalizer held up the
+  namespace. Both `<name>-image-puller` RoleBindings in `box1-ci` and both
+  `<name>-release-observer` Roles and RoleBindings in `openshift-gitops` were gone.
+  Both PAC Repositories stopped on `foregroundDeletion` as described in step 2. They had
+  no dependents, so their finalizers were cleared, and both Applications then disappeared.
+- **RHDH:** the catalog had `url` locations for
+  `https://github.com/box1-org/<name>/tree/main/catalog-info.yaml` for both. Each
+  `DELETE` returned 204. The onboarding ConfigMaps and Leases were deleted. All four
+  lookups (`component` and `api` for each name; `regression-vm` never had an API entity)
+  returned 404 immediately. After the repositories were deleted,
+  `component:default/regression-service` briefly returned **200** again, owned by the
+  discovery origin `url:https://github.com/box1-org/regression-service/blob/main/catalog-info.yaml`.
+  It returned 404 from 21:10:46 on, about two and a half minutes after repository
+  deletion. This is why the second check after step 4 is the final one.
+- **CI leftovers:** the `regression-service`, `regression-vm` and `regression-vm-disk`
+  image streams and the two `onb-<name>-*` PipelineRuns (with their TaskRuns and pods) were
+  deleted from `box1-ci` before the repositories. Nothing named `regression` remains there.
+- **GitHub:** `box1-org/regression-service` and `box1-org/regression-vm` were deleted at
+  about 21:08 and both return 404.
+- **After removal:** `box1-workloads-dev` is `Synced` and `Healthy` on `5b63493`, and no
+  Argo Application, namespace or PAC Repository named `regression-*` remains.
+
+Not exercised: the `vm-instance` path (no Keycloak client, `<name>-site` ConfigMap or
+`<name>-cloud-init` Secret was involved) and the source-in-use guard, because nothing
+booted from `regression-vm`.
