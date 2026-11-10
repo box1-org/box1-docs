@@ -1,0 +1,87 @@
+# Requirement ledger, box1-docs#126 epic and #127-#133. Status = highest level actually observed
+# (proposed → implemented → locally_tested → ci_verified → deployed → live_verified; or blocked).
+# Nothing below is deployed to a site or live-verified on 2026-11-10.
+- id: EPIC-CONTRACTS
+  description: site.*.v1 events, site topic and status API in box1-ops-contracts; EquipmentReading.v1 covers site readings
+  status: locally_tested
+  implementation: ["box1-ops-contracts#14 (5b7296c)"]
+  commands: ["npm test", "npm run validate"]
+  evidence: [evidence/01-local-tests.md, decisions/D-001-site-contracts.md, decisions/D-002-readings-key.md]
+  limitations: [Not merged; the repository has no CI; services pin 5b7296c, so the branch must not be rebased]
+- id: EPIC-SITE-GATEWAY-BUNDLE
+  description: site-gateway monorepo publishing its bundle
+  status: ci_verified
+  implementation: ["box1-org/site-gateway 44f35b7 (PR #1)"]
+  evidence: [evidence/01-local-tests.md]
+  deployment: {bundle: "sha256:26543a45360ae49f3d48db695d3973551b39a2b4429c82ba8c2f6351da33e102", release: site-gateway-release-vptwg, consumer_pr: "box1-org/site-gateway-os#7"}
+- id: EPIC-SITE-OS
+  description: site-gateway-os runs the apps, broker and database; greenboot; collector
+  status: ci_verified
+  implementation: ["box1-org/site-gateway-os#6 (36b9114)"]
+  commands: [site-gateway-os-validate-6pqnz]
+  evidence: [evidence/01-local-tests.md]
+  limitations: [Not merged or released; nothing booted from it; quadlet image pulls, PostgreSQL start and greenboot rollback untested]
+- id: EPIC-NETPOL
+  description: Egress NetworkPolicy per site namespace
+  status: proposed
+  limitations: [Not written; see decisions/D-006-not-done.md]
+- id: EPIC-RUNBOOKS
+  description: Disconnect and recovery, bad edge update, VM rebuild and restore
+  status: implemented
+  implementation: [runbooks/edge-sites.md, site-gateway docs/runbook.md]
+  limitations: [No procedure exercised on the cluster]
+- id: SITE-127-AC1
+  description: Readings and site events from both sites on Kafka with siteId, eventId, occurredAt, trace context; valid against contracts
+  status: locally_tested
+  tests: [gateway LiveSiteContainersTest.aReadingReachesKafkaOnceWithAValidEnvelope, pickListKeepsOnlyThisSiteAndAPickBecomesOneSiteEvent, EventContractTest]
+  limitations: ["Needs the KafkaTopics (box1-gitops#150)", "site-gateway-os#6 and #7", "and both sites running"]
+- id: SITE-127-AC2
+  description: Outbox accumulates while disconnected, within its bound; overflow policy as documented
+  status: locally_tested
+  tests: [LiveSiteContainersTest.aKafkaOutageBuffersAndTheBacklogDrainsWithoutLossOrDuplicates, BoundedSiteContainersTest.readingsOverTheBoundDropTheOldestAndAreRecorded, siteEventsBeyondTheBoundAreRefusedNotDropped]
+  evidence: [decisions/D-003-buffer.md]
+  limitations: [NIC-detach drill not run (approval)]
+- id: SITE-127-AC3
+  description: After reconnection the backlog drains with no loss and no duplicates
+  status: locally_tested
+  tests: [LiveSiteContainersTest.aKafkaOutageBuffersAndTheBacklogDrainsWithoutLossOrDuplicates]
+- id: SITE-127-AC4
+  description: Killing site-gateway or rebooting mid-drain loses nothing committed
+  status: locally_tested
+  tests: [BoundedSiteContainersTest.aCrashAfterTheAcknowledgementResendsTheSameEventIds, LiveSiteContainersTest.aDatabaseOutageHoldsTheReadingUntilItIsStored]
+  limitations: [systemctl kill and VM reboot not exercised (approval)]
+- id: SITE-128
+  description: asset-service ingestion of site readings, dedupe, stale-site alert, generator guard
+  status: locally_tested
+  implementation: ["asset-service#8", "box1-workloads-dev#223"]
+  limitations: [Subagent-reported test results; not merged or deployed]
+- id: SITE-129
+  description: Pick lists down, picks/counts/holds up, inventory reconciliation with audit
+  status: locally_tested
+  implementation: ["site-gateway 44f35b7 (gateway pick list, ops UI)", "inventory-service#7"]
+  evidence: [decisions/D-004-inventory-rules.md]
+  limitations: ["inventory-service#7 not merged; no live order through a site"]
+- id: SITE-130
+  description: Site status in asset-service and the console Sites map; heartbeat from the site agent
+  status: locally_tested
+  implementation: ["site-gateway HeartbeatAgent", "asset-service#8", "operations-console#17"]
+  tests: [HeartbeatContractTest (body valid against SiteStatusReport)]
+- id: SITE-131-KEYCLOAK
+  description: Per-site Keycloak clients with siteId claim and site-reporter role; asset-service claim check
+  status: implemented
+  implementation: ["box1-gitops#151", "asset-service#8"]
+  limitations: ["Operator application of the mapper change not observed; credential delivery is #140's manual flow"]
+- id: SITE-131-KAFKA
+  description: KafkaUser per site, ACLs, consumer-side siteId check
+  status: blocked
+  limitations: ["#71"]
+- id: SITE-132
+  description: Traces from the site apps, in-guest collector for logs and metrics, cluster pipelines
+  status: implemented
+  implementation: ["site-gateway (OTLP, JSON logs with siteId/traceId)", "site-gateway-os#6 (collector)", "box1-gitops#152"]
+  limitations: ["box1-gitops#152 config not run through the collector binary; nothing live"]
+- id: SITE-133
+  description: greenboot required checks and automatic rollback; data survives
+  status: implemented
+  implementation: ["site-gateway-os#6 required.d checks", "site-gateway readiness"]
+  limitations: ["Staged rollout mechanism is #141; no rollback exercised"]

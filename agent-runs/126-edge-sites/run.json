@@ -1,0 +1,22 @@
+{
+  "issue": "box1-org/box1-docs#126",
+  "sub_issues": ["#127", "#128", "#129", "#130", "#131", "#132", "#133"],
+  "profile": "frontier",
+  "prompts": "box1_operations_agent_prompts/04-edge-sites/01-08",
+  "current_phase": "5 Review (site-gateway) complete; 6 Delivery: site-gateway merged and released; all other PRs await the owner",
+  "updated": "2026-11-10T01:45-0500",
+  "repositories": [
+    {"name": "box1-org/box1-ops-contracts", "branch": "edge-sites/126-site-contracts", "commit": "5b7296ca87aeed7a4f89a443e45931def4706658", "pr": "https://github.com/box1-org/box1-ops-contracts/pull/14"},
+    {"name": "box1-org/site-gateway", "merged": "44f35b747b717618c15e6e1c65f4cd5f18bcdf8e", "pr": "https://github.com/box1-org/site-gateway/pull/1", "bundle": "sha256:26543a45360ae49f3d48db695d3973551b39a2b4429c82ba8c2f6351da33e102"},
+    {"name": "box1-org/site-gateway-os", "branch": "edge-sites/126-133-site-os", "pr": "https://github.com/box1-org/site-gateway-os/pull/6"},
+    {"name": "box1-org/site-gateway-os", "branch": "bundle/site-gateway", "pr": "https://github.com/box1-org/site-gateway-os/pull/7", "note": "opened by site-gateway-release"},
+    {"name": "box1-org/asset-service", "branch": "edge-sites/128-130-site-status", "commit": "6b27357d824b1c9f4f6b32a7c432d1f186afacf5", "pr": "https://github.com/box1-org/asset-service/pull/8"},
+    {"name": "box1-org/inventory-service", "branch": "edge-sites/129-site-events", "commit": "466302a12665cfef69f3f358ab6330ab19d5cc84", "pr": "https://github.com/box1-org/inventory-service/pull/7"},
+    {"name": "box1-org/operations-console", "branch": "edge-sites/130-sites-map", "commit": "453b37f", "pr": "https://github.com/box1-org/operations-console/pull/17"},
+    {"name": "box1-org/box1-gitops", "pr": ["https://github.com/box1-org/box1-gitops/pull/150", "https://github.com/box1-org/box1-gitops/pull/151", "https://github.com/box1-org/box1-gitops/pull/152"]},
+    {"name": "box1-org/box1-workloads-dev", "pr": ["https://github.com/box1-org/box1-workloads-dev/pull/223", "https://github.com/box1-org/box1-workloads-dev/pull/225"]},
+    {"name": "box1-org/box1-docs", "branch": "agent-run/126-edge-sites"}
+  ],
+  "review_passes_completed": ["site-gateway: messaging, persistence, security, contracts, operations (one fresh reviewer)"],
+  "authority": "Owner allowed merging site-gateway PRs; everything else is PR-only, merged by the owner about 10 s apart (#64)"
+}
