@@ -1,0 +1,73 @@
+# Requirement ledger for box1-docs#140 (frontier). Status = highest level actually observed.
+- id: CI-AC1-TWO-IDENTITIES
+  description: "One cloud-init image digest boots as site_ds9 and site_spacedock (siteId in /etc/box1/site.env), bootc status digest recorded per guest"
+  source: "#140 acceptance 1"
+  status: implemented
+  implementation: ["box1-templates templates/rhel-image-vm (cloudInit)", "box1-docs scripts/vm-cloud-init/assemble_cloud_init_secret.py"]
+  tests: ["validate.mjs cloudInit on-render checks", "test_assemble_cloud_init_secret.py test_two_instances_share_nothing_but_the_shape"]
+  commands: ["npm run validate", "python3 -I scripts/vm-cloud-init/test_assemble_cloud_init_secret.py -v"]
+  evidence: ["evidence/02-local-tests.md"]
+  limitations: ["No image built or booted (needs approval: onboarding, test namespace, Secrets). Test plan step 2. Real-instance re-run belongs to #138."]
+- id: CI-AC2-NO-CREDENTIAL-IN-GIT
+  description: "No credential in Git or VM manifests; credential readable in guest only by the service user"
+  source: "#140 acceptance 2"
+  status: locally_tested
+  implementation: ["assemble_cloud_init_secret.py (stdin only, scrubbed output, allowlisted ConfigMap)", "rootfs-cloud-init tmpfiles/sysusers", "runbook validator rules for #139"]
+  tests: ["test_assemble_cloud_init_secret.py (16 tests, fake secret never in stdout/stderr/argv/env)"]
+  commands: ["python3 -I scripts/vm-cloud-init/test_assemble_cloud_init_secret.py -v"]
+  evidence: ["evidence/02-local-tests.md", "review-findings/security.md"]
+  limitations: ["Validator negative tests belong to #139 (not implemented here)", "Guest stat/denied/allowed reads not run (test plan step 2)"]
+- id: CI-AC3-RECREATE-DATA
+  description: "Re-creating the VM re-applies identity without losing data-disk data"
+  source: "#140 acceptance 3"
+  status: implemented
+  implementation: ["90-box1.cfg: no disk modules; write_files always", "runbook re-create table"]
+  tests: []
+  commands: []
+  evidence: ["evidence/01-discovery.md (KubeVirt 1.9 instance-id source)"]
+  limitations: ["Not run; needs approval to delete VMs/disks (test plan step 4)"]
+- id: CI-AC4-EXISTING-UNCHANGED
+  description: "legacy-erp and vm-golden-check untouched; parameter-off render identical to before"
+  source: "#140 acceptance 4"
+  status: locally_tested
+  implementation: ["{% if values.cloudInit === true %} guards", "validate.mjs VM_BASELINE_REF"]
+  tests: ["validate.mjs byte-identity checks"]
+  commands: ["VM_BASELINE_REF=origin/main npm run validate"]
+  evidence: ["evidence/01-discovery.md (VM digests and repo heads)", "evidence/02-local-tests.md"]
+  limitations: ["Re-check digests after merge (test plan step 6)"]
+- id: CI-BOOT-NO-DISK
+  description: "Image with cloud-init boots normally without a NoCloud disk; guest agent SSH and registry-setup unaffected"
+  source: "prompt phase 4"
+  status: implemented
+  implementation: ["datasource_list [NoCloud, None]", "sshd-keygen override"]
+  tests: []
+  commands: []
+  evidence: []
+  limitations: ["Not run (test plan step 1)"]
+- id: CI-ROTATION
+  description: "Rotate: update Secret, restart VM, new credential in guest"
+  source: "prompt lifecycle"
+  status: implemented
+  implementation: ["write_files frequency always", "--force-conflicts", "runbook Rotate section"]
+  tests: ["test_secret_from_environment_and_identical_output"]
+  commands: []
+  evidence: ["evidence/01-discovery.md (cloud-init 24.4 check_instance_id)"]
+  limitations: ["Not run in a guest (test plan step 3)"]
+- id: CI-SCENARIOS
+  description: "Secret missing at start; malformed user-data; bootc upgrade keeps identity; bootc rollback"
+  source: "prompt verification scenarios"
+  status: proposed
+  implementation: []
+  tests: []
+  commands: []
+  evidence: []
+  limitations: ["Test plan steps 2 and 5"]
+- id: CI-BUNDLE-SPEC
+  description: "Instance bundle specification and validator rule for #138/#139"
+  source: "prompt deliverable"
+  status: implemented
+  implementation: ["runbooks/vm-cloud-init-identity.md (Instance bundle specification)", "test-plan/instances.yaml (reference manifests, parsed only)"]
+  tests: []
+  commands: []
+  evidence: []
+  limitations: ["Implementation belongs to #138 and #139"]
