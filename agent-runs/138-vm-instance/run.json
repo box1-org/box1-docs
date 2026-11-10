@@ -1,0 +1,13 @@
+{
+  "issue": "box1-org/box1-docs#138",
+  "profile": "frontier",
+  "current_phase": "5 Review (complete); stopped before 6 GitOps delivery: approvals and dependencies",
+  "updated": "2026-11-09T00:35-0500",
+  "repositories": [
+    {"name": "box1-org/box1-templates", "branch": "golden-path/138-vm-instance", "base": "golden-path/137-artifact-profile", "commit": "69f54c3c1ca364a5b05455d022ef1e2f9cb96f14", "pr": "https://github.com/box1-org/box1-templates/pull/36"},
+    {"name": "box1-org/box1-gitops", "branch": "golden-path/138-vm-instance", "base": "golden-path/137-maven-bundle", "commit": "2030fcb1e3edd2522690c5321eca956a969a0719", "pr": "https://github.com/box1-org/box1-gitops/pull/134"},
+    {"name": "box1-org/box1-docs", "branch": "agent-run/138-vm-instance", "base": "main"}
+  ],
+  "plugin_version": "1.5.0 (unreleased)",
+  "review_passes_completed": ["security", "operations"]
+}
