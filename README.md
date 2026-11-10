@@ -86,6 +86,7 @@ the operator console and observability.
 | [RHDH onboarding plugin: OCI delivery](https://github.com/box1-org/box1-docs/blob/main/runbooks/rhdh-onboarding-plugin-oci.md) | Publishing the onboarding plugin as an immutable OCI artifact |
 | [RHDH onboarding durable workflow](https://github.com/box1-org/box1-docs/blob/main/runbooks/rhdh-onboarding-refactor.md) | Operating and resuming the Developer Hub onboarding workflow |
 | [Service decommissioning](https://github.com/box1-org/box1-docs/blob/main/runbooks/service-decommission.md) | Retiring a golden-path service and its GitOps, CI and catalog entries |
+| [Site Expansion back-out](https://github.com/box1-org/box1-docs/blob/main/runbooks/site-expansion-backout.md) | Removing the #126 edge sites and their golden-path changes, in three levels, against the `pre-site-expansion-2026-11-09` tags |
 
 Platform component runbooks live next to their manifests in `box1-gitops`
 (see [below](#box1-gitops-platform-desired-state)).
