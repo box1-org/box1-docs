@@ -224,6 +224,8 @@ never contains the value.
 | `box1-ci` | `etc-pki-entitlement` | `box1-rhel-image-poc` | RHEL entitlement for image-mode builds |
 | `trusted-profile-analyzer` | `rhtpa-ci` | `box1-rhtpa-bootstrap` | TPA CI OIDC client |
 | `trusted-profile-analyzer` | `rhtpa-database` | `box1-rhtpa-bootstrap` | TPA PostgreSQL credentials |
+| `langfuse` | `langfuse-secrets` | `langfuse-bootstrap` Job (Argo CD Sync hook, 2026-11-09) | Langfuse database, ClickHouse and Redis passwords, `NEXTAUTH_SECRET`, `SALT`, `ENCRYPTION_KEY`, the local owner's password and the initial project API keys. Generated once and never overwritten. **Preserve it** with the Langfuse PVCs: losing `SALT` or `ENCRYPTION_KEY` makes stored API keys and LLM-connection keys unusable |
+| `langfuse` | `langfuse-keycloak` | `langfuse-bootstrap` Job (every sync) | Copy of `keycloak/keycloak-client-secret-langfuse`. Recreated from the operator's Secret, so it needs no backup |
 
 ### Created by the Helm CLI (`openshell` release)
 
