@@ -4,6 +4,8 @@ How the Box1 operations services interact in the development environment: synchr
 
 Sources: `main` of each `box1-org` service repository, [`box1-ops-contracts/TOPICS.md`](https://github.com/box1-org/box1-ops-contracts/blob/main/TOPICS.md) and the `box1-workloads-dev` deployments, as of 2026-11-06 (America/New_York). An interactive version, where selecting a service lists every call, path and topic it uses, is in [`service-map.html`](service-map.html); download it and open it in a browser.
 
+See also the second map, [Box1 service map with edge sites](service-map-sites.md), which adds the Site Expansion VMs and Agentic Operations.
+
 ```mermaid
 flowchart TB
   operator([Operator]) -->|HTTPS| console
