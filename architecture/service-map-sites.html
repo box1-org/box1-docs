@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Box1 Service Map with Edge Sites</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Source+Sans+3:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one wide wiring diagram (cluster services above the Kafka band, edge-site VMs below it), a detail panel beside it, then flows, status and the topic register. */
+:root{
+  --bg:#f3f5f7; --surface:#ffffff; --ink:#18212b; --muted:#5b6876; --line:#d5dbe2;
+  --http:#2f5fb3; --kafka:#c46a12; --ext:#2c7a5b; --obs:#7a4fb5; --planned:#8a94a0;
+  --node:#ffffff; --node-ink:#18212b; --band:#fbf3ea; --band-line:#ebd2b6;
+  --zone:#eef3f8; --zone-line:#c9d6e4; --chip:#f6f8fa;
+  --dim:.12;
+  --f-display:"Archivo",system-ui,sans-serif;
+  --f-body:"Source Sans 3",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11161c; --surface:#18202a; --ink:#e3e9ef; --muted:#97a3b0; --line:#2c3846;
+  --http:#7ea6ec; --kafka:#f0a050; --ext:#5cc39a; --obs:#b896ee; --planned:#7d8894;
+  --node:#1d2731; --node-ink:#e3e9ef; --band:#22201b; --band-line:#4a3c2b;
+  --zone:#16202b; --zone-line:#2e3d4e; --chip:#222d39; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11161c; --surface:#18202a; --ink:#e3e9ef; --muted:#97a3b0; --line:#2c3846;
+  --http:#7ea6ec; --kafka:#f0a050; --ext:#5cc39a; --obs:#b896ee; --planned:#7d8894;
+  --node:#1d2731; --node-ink:#e3e9ef; --band:#22201b; --band-line:#4a3c2b;
+  --zone:#16202b; --zone-line:#2e3d4e; --chip:#222d39; color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 var(--f-body)}
+.wrap{max-width:1560px;margin:0 auto;padding-block:28px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:28px}
+header{display:grid;gap:6px}
+h1{font:700 1.9rem/1.15 var(--f-display);margin:0;letter-spacing:-.01em;text-wrap:balance}
+h2{font:600 1.15rem/1.3 var(--f-display);margin:0 0 10px;text-wrap:balance}
+.lede{color:var(--muted);margin:0;max-width:80ch}
+.meta{font:12px/1.4 var(--f-mono);color:var(--muted)}
+.meta a,.notes a,.card a{color:var(--http)}
+.legend{display:flex;flex-wrap:wrap;gap:8px 20px;font-size:14px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:8px}
+.legend svg{flex:none}
+.stage{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:20px;align-items:start}
+@media (max-width:1100px){.stage{grid-template-columns:minmax(0,1fr)}}
+.diagram{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow-x:auto;min-width:0}
+.diagram svg{display:block;width:100%;min-width:980px;height:auto}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;display:grid;gap:10px;min-width:0;position:sticky;top:max(12px,env(safe-area-inset-top,0px))}
+.panel .kind{font:500 11px/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.panel h3{font:600 1.2rem/1.25 var(--f-display);margin:0}
+.panel p{margin:0;color:var(--muted)}
+.panel ul{margin:0;padding:0;list-style:none;display:grid;gap:6px}
+.panel li{display:grid;grid-template-columns:62px 1fr;gap:8px;font-size:14px;align-items:baseline}
+.panel li b{font:500 10.5px/1.6 var(--f-mono);text-transform:uppercase;letter-spacing:.06em;border-radius:4px;padding:0 5px;text-align:center}
+.panel li code{font:12.5px/1.4 var(--f-mono);overflow-wrap:anywhere}
+.t-http{color:var(--http);background:color-mix(in srgb,var(--http) 12%,transparent)}
+.t-pub,.t-sub{color:var(--kafka);background:color-mix(in srgb,var(--kafka) 14%,transparent)}
+.t-ext,.t-idp{color:var(--ext);background:color-mix(in srgb,var(--ext) 14%,transparent)}
+.t-obs{color:var(--obs);background:color-mix(in srgb,var(--obs) 14%,transparent)}
+.hint{font-size:13px;color:var(--muted)}
+.new{font:500 10px/1 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--obs);border:1px solid currentColor;border-radius:4px;padding:2px 5px;margin-left:6px;vertical-align:2px}
+/* svg */
+.node rect.box{fill:var(--node);stroke:var(--line);stroke-width:1.2}
+.node.app rect.box{stroke:var(--ink);stroke-opacity:.35}
+.node.actor rect.box{fill:transparent;stroke-dasharray:3 3}
+.node.ext rect.box,.node.idp rect.box{stroke:var(--ext);stroke-width:1.4}
+.node.obsn rect.box{stroke:var(--obs);stroke-width:1.4}
+.node.site rect.box{fill:var(--surface);stroke:var(--http);stroke-width:1.4}
+.node .t{font:600 15px var(--f-display);fill:var(--node-ink)}
+.node .s{font:11px var(--f-mono);fill:var(--muted)}
+.node .badge{font:600 9.5px var(--f-mono);fill:var(--obs);letter-spacing:.06em}
+.node{cursor:pointer;outline:none;transition:opacity .15s}
+.node:focus-visible rect.box{stroke:var(--http);stroke-width:2.6}
+.node.sel rect.box{stroke:var(--http);stroke-width:2.4}
+.chip rect{fill:var(--chip);stroke:var(--line)}
+.chip text{font:500 11.5px var(--f-mono);fill:var(--node-ink)}
+.chip .cs{font:10px var(--f-mono);fill:var(--muted)}
+.ilink{fill:none;stroke:var(--muted);stroke-width:1.2}
+.ilab{font:10px var(--f-mono);fill:var(--muted)}
+.topic rect{fill:var(--node);stroke:var(--kafka);stroke-width:1.3}
+.topic.newt rect{stroke-width:2}
+.topic text{font:500 12px var(--f-mono);fill:var(--kafka)}
+.topic{transition:opacity .15s}
+.band{fill:var(--band);stroke:var(--band-line)}
+.zone{fill:var(--zone);stroke:var(--zone-line)}
+.band-t{font:600 13px var(--f-display);fill:var(--kafka);letter-spacing:.04em}
+.zone-t{font:600 13px var(--f-display);fill:var(--http);letter-spacing:.04em}
+.band-n{font:11.5px var(--f-mono);fill:var(--muted)}
+.band-t,.band-n{paint-order:stroke;stroke:var(--band);stroke-width:5px}
+.zone-t{paint-order:stroke;stroke:var(--zone);stroke-width:5px}
+.nwo{fill:none!important;stroke:var(--obs);stroke-dasharray:3 3}
+.edge{fill:none;stroke-width:1.7;transition:opacity .15s}
+.edge.http{stroke:var(--http)}
+.edge.pub{stroke:var(--kafka)}
+.edge.sub{stroke:var(--kafka);stroke-dasharray:6 4}
+.edge.ext,.edge.idp{stroke:var(--ext)}
+.edge.idp{stroke-dasharray:2 4}
+.edge.obs{stroke:var(--obs)}
+.elab{font:500 11px var(--f-mono);paint-order:stroke;stroke:var(--surface);stroke-width:4px}
+.elab.http{fill:var(--http)} .elab.ext,.elab.idp{fill:var(--ext)} .elab.obs{fill:var(--obs)} .elab.pub,.elab.sub{fill:var(--kafka)}
+svg.focus .edge:not(.on),svg.focus .node:not(.on),svg.focus .topic:not(.on),svg.focus .elab:not(.on){opacity:var(--dim)}
+svg.focus .kz:not(.on){opacity:.5}
+svg.focus .edge.on{stroke-width:2.6}
+@media (prefers-reduced-motion:reduce){.edge,.node,.topic{transition:none}}
+/* lower sections */
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:20px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px 20px;min-width:0}
+ol.flow,ul.plain{margin:0;padding-left:22px;display:grid;gap:7px;font-size:15px}
+code{font:12.5px var(--f-mono);overflow-wrap:anywhere}
+.status{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:18px}
+.status h3{font:600 .95rem/1.3 var(--f-display);margin:0 0 6px;display:flex;align-items:center;gap:8px}
+.dot{width:9px;height:9px;border-radius:50%;flex:none}
+.d-ok{background:var(--ext)} .d-part{background:var(--kafka)} .d-no{background:var(--planned)}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:680px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:500 11px var(--f-mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+td.num{font-variant-numeric:tabular-nums;text-align:right}
+.notes{font-size:14px;color:var(--muted);display:grid;gap:6px}
+.notes p{margin:0;max-width:100ch}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Box1 Service Map with Edge Sites</h1>
+    <p class="lede">The Box1 operations services after Site Expansion: two RHEL 10 image-mode VMs now act as remote warehouse sites. They send equipment readings and site events into Kafka through a local outbox, keep their own pick lists from inventory and shipment events, report their status to Asset Service, and ship traces, logs and metrics to the cluster collector. Select a box to trace its connections.</p>
+    <div class="meta">Second diagram; the first is <a href="service-map.html">service-map.html</a>. Sources: <code>box1-ops-contracts</code> <code>c115534</code> (TOPICS.md, SITE.md), epic box1-docs#126 live-check comments and the 2026-11-10 edge-sites log · 10 Nov 2026 (America/New_York)</div>
+  </header>
+
+  <div class="legend" aria-label="Legend">
+    <span><svg width="34" height="10"><line x1="0" y1="5" x2="34" y2="5" stroke="var(--http)" stroke-width="2"/></svg>HTTP call</span>
+    <span><svg width="34" height="10"><line x1="0" y1="5" x2="34" y2="5" stroke="var(--kafka)" stroke-width="2"/></svg>Publishes to topic (outbox)</span>
+    <span><svg width="34" height="10"><line x1="0" y1="5" x2="34" y2="5" stroke="var(--kafka)" stroke-width="2" stroke-dasharray="6 4"/></svg>Consumes from topic</span>
+    <span><svg width="34" height="10"><line x1="0" y1="5" x2="34" y2="5" stroke="var(--ext)" stroke-width="2"/></svg>External protocol (SFTP, SMTP, model API)</span>
+    <span><svg width="34" height="10"><line x1="0" y1="5" x2="34" y2="5" stroke="var(--ext)" stroke-width="2" stroke-dasharray="2 4"/></svg>Identity (Keycloak)</span>
+    <span><svg width="34" height="10"><line x1="0" y1="5" x2="34" y2="5" stroke="var(--obs)" stroke-width="2"/></svg>OTLP telemetry</span>
+    <span><svg width="34" height="12"><rect x="1" y="1" width="32" height="10" rx="3" fill="none" stroke="var(--obs)"/></svg>New since the first map</span>
+  </div>
+
+  <div class="stage">
+    <div class="diagram"><svg id="map" viewBox="0 0 1400 1060" role="img" aria-label="Box1 service interaction diagram including the edge sites"></svg></div>
+    <aside class="panel" id="panel" aria-live="polite"></aside>
+  </div>
+
+  <div class="cols">
+    <section class="card">
+      <h2>Edge site data flows</h2>
+      <ol class="flow">
+        <li><strong>Readings.</strong> The site's equipment simulator publishes over MQTT to the local AMQ Broker. <code>site-gateway</code> stores each reading in the site's PostgreSQL outbox, then publishes <code>equipment.reading.v1</code> to <code>box1.telemetry.events.v1</code>, keyed by <code>assetId</code>, with a <code>box1-site-id</code> header and a <code>traceparent</code>.</li>
+        <li><strong>Site events.</strong> Pick confirmations, cycle counts and holds from the <code>site-ops</code> handheld UI go through the same outbox to <code>box1.site.events.v1</code>, keyed by <code>siteId</code>. Inventory Service consumes them as group <code>inventory-site</code> and dead-letters to <code>box1.site.dlq.v1</code>.</li>
+        <li><strong>Pick lists.</strong> Each site reads <code>box1.inventory.events.v1</code> and <code>box1.fulfillment.events.v1</code> as group <code>site-gateway-&lt;siteId&gt;</code>, keeps only its own reservations and commits offsets after storing them.</li>
+        <li><strong>Status.</strong> About every 15 s each site sends <code>PUT /api/v1/sites/{siteId}/status</code> to Asset Service with its own Keycloak client token (role <code>site-reporter</code>, <code>siteId</code> claim). Asset Service derives ONLINE, DEGRADED or OFFLINE (no status for 90 s); the console's Sites view reads it back.</li>
+        <li><strong>Observability.</strong> Quarkus OTLP and an in-guest OpenTelemetry collector send traces, journald logs and host metrics, including <code>site_outbox_depth</code>, to <code>box1-collector</code>, which feeds Tempo, LokiStack and Prometheus.</li>
+        <li><strong>Not connected.</strong> The sites never talk to the legacy ERP directly, and stay outside the ambient mesh.</li>
+      </ol>
+    </section>
+    <section class="card">
+      <h2>How a site gets its software</h2>
+      <ol class="flow">
+        <li>A merge to <code>site-gateway</code> (Quarkus monorepo: <code>gateway</code>, <code>ops</code>, <code>simulator</code>) publishes a <code>FROM scratch</code> bundle by digest and passes the security gate.</li>
+        <li>The release opens a digest-bump PR in <code>site-gateway-os</code>, whose Containerfile copies the bundle into the RHEL 10 bootc image. One OS digest carries the apps.</li>
+        <li>Each site instance (<code>site-west</code>, <code>site-east</code>) was created from the Developer Hub <code>vm-instance</code> template and pins its own approved OS digest in <code>box1-workloads-dev</code>. Identity comes from cloud-init (NoCloud) with the client secret passed by reference.</li>
+        <li>Rollout is staged, site-east first, then site-west. On 2026-11-10 both moved to <code>sha256:651d4a5f…</code> (bundle <code>sha256:26543a45…</code>) by GitOps PR plus a digest-pinned <code>bootc switch</code>; greenboot passed on both. The automated staged rollout (#141) is not built yet.</li>
+      </ol>
+    </section>
+  </div>
+
+  <section class="card">
+    <h2>Where Site Expansion stands</h2>
+    <div class="status">
+      <div>
+        <h3><span class="dot d-ok"></span>Verified live on 2026-11-10</h3>
+        <ul class="plain">
+          <li>Both VMs running the approved OS digest; both sites ONLINE in Asset Service.</li>
+          <li>Readings from both sites stored (114 for <code>site_ds9</code>, 151 for <code>site_spacedock</code>); one breach raised and cleared one alert; trace runs site → gateway → Asset Service.</li>
+          <li>Site identity: own status write 200, other site 403, anonymous 401.</li>
+          <li>Site events (holds) and a pick confirmation recorded by Inventory Service; test orders appeared only on their own site's pick list.</li>
+          <li>Site logs, host metrics and traces visible in LokiStack, Prometheus and Tempo.</li>
+        </ul>
+      </div>
+      <div>
+        <h3><span class="dot d-part"></span>Not verified or not run yet</h3>
+        <ul class="plain">
+          <li>Console Sites page not yet opened in a browser.</li>
+          <li>Shipment closing a pick list, cycle-count reconciliation and replay.</li>
+          <li>Drills: site goes dark (NIC detach), bad release rollback by greenboot, reboot.</li>
+          <li>Agentic Operations citing a site's last-seen gap and buffer depth.</li>
+        </ul>
+      </div>
+      <div>
+        <h3><span class="dot d-no"></span>Not built</h3>
+        <ul class="plain">
+          <li>Per-site Kafka identity and ACLs, blocked on box1-docs#71; sites currently mark records with the <code>box1-site-id</code> header.</li>
+          <li>Egress NetworkPolicy for the site namespaces.</li>
+          <li>Automated staged rollout (#141); gating orders on site picks (#134); native builds (#135).</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Topic register</h2>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>Topic</th><th>Producer</th><th>Event types</th><th>Consumer groups</th><th class="num">Retention</th></tr></thead>
+        <tbody>
+          <tr><td><code>box1.order.events.v1</code></td><td>Order</td><td><code>order.placed.v1</code>, <code>order.state-changed.v1</code>, <code>fulfillment.requested.v1</code></td><td>inventory, fulfillment, notification, agentic-operations · bff-projections (contract only)</td><td class="num">7 d</td></tr>
+          <tr><td><code>box1.inventory.events.v1</code></td><td>Inventory</td><td><code>inventory.reserved.v1</code>, <code>inventory.rejected.v1</code>, <code>inventory.reservation-expired.v1</code></td><td>order, agentic-operations, <strong>site-gateway-&lt;siteId&gt;</strong></td><td class="num">7 d</td></tr>
+          <tr><td><code>box1.fulfillment.events.v1</code></td><td>Fulfillment Adapter</td><td><code>shipment.confirmed.v1</code>, <code>shipment.failed.v1</code></td><td>order, notification, inventory, agentic-operations, <strong>site-gateway-&lt;siteId&gt;</strong></td><td class="num">14 d</td></tr>
+          <tr><td><code>box1.telemetry.events.v1</code></td><td>Asset Service and <strong>edge sites</strong></td><td><code>equipment.reading.v1</code>, <code>equipment.threshold-exceeded.v1</code></td><td>asset-service, agentic-operations · telemetry-projections (contract only)</td><td class="num">2 d</td></tr>
+          <tr><td><strong><code>box1.site.events.v1</code></strong><span class="new">new</span></td><td>Edge sites (<code>site-gateway</code>)</td><td><code>site.pick-confirmed.v1</code>, <code>site.stock-adjusted.v1</code>, <code>site.stock-held.v1</code></td><td>inventory-site</td><td class="num">7 d</td></tr>
+          <tr><td><code>box1.notification.events.v1</code></td><td>Notification</td><td><code>notification.requested.v1</code>, <code>notification.delivered.v1</code>, <code>notification.failed.v1</code></td><td>agentic-operations · notification-history (contract only)</td><td class="num">14 d</td></tr>
+          <tr><td><code>box1.&lt;domain&gt;.dlq.v1</code></td><td>Each consumer</td><td>Records its consumer group could not process, unchanged; now includes <code>box1.site.dlq.v1</code></td><td>Operator replay only; Notification has an opt-in <code>notification-replay</code> group</td><td class="num">7–14 d</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="notes">
+    <p><code>agentic-operations</code> is a read-only consumer: it reads the five <code>*.events.v1</code> topics into an in-memory evidence window, never commits offsets and never produces. It answers the console's Assistant chat and incident analyses with the in-cluster vLLM model <code>box1-coder</code>, using read-only HTTP tools under the caller's own token.</p>
+    <p>Equipment can still post readings over HTTP (<code>POST /api/v1/telemetry/readings</code>, role <code>telemetry-writer</code>); the edge sites use Kafka instead. "Contract only" means a group is listed in <code>TOPICS.md</code> but no service consumes it yet.</p>
+  </section>
+</div>
+
+<script>
+(function(){
+const NS="http://www.w3.org/2000/svg";
+const W=190,H=58,C=[130,360,590,820,1050,1280],R1=30,R2=160,R3=320,B3=R3+H;
+const TY=470,TH=40,TW=180,SY=550;
+const nodes=[
+ {id:"operator",x:C[1],y:R1,t:"Operator",s:"browser",k:"actor",kind:"Person",d:"Box1 operations staff using the console in a browser."},
+ {id:"keycloak",x:C[3],y:R1,t:"Keycloak",s:"realm box1",k:"idp",kind:"Identity provider",d:"Issues tokens for the console login, Scenario Controller's client-credentials grant, and Asset Service's bearer-token API. Each edge site has its own confidential client (site-west, site-east) with role site-reporter and a siteId claim; sites fetch those tokens directly."},
+ {id:"vllm",x:C[5],y:R1,t:"vLLM box1-coder",s:"in-cluster model",k:"ext",kind:"Model server",d:"In-cluster vLLM serving box1-coder through an OpenAI-compatible API. One request at a time.",nw:1},
+ {id:"scenario",x:C[0],y:R2,t:"Scenario Controller",s:"Quarkus · PostgreSQL",k:"app",kind:"Service · demo driver",d:"Runs scripted demo scenarios and drills against the order flow, recording runs and an audit trail."},
+ {id:"console",x:C[1],y:R2,t:"Operations Console",s:"Quarkus · OIDC web app",k:"app",kind:"Service · single pane of glass",d:"Operator UI. Logs in through Keycloak, aggregates the services over cluster HTTP, shows site status from Asset Service, and hosts the Assistant chat backed by Agentic Operations."},
+ {id:"mailhog",x:C[2],y:R2,t:"MailHog",s:"SMTP sink",k:"ext",kind:"Mail relay (dev)",d:"Development SMTP server that captures outbound customer email."},
+ {id:"erp",x:C[3],y:R2,t:"Legacy ERP",s:"RHEL 10 bootc VM",k:"ext",kind:"Legacy system · VirtualMachine",d:"The back-office ERP appliance in an OpenShift Virtualization VM. Exchanges ERP1 files with the Fulfillment Adapter over SFTP. Edge sites deliberately never talk to it."},
+ {id:"agentic",x:C[5],y:R2,t:"Agentic Operations",s:"Quarkus · REST · MCP",k:"app",kind:"Service · AI assistant",d:"Answers operator questions and analyses incidents with the in-cluster model, using read-only tools under the caller's token. Suggested actions are never executed. Reads all event topics without committing offsets.",nw:1},
+ {id:"inventory",x:C[0],y:R3,t:"Inventory Service",s:"Quarkus · PostgreSQL",k:"app",kind:"Service",d:"Owns stock per site and order reservations. Now also consumes site events (picks, cycle counts, holds) as group inventory-site, with a documented reconciliation rule."},
+ {id:"order",x:C[1],y:R3,t:"Order Service",s:"Quarkus · PostgreSQL",k:"app",kind:"Service",d:"Transactional state of customer orders; drives the order saga through events. Unchanged by Site Expansion."},
+ {id:"notification",x:C[2],y:R3,t:"Notification Service",s:"Quarkus · PostgreSQL",k:"app",kind:"Service",d:"Turns order and shipment events into deduplicated customer notices delivered by email."},
+ {id:"adapter",x:C[3],y:R3,t:"Fulfillment Adapter",s:"Quarkus · Camel · PostgreSQL",k:"app",kind:"Service · anti-corruption layer",d:"Protects the legacy ERP: queues requests, retries uploads and translates to the ERP1 file protocol."},
+ {id:"asset",x:C[4],y:R3,t:"Asset Service",s:"Quarkus · PostgreSQL",k:"app",kind:"Service",d:"Ingests equipment readings, keeps recent history and raises threshold alerts. Now also holds each site's status (PUT /api/v1/sites/{siteId}/status) and derives ONLINE, DEGRADED or OFFLINE."},
+ {id:"collector",x:700,y:985,t:"box1-collector",s:"OTLP → Tempo · Loki · Prometheus",k:"obsn",kind:"Observability",d:"The cluster's OpenTelemetry collector. Receives site traces, journald logs and host metrics, labelled with site_id.",w:300},
+];
+const SITE_W=640,SITE_H=240,SITE_Y=700;
+const sites=[
+ {id:"sw",x0:40,t:"site-west",fx:"site_ds9",ns:"site-west-dev"},
+ {id:"se",x0:720,t:"site-east",fx:"site_spacedock",ns:"site-east-dev"},
+];
+sites.forEach(s=>{s.kind="Edge site · VirtualMachine";s.d=`RHEL 10 image-mode VM in namespace ${s.ns}, mapped to fixture site ${s.fx}. Runs the site apps from the site-gateway bundle baked into the site-gateway-os image, with its own Keycloak client (${s.t}) and cloud-init identity. Booted sha256:651d4a5f… on 2026-11-10.`;s.s=`${s.fx} · ${s.ns}`});
+const topics=[
+ {id:"t-inv",x:C[0],y:TY,t:"inventory.events.v1"},
+ {id:"t-order",x:C[1],y:TY,t:"order.events.v1"},
+ {id:"t-notif",x:C[2],y:TY,t:"notification.events.v1"},
+ {id:"t-ful",x:C[3],y:TY,t:"fulfillment.events.v1"},
+ {id:"t-tel",x:C[4],y:TY,t:"telemetry.events.v1"},
+ {id:"t-site",x:245,y:SY,t:"site.events.v1",nw:1},
+];
+const E=[
+ {a:"operator",b:"console",c:"http",l:"HTTPS · web UI",p:[[C[1],R1+H],[C[1],R2]]},
+ {a:"console",b:"keycloak",c:"idp",l:"OIDC login (authorization code + PKCE)",h:1,p:[[C[1]+W/2,R2+12],[C[3]-W/2,R1+H/2]]},
+ {a:"scenario",b:"keycloak",c:"idp",l:"client-credentials token for Inventory calls",path:`M150 ${R2} C150 120 190 112 240 112 L560 112 C700 112 760 110 790 ${R1+H}`},
+ {a:"asset",b:"keycloak",c:"idp",l:"validates bearer tokens (audience asset-service)",p:[[1030,R3],[870,R1+H]]},
+ {a:"console",b:"scenario",c:"http",l:"/internal/v1/scenarios, /runs, /fixtures, /audit",h:1,p:[[C[1]-W/2,R2+40],[C[0]+W/2,R2+40]]},
+ {a:"console",b:"agentic",c:"http",l:"Assistant chat and incident analysis, caller's token forwarded",path:`M440 ${R2} C440 142 455 136 480 136 L1180 136 C1200 136 1210 146 1210 ${R2}`,lab:[700,131,"Assistant chat"]},
+ {a:"console",b:"inventory",c:"http",l:"/api/v1/inventory, /api/v1/reservations/{id}",p:[[320,R2+H],[150,R3]]},
+ {a:"console",b:"order",c:"http",l:"/api/v1/orders, /orders/{id}/timeline",p:[[360,R2+H],[360,R3]]},
+ {a:"console",b:"adapter",c:"http",l:"/api/fulfillments",p:[[400,R2+H],[780,R3]]},
+ {a:"console",b:"asset",c:"http",l:"/api/v1/alerts, readings, site status for the Sites view",p:[[430,R2+H],[1000,R3]]},
+ {a:"scenario",b:"inventory",c:"http",l:"/internal/v1/stock, /internal/v1/sites",p:[[110,R2+H],[110,R3]]},
+ {a:"scenario",b:"order",c:"http",l:"POST /api/v1/orders",p:[[150,R2+H],[330,R3]]},
+ {a:"scenario",b:"adapter",c:"http",l:"/internal/fulfillments (fault injection)",p:[[190,R2+H],[800,R3]]},
+ {a:"agentic",b:"vllm",c:"ext",l:"OpenAI-compatible chat with tools (box1-coder)",p:[[C[5],R2],[C[5],R1+H]]},
+ {a:"agentic",b:"order",c:"http",l:"read-only: order timeline",p:[[1200,R2+H],[395,R3]]},
+ {a:"agentic",b:"inventory",c:"http",l:"read-only: inventory reservation",p:[[1210,R2+H],[180,R3]]},
+ {a:"agentic",b:"adapter",c:"http",l:"read-only: fulfillment status",p:[[1225,R2+H],[850,R3]]},
+ {a:"agentic",b:"asset",c:"http",l:"read-only: telemetry alerts",p:[[1240,R2+H],[1080,R3]]},
+ {a:"kafka",b:"agentic",c:"sub",l:"reads all five *.events.v1 topics, never commits offsets",path:`M1290 445 L1290 ${R2+H}`,lab:[1298,300,"*.events.v1"],la:"start"},
+ {a:"notification",b:"mailhog",c:"ext",l:"SMTP · customer notices",p:[[C[2],R3],[C[2],R2+H]],lab:[600,290,"SMTP"],la:"start"},
+ {a:"adapter",b:"erp",c:"ext",l:"SFTP · ERP1 request and result files",p:[[C[3],R3],[C[3],R2+H]],lab:[830,290,"SFTP"],la:"start"},
+ // produce
+ {a:"inventory",b:"t-inv",c:"pub",l:"inventory.reserved / rejected / reservation-expired",p:[[C[0],B3],[C[0],TY]]},
+ {a:"order",b:"t-order",c:"pub",l:"order.placed, order.state-changed, fulfillment.requested",p:[[C[1],B3],[C[1],TY]]},
+ {a:"notification",b:"t-notif",c:"pub",l:"notification.requested / delivered / failed",p:[[C[2],B3],[C[2],TY]]},
+ {a:"adapter",b:"t-ful",c:"pub",l:"shipment.confirmed / shipment.failed",p:[[C[3],B3],[C[3],TY]]},
+ {a:"asset",b:"t-tel",c:"pub",l:"equipment.threshold-exceeded (and HTTP-ingested readings)",p:[[1030,B3],[1030,TY]]},
+ // consume
+ {a:"t-order",b:"inventory",c:"sub",l:"group inventory",p:[[325,TY],[165,B3]]},
+ {a:"t-order",b:"notification",c:"sub",l:"group notification",p:[[400,TY],[555,B3]]},
+ {a:"t-order",b:"adapter",c:"sub",l:"group fulfillment",p:[[420,TY],[780,B3]]},
+ {a:"t-inv",b:"order",c:"sub",l:"group order",p:[[175,TY],[325,B3]]},
+ {a:"t-ful",b:"order",c:"sub",l:"group order",p:[[775,TY],[395,B3]]},
+ {a:"t-ful",b:"inventory",c:"sub",l:"group inventory",p:[[760,TY],[195,B3]]},
+ {a:"t-ful",b:"notification",c:"sub",l:"group notification",p:[[790,TY],[625,B3]]},
+ {a:"t-tel",b:"asset",c:"sub",l:"group asset-service (readings from sites and HTTP)",p:[[1075,TY],[1075,B3]]},
+ {a:"t-site",b:"inventory",c:"sub",l:"group inventory-site · DLQ box1.site.dlq.v1",p:[[250,SY],[212,B3]]},
+ // site-west
+ {a:"sw",b:"t-site",c:"pub",l:"site.pick-confirmed / stock-adjusted / stock-held, keyed by siteId",p:[[245,SITE_Y],[245,SY+TH]]},
+ {a:"t-inv",b:"sw",c:"sub",l:"pick list · group site-gateway-site_ds9",p:[[130,TY+TH],[130,SITE_Y]]},
+ {a:"t-ful",b:"sw",c:"sub",l:"pick list closes on shipment · group site-gateway-site_ds9",p:[[800,TY+TH],[600,SITE_Y]]},
+ {a:"sw",b:"t-tel",c:"pub",l:"equipment.reading.v1 from the outbox, keyed by assetId",p:[[640,SITE_Y],[1030,TY+TH]]},
+ {a:"sw",b:"asset",c:"http",l:"PUT /api/v1/sites/site_ds9/status every ~15 s (client site-west)",path:`M665 ${SITE_Y} C665 668 1165 672 1165 640 L1165 420 C1165 396 1135 392 1130 ${B3}`,lab:[1172,560,"status"],la:"start"},
+ {a:"sw",b:"collector",c:"obs",l:"OTLP traces, journald logs, host metrics",p:[[360,SITE_Y+SITE_H],[630,985]],lab:[470,972,"OTLP"]},
+ // site-east
+ {a:"se",b:"t-site",c:"pub",l:"site.pick-confirmed / stock-adjusted / stock-held, keyed by siteId",p:[[760,SITE_Y],[290,SY+TH]]},
+ {a:"t-inv",b:"se",c:"sub",l:"pick list · group site-gateway-site_spacedock",path:`M200 ${TY+TH} C200 528 215 531 240 531 L700 531 C760 531 790 600 790 ${SITE_Y}`},
+ {a:"t-ful",b:"se",c:"sub",l:"pick list closes on shipment · group site-gateway-site_spacedock",p:[[840,TY+TH],[860,SITE_Y]]},
+ {a:"se",b:"t-tel",c:"pub",l:"equipment.reading.v1 from the outbox, keyed by assetId",p:[[1050,SITE_Y],[1050,TY+TH]]},
+ {a:"se",b:"asset",c:"http",l:"PUT /api/v1/sites/site_spacedock/status every ~15 s (client site-east)",path:`M1090 ${SITE_Y} C1090 672 1195 672 1195 640 L1195 420 C1195 396 1150 392 1140 ${B3}`},
+ {a:"se",b:"collector",c:"obs",l:"OTLP traces, journald logs, host metrics",p:[[1040,SITE_Y+SITE_H],[770,985]]},
+];
+const svg=document.getElementById("map");
+const el=(n,a,p)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);(p||svg).appendChild(e);return e};
+const txt=(p,a,s)=>{const e=el("text",a,p);e.textContent=s;return e};
+const defs=el("defs",{});
+[["http","var(--http)"],["pub","var(--kafka)"],["sub","var(--kafka)"],["ext","var(--ext)"],["idp","var(--ext)"],["obs","var(--obs)"],["in","var(--muted)"]].forEach(([k,c])=>{
+  const m=el("marker",{id:"m-"+k,viewBox:"0 0 10 10",refX:"9",refY:"5",markerWidth:"7",markerHeight:"7",orient:"auto-start-reverse"},defs);
+  el("path",{d:"M0 0 L10 5 L0 10 z",fill:c},m);
+});
+// zones
+const bandG=el("g",{class:"kz"});
+el("rect",{x:20,y:430,width:1360,height:200,rx:10,class:"band"},bandG);
+txt(bandG,{x:36,y:452,class:"band-t"},"KAFKA · box1-kafka (Strimzi) · topics prefixed box1.");
+txt(bandG,{x:360,y:618,class:"band-n"},"Every consumer group dead-letters to box1.<domain>.dlq.v1 for operator replay.");
+el("rect",{x:20,y:660,width:1360,height:300,rx:12,class:"zone"});
+txt(svg,{x:36,y:684,class:"zone-t"},"EDGE SITES · OpenShift Virtualization VMs · RHEL 10 image mode (bootc) · image site-gateway-os");
+// edges
+const pathOf=e=>{
+  if(e.path)return e.path;
+  const[[x1,y1],[x2,y2]]=e.p;
+  if(x1===x2||y1===y2)return`M${x1} ${y1} L${x2} ${y2}`;
+  if(e.h){const mx=(x1+x2)/2;return`M${x1} ${y1} C${mx} ${y1} ${mx} ${y2} ${x2} ${y2}`}
+  const my=(y1+y2)/2;return`M${x1} ${y1} C${x1} ${my} ${x2} ${my} ${x2} ${y2}`;
+};
+const gE=el("g",{});
+// topics (below edges visually? draw edges first, then topics on top)
+E.forEach(e=>{
+  e.el=el("path",{d:pathOf(e),class:"edge "+e.c,"marker-end":`url(#m-${e.c})`},gE);
+});
+topics.forEach(t=>{
+  const g=el("g",{class:"topic"+(t.nw?" newt":"")});t.el=g;
+  el("rect",{x:t.x-TW/2,y:t.y,width:TW,height:TH,rx:20},g);
+  txt(g,{x:t.x,y:t.y+25,"text-anchor":"middle"},t.t);
+  if(t.nw)el("rect",{x:t.x-TW/2-4,y:t.y-4,width:TW+8,height:TH+8,rx:24,class:"nwo"},g);
+});
+const gL=el("g",{});
+E.forEach(e=>{if(e.lab){e.lt=txt(gL,{x:e.lab[0],y:e.lab[1],class:"elab "+e.c,"text-anchor":e.la||"middle"},e.lab[2])}});
+let sel=null;
+function wire(g,id){
+  g.addEventListener("mouseenter",()=>show(id));
+  g.addEventListener("mouseleave",()=>show(sel,true));
+  g.addEventListener("focus",()=>show(id));
+  g.addEventListener("click",()=>{sel=sel===id?null:id;show(sel,true)});
+  g.addEventListener("keydown",ev=>{if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();sel=sel===id?null:id;show(sel,true)}});
+}
+nodes.forEach(n=>{
+  const w=n.w||W;
+  const g=el("g",{class:"node "+n.k,tabindex:"0",role:"button","aria-label":n.t});n.el=g;
+  el("rect",{x:n.x-w/2,y:n.y,width:w,height:H,rx:8,class:"box"},g);
+  txt(g,{x:n.x,y:n.y+25,"text-anchor":"middle",class:"t"},n.t);
+  txt(g,{x:n.x,y:n.y+44,"text-anchor":"middle",class:"s"},n.s);
+  if(n.nw)el("rect",{x:n.x-w/2-4,y:n.y-4,width:w+8,height:H+8,rx:11,fill:"none",stroke:"var(--obs)","stroke-dasharray":"3 3"},g);
+  wire(g,n.id);
+});
+// site frames
+const chip=(g,x,y,w,t,s)=>{const c=el("g",{class:"chip"},g);el("rect",{x,y,width:w,height:s?40:30,rx:6},c);txt(c,{x:x+w/2,y:y+(s?17:19),"text-anchor":"middle"},t);if(s)txt(c,{x:x+w/2,y:y+32,"text-anchor":"middle",class:"cs"},s);return c};
+const il=(g,d,lab,lx,ly)=>{el("path",{d,class:"ilink","marker-end":"url(#m-in)"},g);if(lab)txt(g,{x:lx,y:ly,class:"ilab","text-anchor":"middle"},lab)};
+sites.forEach(s=>{
+  const x=s.x0,y=SITE_Y;
+  const g=el("g",{class:"node site",tabindex:"0",role:"button","aria-label":s.t+" edge site"});s.el=g;
+  el("rect",{x,y,width:SITE_W,height:SITE_H,rx:10,class:"box"},g);
+  el("rect",{x:x-4,y:y-4,width:SITE_W+8,height:SITE_H+8,rx:13,fill:"none",stroke:"var(--obs)","stroke-dasharray":"3 3"});
+  txt(g,{x:x+16,y:y+26,class:"t"},s.t);
+  txt(g,{x:x+16+s.t.length*8.6+12,y:y+26,class:"s"},`${s.fx} · ${s.ns} · Keycloak client ${s.t}`);
+  // row 1: simulator -> broker -> gateway
+  chip(g,x+16,y+46,170,"Equipment simulator","Quarkus");
+  chip(g,x+232,y+46,170,"AMQ Broker","MQTT · Podman quadlet");
+  chip(g,x+448,y+46,176,"site-gateway","Quarkus + Camel");
+  il(g,`M${x+186} ${y+66} L${x+230} ${y+66}`,"MQTT",x+208,y+60);
+  il(g,`M${x+402} ${y+66} L${x+446} ${y+66}`);
+  // row 2: site-ops -> postgres <-> gateway ; otel
+  chip(g,x+16,y+116,170,"OTel collector","in-guest · OTLP out");
+  chip(g,x+232,y+116,170,"site-ops","handheld UI · Qute");
+  chip(g,x+448,y+116,176,"PostgreSQL outbox","bounded buffer");
+  il(g,`M${x+402} ${y+136} L${x+446} ${y+136}`,"picks",x+424,y+130);
+  il(g,`M${x+520} ${y+86} L${x+520} ${y+114}`);
+  il(g,`M${x+560} ${y+114} L${x+560} ${y+88}`);
+  txt(g,{x:x+532,y:y+104,class:"ilab"},"store");
+  txt(g,{x:x+572,y:y+104,class:"ilab"},"publish");
+  // row 3: platform
+  txt(g,{x:x+16,y:y+190,class:"s"},"bootc + greenboot rollback · cloud-init identity in /etc/box1/site.env");
+  txt(g,{x:x+16,y:y+210,class:"s"},"OS sha256:651d4a5f… · apps bundle sha256:26543a45… · 2 vCPU / 4 GiB");
+  txt(g,{x:x+16,y:y+228,class:"s"},"not in the mesh · no direct path to the ERP");
+  wire(g,s.id);
+});
+const kafka={id:"kafka",t:"Kafka topics",el:bandG};
+const byId=Object.fromEntries([...nodes,...topics,...sites,kafka].map(o=>[o.id,o]));
+const nameOf=id=>id.startsWith("t-")?"box1."+byId[id].t:byId[id].t;
+const panel=document.getElementById("panel");
+const esc=s=>s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+const OUT={http:["HTTP","calls"],idp:["Auth","uses"],pub:["Pub","publishes to"],sub:["Feeds","delivers to"],ext:["Ext","sends to"],obs:["OTLP","exports to"]};
+const IN={http:["HTTP","called by"],idp:["Auth","used by"],pub:["Pub","published by"],sub:["Sub","consumes"],ext:["Ext","receives from"],obs:["OTLP","receives from"]};
+const row=(tag,c,verb,who,l)=>`<li><b class="t-${c}">${tag}</b><span>${verb} <strong>${esc(who)}</strong><br><code>${esc(l)}</code></span></li>`;
+function rows(id){
+  const out=[];
+  E.forEach(e=>{if(e.a===id){const t=OUT[e.c];out.push(row(t[0],e.c,t[1],nameOf(e.b),e.l))}});
+  E.forEach(e=>{if(e.b===id){const t=IN[e.c];out.push(row(t[0],e.c,t[1],nameOf(e.a),e.l))}});
+  if(id==="sw"||id==="se"){const s=byId[id];out.push(row("Auth","idp","uses",`Keycloak client ${s.t}`,"client credentials · role site-reporter · siteId claim"))}
+  return out.join("");
+}
+function show(id,persist){
+  svg.querySelectorAll(".on,.sel").forEach(x=>x.classList.remove("on","sel"));
+  if(!id){svg.classList.remove("focus");
+    panel.innerHTML=`<div class="kind">Overview</div><h3>Cluster services plus two edge sites</h3><p>The order saga between Order, Inventory, Fulfillment Adapter and Notification is unchanged. Site Expansion adds two edge-site VMs that talk to the cluster only through Kafka, an HTTPS status heartbeat to Asset Service, Keycloak tokens and OTLP telemetry.</p><p>Boxes with a dotted violet outline are new since the first map.</p><p class="hint">Hover or select a box to list every call, topic and protocol it uses. Select it again to clear.</p>`;return}
+  svg.classList.add("focus");
+  const on=new Set([id]);
+  E.forEach(e=>{if(e.a===id||e.b===id){e.el.classList.add("on");e.lt&&e.lt.classList.add("on");on.add(e.a);on.add(e.b)}});
+  on.forEach(x=>byId[x].el.classList.add("on"));
+  if(persist&&sel)byId[sel].el.classList.add("sel");
+  const n=byId[id];
+  panel.innerHTML=`<div class="kind">${esc(n.kind)}</div><h3>${esc(n.t)}</h3><p>${esc(n.d)}</p><ul>${rows(id)}</ul>`;
+}
+show(null);
+})();
+</script>
